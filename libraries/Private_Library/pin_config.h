@@ -1,10 +1,8 @@
 /*
  * @Description: None
- * @version: V1.0.0
- * @Author: None
- * @Date: 2023-08-16 14:24:03
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2024-12-03 17:02:16
+ * @Author: LILYGO
+ * @Date: 2024-12-06 14:37:43
+ * @LastEditTime: 2024-12-06 14:37:43
  * @License: GPL 3.0
  */
 #pragma once

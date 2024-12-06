@@ -2,15 +2,11 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 12:04:54
+ * @LastEditTime: 2024-12-06 15:44:32
  * @License: GPL 3.0
 -->
 
 <h1 align = "center">T-Echo-Lite</h1>
-
-<p align="center" width="100%">
-    <img src="image/13.jpg" alt="">
-</p>
 
 ## **[English](./README.md) | 中文**
 
@@ -20,9 +16,9 @@
 | T-Echo-Lite_V1.0            | 2024-12-06                         |
 
 ## 购买链接
-| Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
+| Product                     | SOC           |  FLASH  |  RAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Echo-Lite_V1.0   | ESP32S3R8 |   16M   |8M (Octal SPI)| NULL |
+| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| NULL |
 
 ## 目录
 - [描述](#描述)
@@ -30,6 +26,7 @@
 - [模块](#模块)
 - [快速开始](#快速开始)
 - [引脚总览](#引脚总览)
+- [相关测试](#相关测试)
 - [常见问题](#常见问题)
 - [项目](#项目)
 
@@ -71,6 +68,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 * 名称：GDEM0122T61
 * 尺寸：1.22 英寸
+* 分辨率：176x192px
 * 屏幕类型：E-PAPER
 * 驱动芯片：SSD1681
 * 总线通信协议：IIC
@@ -128,19 +126,38 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 ### 例程支持
 
-| Example | Support IDE And Version| Description | Picture |
+[supported]: https://img.shields.io/badge/-supported-green "supported"
+[preview]: https://img.shields.io/badge/-preview-orange "preview"
+
+| Example | `[Arduino IDE][Adafruit_nRF52_V1.6.1]` <br /> `[PlatformIO][nordicnrf52_V10.6.0]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [GFX](./examples/GFX) | `[Arduino IDE][esp32_v3.0.7]` |  |  |
-| [Lvgl_CIT](./examples/Lvgl_CIT) |`[Arduino IDE][esp32_v3.0.7]` | Product factory original testing |  |
-| [CHSC5816](./examples/CHSC5816) | `[Arduino IDE][esp32_v3.0.7]` |  |  |
-| [Rotary_Encoder](./examples/Rotary_Encoder) | `[Arduino IDE][esp32_v3.0.7]` |  |  |
+| [Battery_Measurement](./examples/Battery_Measurement) | ![alt text][supported] |  |  |
+| [Original_Test](./examples/Original_Test) |![alt text][supported] | 出厂测试程序 |  |
+| [BLE_Uart](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Button_Triggered](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Display](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Display_BLE_Uart](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Display_SX1262](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Flash](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Flash_Erase](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [GPS](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [GPS_Full](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [ICM20948](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [IIC_Scan_2](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Sleep_Wake_Up](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [SX126x_PingPong](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [SX126x_PingPong_2](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+
+| Bootloader | Description | Picture |
+| ------  | ------  | ------ |
+| [Bootloader_V1.0.0](./bootloader/t-echo_lite_nrf52840_bootloader-0.9.2-dirty_s140_6.1.1_v1.0.0.hex) <br /> [Bootloader_V1.0.0(uf2)](./bootloader/update-t-echo_lite_nrf52840_bootloader-0.9.2-dirty_nosd_v1.0.0.uf2) | Original |  |
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [Lvgl_CIT](./firmware/[T-Echo-Lite_V1.0][Lvgl_CIT]_firmware_V1.0.0.bin) | Original |  |
+| [Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.hex.bin) <br /> [Original_Test(uf2)](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.uf2)| 出厂测试程序 |  |
 
 ### PlatformIO
-1. 安装[VisualStudioCode](https://code.visualstudio.com/Download)，根据你的系统类型选择安装。
+1. 安装 [VisualStudioCode](https://code.visualstudio.com/Download)，根据你的系统类型选择安装。
 
 2. 打开VisualStudioCode软件侧边栏的“扩展”（或者使用<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>打开扩展），搜索“PlatformIO IDE”扩展并下载。
 
@@ -150,12 +167,14 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 5. 打开项目文件中的“platformio.ini”（添加文件夹成功后PlatformIO会自动打开对应文件夹的“platformio.ini”）,在“[platformio]”目录下取消注释选择你需要烧录的示例程序（以“default_envs = xxx”为标头），然后点击左下角的“<kbd>[√](image/4.png)</kbd>”进行编译，如果编译无误，将单片机连接电脑，点击左下角“<kbd>[→](image/5.png)</kbd>”即可进行烧录。
 
+6. 此时可能会报错，你需要安装一个 [Python](https://www.python.org/downloads/) ，依次打开文件夹“tool”->“win10 vscode platformio start”，在“win10 vscode platformio start”文件夹下执行cmd命令`python t-echo-lite_v1.0.0_setup.py`，即可完成开发板安装，此时编译烧录就不会报错了。
+
 ### Arduino
-1. 安装[Arduino](https://www.arduino.cc/en/software)，根据你的系统类型选择安装。
+1. 安装 [Arduino](https://www.arduino.cc/en/software)，根据你的系统类型选择安装。
 
 2. 打开项目文件夹的“example”目录，选择示例项目文件夹，打开以“.ino”结尾的文件即可打开Arduino IDE项目工作区。
 
-3. 打开右上角“工具”菜单栏->选择“开发板”->“开发板管理器”，找到或者搜索“esp32”，下载作者名为“Espressif Systems”的开发板文件。接着返回“开发板”菜单栏，选择“ESP32 Arduino”开发板下的开发板类型，选择的开发板类型由“platformio.ini”文件中以[env]目录下的“board = xxx”标头为准，如果没有对应的开发板，则需要自己手动添加项目文件夹下“board”目录下的开发板。
+3. 打开右上角“工具”菜单栏->选择“开发板”->“开发板管理器”，找到或者搜索“Adafruit_nRF52”，下载作者名为“Adafruit”的开发板文件。接着返回“开发板”菜单栏，选择“Adafruit_nRF52”开发板下的开发板类型，选择的开发板类型由“platformio.ini”文件中以[env]目录下的“board = xxx”标头为准，如果没有对应的开发板，则需要自己手动添加项目文件夹下“board”目录下的开发板。(如果找不到“Adafruit_nRF52”，则需要打开首选项 -> 添加 “https://www.adafruit.com/package_adafruit_index.json” 到“其他开发板管理地址”)
 
 4. 打开菜单栏“[文件](image/6.png)”->“[首选项](image/6.png)”，找到“[项目文件夹位置](image/7.png)”这一栏，将项目目录下的“libraries”文件夹里的所有库文件连带文件夹复制粘贴到这个目录下的“libraries”里边。
 
@@ -163,66 +182,112 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 | Setting                               | Value                                 |
 | :-------------------------------: | :-------------------------------: |
-| Board                                | ESP32S3 Dev Module|
-| Upload Speed                     | 921600                               |
-| USB Mode                           | Hardware CDC and JTAG     |
-| USB CDC On Boot                | Enabled                             |
-| USB Firmware MSC On Boot | Disabled                             |
-| USB DFU On Boot                | Disabled                             |
-| CPU Frequency                   | 240MHz (WiFi)                    |
-| Flash Mode                         | QIO 80MHz                         |
-| Flash Size                           | 16MB (128Mb)                     |
-| Core Debug Level                | None                                 |
-| Partition Scheme                | 16M Flash (3MB APP/9.9MB FATFS) |
-| PSRAM                                | OPI PSRAM                         |
-| Arduino Runs On                  | Core 1                               |
-| Events Run On                     | Core 1                               |
+| Board                                 | Nordic nRF52840 DK           |
 
 6. 选择正确的端口。
 
-7. 点击右上角“<kbd>[√](image/8.png)</kbd>”进行编译，如果编译无误，将单片机连接电脑，点击右上角“<kbd>[→](image/9.png)</kbd>”即可进行烧录。
+7. 开启引导下载模式：按一下RST芯片复位按键后松开等待LED1亮后（一定要等待LED1亮）再按一下RST按键后松开，观察到LED1灯逐渐熄灭逐渐点亮，即已进入引导下载模式。
 
-### firmware烧录
-1. 打开项目文件“tools”找到ESP32烧录工具，打开。
+8. 点击右上角“<kbd>[√](image/8.png)</kbd>”进行编译，如果编译无误，将单片机连接电脑，点击右上角“<kbd>[→](image/9.png)</kbd>”即可进行烧录。
 
-2. 选择正确的烧录芯片以及烧录方式点击“OK”，如图所示根据步骤1->2->3->4->5即可烧录程序，如果烧录不成功，请按住“BOOT-0”键再下载烧录。
+### JLINK烧录firmware和bootloader
+1. 安装软件 [nRF-Connect-for-Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download#infotabs)
 
-3. 烧录文件在项目文件根目录“[firmware](./firmware/)”文件下，里面有对firmware文件版本的说明，选择合适的版本下载即可。
+2. 安装软件 [JLINK](https://www.segger.com/downloads/jlink/)
+
+3. 正确连接JLINK引脚如下图
 
 <p align="center" width="100%">
-    <img src="image/10.png" alt="example">
-    <img src="image/11.png" alt="example">
+    <img src="image/12.jpg" alt="">
 </p>
+
+4. 打开软件nRF-Connect-for-Desktop 安装工具 [Programmer](./image/10.png) 并打开
+
+5. 添加文件，同时选择bootloader文件和firmware文件，点击 [Erase&write](./image/11.png) ，即可完成烧录
 
 ## 引脚总览
 
-| 屏幕引脚       | ESP32S3引脚      |
+| Flash引脚          | nRF52840引脚      |
 | :------------------: | :------------------:|
-| SDIO0                     | IO11                  |
-| SDIO1                     | IO13                  |
-| SDIO2                     | IO7                  |
-| SDIO3                     | IO14                  |
-| SCLK                  | IO12                  |
-| RST                    | IO4                  |
-| VCI EN                | IO3                  |
-| CS                    | IO10                  |
+| CS      | IO 0.12                  |
+| SCLK      | IO 0.4                  |
+| (SPI)MOSI      | IO 0.6                  |
+| (SPI)MISO      | IO 0.8                  |
+| (QSPI)IO0      | IO 0.6                  |
+| (QSPI)IO1      | IO 0.8                  |
+| (QSPI)IO2      | IO 1.9                  |
+| (QSPI)IO3      | IO 0.26                  |
 
-| 触摸引脚          | ESP32S3引脚      |
+| LED引脚          | nRF52840引脚      |
 | :------------------: | :------------------:|
-| RST                  | IO8                  |
-| INT                  | IO9                    |
-| SDA                  | IO5                  |
-| SCL                  | IO6                  |
+| LED_1      | IO 1.7                  |
+| LED_1      | IO 1.5                  |
+| LED_1      | IO 1.14                  |
 
-| 旋转编码器引脚          | ESP32S3引脚      |
+| 屏幕引脚       | nRF52840引脚      |
 | :------------------: | :------------------:|
-| KNOB DATA A      | IO1                  |
-| KNOB DATA B      | IO2                  |
-| KNOB KEY      | IO0                  |
+| BS1                     | IO 1.12                  |
+| BUSY                     | IO 0.3                  |
+| RST                     | IO 0.28                  |
+| DC                     | IO 0.21                  |
+| CS                    | IO 0.22                  |
+| SCLK                  | IO 0.19                  |
+| MOSI                  | IO 0.20                  |
 
-| 蜂鸣器引脚          | ESP32S3引脚      |
+| LORA引脚          | nRF52840引脚      |
 | :------------------: | :------------------:|
-| BUZZER DATA      | IO17                  |
+| CS      | IO 0.11                  |
+| RST      | IO 0.7                  |
+| SCLK      | IO 0.13                  |
+| MOSI      | IO 0.15                  |
+| MISO      | IO 0.17                  |
+| BUSY      | IO 0.14                  |
+| INT      | IO 1.8                  |
+| DIO1      | IO 1.8                  |
+| DIO2      | IO 0.5                  |
+| RF_VC1      | IO 0.27                  |
+| RF_VC2      | IO 1.1                  |
+
+| BOOT按键引脚          | nRF52840引脚      |
+| :------------------: | :------------------:|
+| BOOT      | IO 0.24                  |
+
+| 2个SH1.0外接座子引脚          | nRF52840引脚      |
+| :------------------: | :------------------:|
+| SH1_0_1_1      | IO 0.25                  |
+| SH1_0_1_2      | IO 0.23                  |
+| SH1_0_2_1      | IO 1.2                  |
+| SH1_0_2_2      | IO 1.4                  |
+
+| 电池引脚          | nRF52840引脚      |
+| :------------------: | :------------------:|
+| BATTERY_MEASUREMENT_CONTROL      | IO 0.31                  |
+| BATTERY_ADC_DATA      | IO 0.2                  |
+
+| RT9080电源3.3V引脚          | nRF52840引脚      |
+| :------------------: | :------------------:|
+| RT9080_EN      | IO 0.30                  |
+
+| GPS引脚          | nRF52840引脚      |
+| :------------------: | :------------------:|
+| UART_RX      | IO 1.13                  |
+| UART_TX      | IO 1.15                  |
+| 1PPS      | IO 0.29                  |
+| WAKE_UP      | IO 1.10                  |
+| POWER_RT9080_EN      | IO 1.11                  |
+
+| 惯性传感器引脚          | nRF52840引脚      |
+| :------------------: | :------------------:|
+| SDA      | IO 1.4                  |
+| SCL      | IO 1.2                  |
+| INT      | IO 0.16                  |
+
+## 相关测试
+
+### 功耗
+| Firmware | Software| Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Light_Sleep` | 最低功耗: 2.54uA <br /> 更多信息请查看 [功耗测试日志](./relevant_test/PowerConsumptionTestLog_[T-Echo-Lite_V1.0]_20241030.pdf) | <p align="center" width="10%"> <img src="image/13.png" alt="example" width="100%"> </p> |
 
 ## 常见问题
 
@@ -236,21 +301,17 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 <br />
 
-* Q. 为什么我的板子上“Uart”接口没有输出串口数据，是不是坏了用不了啊？
-* A. 因为项目文件默认配置将USB接口作为Uart0串口输出作为调试，“Uart”接口连接的是Uart0，不经配置自然是不会输出任何数据的。<br />PlatformIO用户请打开项目文件“platformio.ini”，将“build_flags = xxx”下的选项“-DARDUINO_USB_CDC_ON_BOOT=true”修改成“-DARDUINO_USB_CDC_ON_BOOT=false”即可正常使用外部“Uart”接口。<br />Arduino用户打开菜单“工具”栏，选择USB CDC On Boot: “Disabled”即可正常使用外部“Uart”接口。
+* Q. 为什么我的板子USB输出不任何调试信息
+* A. 请打开串口助手软件中的“DTR”选项
 
 <br />
 
-* Q. 为什么我的板子一直烧录失败呢？
-* A. 请按住“BOOT”按键重新下载程序。下图为BOOT按键示意图
-
-<p align="center" width="100%">
-    <img src="image/12.jpg" alt="BOOT">
-</p>
+* Q. 为什么我直接使用USB烧录板子一直烧录失败呢？
+* A. 请按一下RST芯片复位按键后松开等待LED1亮后（一定要等待LED1亮）再按一下RST按键后松开，观察到LED1灯逐渐熄灭逐渐点亮，即已进入引导下载模式，这时候就能烧录了。
 
 <br />
 
 ## 项目
-* [SCH_T-Echo-Lite_V1.0](./project/[SCH][T-Echo-Lite_V1.0].pdf)
-* [SCH_T-Echo-Lite_V1.0_TFT_FPC](./project/[SCH][T-Echo-Lite_V1.0][TFT_FPC].pdf)
+* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite_V1.0.pdf)
+* [T-Echo-Lite-Eapper_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite-Eapper_V1.0.pdf)
 

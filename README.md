@@ -2,30 +2,22 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-11-18 11:40:39
+ * @LastEditTime: 2024-12-06 15:57:40
  * @License: GPL 3.0
 -->
-<h1 align = "center">T-Encoder-Pro</h1>
-
-<p align="center" width="100%">
-    <img src="image/13.jpg" alt="">
-</p>
-
-<p> 
-  <a href="https://www.arduino.cc/"> <img src="badges/Arduino_badge.png" height="25px" alt="Arduino_badge"></a>
-</p> 
+<h1 align = "center">T-Echo-Lite</h1>
 
 ## **English | [中文](./README_CN.md)**
 
 ## Version iteration:
 | Version                              | Update date                       |
 | :-------------------------------: | :-------------------------------: |
-| T-Encoder-Pro_V1.0            | 2024-02-02                         |
+| T-Echo-Lite_V1.0            | 2024-12-06                         |
 
 ## PurchaseLink
 | Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Encoder-Pro_V1.0   | ESP32S3R8 |   16M   |8M (Octal SPI)| [LILYGO Mall](https://www.lilygo.cc/products/t-encoder-plus) <br /> [Banggood Mall](https://m.banggood.in/LILYGO-T-Encoder-Pro-ESP32-S3-Rotary-Encoder-CHSC5816-ESP32-S3FN4R2-Circuit-Board-1_2-inch-AMOLED-Touch-Display-Wireless-Module-p-2018774.html) |
+| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| NULL |
 
 ## Directory
 - [Describe](#describe)
@@ -33,20 +25,19 @@
 - [Module](#module)
 - [QuickStart](#quickstart)
 - [PinOverview](#pinoverview)
+- [RelatedTests](#RelatedTests)
 - [FAQ](#faq)
 - [Project](#project)
-- [Information](#information)
-- [DependentLibraries](#dependentlibraries)
 
 ## Describe
 
- T-Encoder-Pro is a smart control knob equipped with a AMOLED touch screen, based on the ESP32S3R8 chip. The knob rotates, clicks (pushes in), and contains a beeper and vibration motor.
+T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume and lower power consumption design compared to T-Echo. Its minimum deep sleep power consumption can reach 2μA to 10μA (due to differences in onboard components on different boards, power consumption performance may vary; the minimum power consumption mentioned here is based on the engineering board tested by the LILYGO laboratory). The board is equipped with a rich set of features, including an inertial sensor, LORA module, solar charging function (5V), external GPS, and more. Its excellent power consumption performance allows T-Echo-Lite to achieve superior battery life.
 
 ## Preview
 
 ### Actual Product Image
 
-<p align="center" width="100%">
+<!-- <p align="center" width="100%">
     <img src="image/14.jpg" alt="">
 </p>
 
@@ -60,50 +51,102 @@
 
 <p align="center" width="100%">
     <img src="image/15.jpg" alt="">
-</p>
+</p> -->
 
 ## Module
-
 ### 1. MCU
-
-* Chip: ESP32-S3-R8
-* PSRAM: 8M (Octal SPI) 
-* FLASH: 16M
-* For more details, please visit [Espressif ESP32-S3 Datashee](https://www.espressif.com.cn/sites/default/files/documentation/esp32-s3_datasheet_en.pdf)
+*   Chip: nRF52840
+*   RAM: 256kB
+*   FLASH: 1M
+*   Related Documentation:
+    > [NORDIC Official nRF52840 Datasheet](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
 
 ### 2. Screen
+*   Name: GDEM0122T61
+*   Size: 1.22 inches
+*   Resolution: 176x192px
+*   Screen Type: E-PAPER
+*   Driver Chip: SSD1681
+*   Bus Communication Protocol: IIC
+*   Additional Notes: Fast refresh is not supported (after consulting the screen manufacturer, they replied that it is not supported), it is recommended to use full refresh only
+*   Dependent Libraries:
+    > [Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)  
+    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
+    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
+    > [Adafruit-GFX-Library-1.11.10](./libraries/Adafruit-GFX-Library-1.11.10/)  
+*   Related Documentation:
+    > [GDEM0122T61](./information/GDEM0122T61.pdf)  
+    > [SSD1681](./information/SSD1681.pdf)  
 
-* Size: 1.2-inch round screen
-* Screen Type: AMOLED
-* Driver Chip: SH8601A-W14-T06
-* Compatibility Library: Arduino_GFX
-* Bus Communication Protocol: QSPI
+### 3. LORA
+*   Chip Module: S62F
+*   Chip: SX1262
+*   Bus Communication Protocol: SPI
+*   Dependent Libraries:
+    > [RadioLib-6.6.0](./libraries/RadioLib-6.6.0/)  
+    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
+    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
+*   Related Documentation:
+    > [S62F](./information/S62F.pdf)  
 
-### 3. Touch
+### 4. GPS
+*   Chip Module: L76K
+*   Bus Communication Protocol: UART
+*   Dependent Libraries:
+    > [TinyGPSPlus-1.0.3a](./libraries/TinyGPSPlus-1.0.3a/)  
+*   Related Documentation:
+    > [L76KB-A58](./information/L76KB-A58.pdf)  
 
-* Chip: CHSC5816
-* Bus Communication Protocol: IIC
+### 5. Inertial Measurement Unit
+*   Chip: ICM20948
+*   Bus Communication Protocol: IIC
+*   Dependent Libraries:
+    > [ICM20948_WE-1.1.11](./libraries/ICM20948_WE-1.1.11/)  
+*   Related Documentation:
+    > [ICM20948](./information/ICM20948.pdf)  
 
-### 4. Rotary Encoder
-
-* Characteristic: Supports left and right rotation
-
-### 5. Buzzer
+### 6. Flash
+*   Chip: ZD25WQ32CEIGR
+*   Bus Communication Protocol: SPI
+*   Dependent Libraries:
+    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
+    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
+*   Related Documentation:
+    > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 
 ## QuickStart
 
 ### Examples Support
 
-| Example | Support IDE And Version| Description | Picture |
+[supported]: https://img.shields.io/badge/-supported-green "supported"
+[preview]: https://img.shields.io/badge/-preview-orange "preview"
+
+| Example | `[Arduino IDE][Adafruit_nRF52_V1.6.1]` <br /> `[PlatformIO][nordicnrf52_V10.6.0]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [GFX](./examples/GFX) | `[Arduino IDE][esp32_v3.0.7]` |  |  |
-| [Lvgl_CIT](./examples/Lvgl_CIT) |`[Arduino IDE][esp32_v3.0.7]` | Product factory original testing |  |
-| [CHSC5816](./examples/CHSC5816) | `[Arduino IDE][esp32_v3.0.7]` |  |  |
-| [Rotary_Encoder](./examples/Rotary_Encoder) | `[Arduino IDE][esp32_v3.0.7]` |  |  |
+| [Battery_Measurement](./examples/Battery_Measurement) | ![alt text][supported] |  |  |
+| [Original_Test](./examples/Original_Test) |![alt text][supported] | Product factory original testing |  |
+| [BLE_Uart](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Button_Triggered](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Display](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Display_BLE_Uart](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Display_SX1262](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Flash](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Flash_Erase](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [GPS](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [GPS_Full](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [ICM20948](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [IIC_Scan_2](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [Sleep_Wake_Up](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [SX126x_PingPong](./examples/BLE_Uart) | ![alt text][supported] |  |  |
+| [SX126x_PingPong_2](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+
+| Bootloader | Description | Picture |
+| ------  | ------  | ------ |
+| [Bootloader_V1.0.0](./bootloader/t-echo_lite_nrf52840_bootloader-0.9.2-dirty_s140_6.1.1_v1.0.0.hex) <br /> [Bootloader_V1.0.0(uf2)](./bootloader/update-t-echo_lite_nrf52840_bootloader-0.9.2-dirty_nosd_v1.0.0.uf2) | Original |  |
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [Lvgl_CIT](./firmware/[T-Encoder-Pro_V1.0][Lvgl_CIT]_firmware_V1.0.0.bin) | Original |  |
+| [Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.hex.bin) <br /> [Original_Test(uf2)](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.uf2)| Product factory original testing |  |
 
 ### PlatformIO
 1. Install [VisualStudioCode](https://code.visualstudio.com/Download),choose installation based on your system type.
@@ -116,79 +159,122 @@
 
 5. Open the "platformio.ini" file in the project folder (PlatformIO will automatically open the "platformio.ini" file corresponding to the added folder). Under the "[platformio]" section, uncomment and select the example program you want to burn (it should start with "default_envs = xxx") Then click "<kbd>[√](image/4.png)</kbd>" in the bottom left corner to compile. If the compilation is correct, connect the microcontroller to the computer and click "<kbd>[→](image/5.png)</kbd>" in the bottom left corner to download the program.
 
+6. At this point, an error may occur, and you need to install [Python](https://www.python.org/downloads/). Open the folder "tool" -> "win10 vscode platformio start" sequentially, and execute the cmd command `python t-echo-lite_v1.0.0_setup.py` under the "win10 vscode platformio start" folder. This will complete the development board installation, and the compilation and flashing will no longer report errors.
+
 ### Arduino
-1. Install [Arduino](https://www.arduino.cc/en/software), choose installation based on your system type.
 
-2. Open the "example" directory within the project folder, select the example project folder, and open the file ending with ".ino" to open the Arduino IDE project workspace.
+1. Install [Arduino](https://www.arduino.cc/en/software), and select the installation based on your system type.
 
-3. Open the "Tools" menu at the top right -> Select "Board" -> "Board Manager." Find or search for "esp32" and download the board files from the author named "Espressif Systems." Then, go back to the "Board" menu and select the development board type under "ESP32 Arduino." The selected development board type should match the one specified in the "platformio.ini" file under the [env] section with the header "board = xxx." If there is no corresponding development board, you may need to manually add the development board from the "board" directory within your project folder.
+2. Open the "example" directory of the project folder, select the example project folder, and open the file ending with ".ino" to open the Arduino IDE project workspace.
 
-4. Open menu bar "[File](image/6.png)" -> "[Preferences](image/6.png)", find "[Sketchbook location](image/7.png)" here, copy and paste all library files and folders from the "libraries" folder in the project directory into the "libraries" folder in this directory.
-
-5. Select the correct settings in the Tools menu, as shown in the table below.
-
+3. Open the "Tools" menu bar at the top right -> Select "Board" -> "Board Manager", find or search for "Adafruit_nRF52", and download the board file with the author named "Adafruit". Then return to the "Board" menu bar, select the board type under the "Adafruit_nRF52" board, and the selected board type is determined by the "board = xxx" header under the [env] directory in the "platformio.ini" file. If there is no corresponding board, you need to manually add the board under the "board" directory in the project folder. (If "Adafruit_nRF52" cannot be found, you need to open Preferences -> Add `https://www.adafruit.com/package_adafruit_index.json` to "Additional Board Manager URLs")
+    
+4. Open the menu bar "[File](image/6.png)" -> "[Preferences](image/6.png)", find the "[Project Folder Location](image/7.png)" section, and copy and paste all the library files along with the folders in the "libraries" folder under the project directory into the "libraries" folder in this directory.
+    
+5. Select the correct settings in the "Tools" menu, as shown in the table below.
+    
 | Setting                               | Value                                 |
 | :-------------------------------: | :-------------------------------: |
-| Board                                | ESP32S3 Dev Module|
-| Upload Speed                     | 921600                               |
-| USB Mode                           | Hardware CDC and JTAG     |
-| USB CDC On Boot                | Enabled                             |
-| USB Firmware MSC On Boot | Disabled                             |
-| USB DFU On Boot                | Disabled                             |
-| CPU Frequency                   | 240MHz (WiFi)                    |
-| Flash Mode                         | QIO 80MHz                         |
-| Flash Size                           | 16MB (128Mb)                     |
-| Core Debug Level                | None                                 |
-| Partition Scheme                | 16M Flash (3MB APP/9.9MB FATFS) |
-| PSRAM                                | OPI PSRAM                         |
-| Arduino Runs On                  | Core 1                               |
-| Events Run On                     | Core 1                               |
+| Board                                 | Nordic nRF52840 DK           |
 
-6. Select the correct port.
+6.  Select the correct port.
 
-7. Click "<kbd>[√](image/8.png)</kbd>" in the upper right corner to compile. If the compilation is correct, connect the microcontroller to the computer, click "<kbd>[→](image/9.png)</kbd>" in the upper right corner to download.
+7.  Enable boot download mode: Press and release the RST chip reset button, wait for LED1 to light up (you must wait for LED1 to light up), then press and release the RST button again. Observe that LED1 gradually dims and then gradually lights up, indicating that the boot download mode has been entered.
 
-### Firmware download
-1. Open the project file "tools" and locate the ESP32 burning tool. Open it.
+8.  Click the top right "[√](image/8.png)" to compile. If there are no errors, connect the microcontroller to the computer and click the top right "[→](image/9.png)" to start the flashing process.
 
-2. Select the correct burning chip and burning method, then click "OK." As shown in the picture, follow steps 1->2->3->4->5 to burn the program. If the burning is not successful, press and hold the "BOOT-0" button and then download and burn again.
+### JLINK Flashing Firmware and Bootloader
 
-3. Burn the file in the root directory of the project file "[firmware](./firmware/)" file, there is a description of the firmware file version inside, just choose the appropriate version to download.
+1.  Install the software [nRF-Connect-for-Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download#infotabs)
+
+2.  Install the software [JLINK](https://www.segger.com/downloads/jlink/)
+
+3.  Connect the JLINK pins correctly as shown in the figure below
 
 <p align="center" width="100%">
-    <img src="image/10.png" alt="example">
-    <img src="image/11.png" alt="example">
+    <img src="image/12.jpg" alt="">
 </p>
+
+4.  Open the software nRF-Connect-for-Desktop and install the tool [Programmer](./image/10.png) and open it
+
+5.  Add files, select both the bootloader file and the firmware file at the same time, click [Erase&write](./image/11.png), and the flashing will be completed.
 
 ## PinOverview
 
-| Screen PIN       | ESP32S3 PIN      |
+| Flash pin          | nRF52840 pin      |
 | :------------------: | :------------------:|
-| SDIO0                     | IO11                  |
-| SDIO1                     | IO13                  |
-| SDIO2                     | IO7                  |
-| SDIO3                     | IO14                  |
-| SCLK                  | IO12                  |
-| RST                    | IO4                  |
-| VCI EN               |  IO3                  |
-| CS                    | IO10                  |
+| CS      | IO 0.12                  |
+| SCLK      | IO 0.4                  |
+| (SPI)MOSI      | IO 0.6                  |
+| (SPI)MISO      | IO 0.8                  |
+| (QSPI)IO0      | IO 0.6                  |
+| (QSPI)IO1      | IO 0.8                  |
+| (QSPI)IO2      | IO 1.9                  |
+| (QSPI)IO3      | IO 0.26                  |
 
-| Touch PIN          | ESP32S3 PIN      |
+| LED pin          | nRF52840 pin      |
 | :------------------: | :------------------:|
-| RST                  | IO8                  |
-| INT                  | IO9                    |
-| SDA                  | IO5                  |
-| SCL                  | IO6                  |
+| LED_1      | IO 1.7                  |
+| LED_1      | IO 1.5                  |
+| LED_1      | IO 1.14                  |
 
-| Rotary Encoder PIN          | ESP32S3 PIN      |
+| Screen pin       | nRF52840 pin      |
 | :------------------: | :------------------:|
-| KNOB DATA A      | IO1                  |
-| KNOB DATA B      | IO2                  |
-| KNOB KEY      | IO0                  |
+| BS1                     | IO 1.12                  |
+| BUSY                     | IO 0.3                  |
+| RST                     | IO 0.28                  |
+| DC                     | IO 0.21                  |
+| CS                    | IO 0.22                  |
+| SCLK                  | IO 0.19                  |
+| MOSI                  | IO 0.20                  |
 
-| Buzzer PIN          | ESP32S3 PIN      |
+| LORA pin          | nRF52840 pin      |
 | :------------------: | :------------------:|
-| BUZZER DATA      | IO17                  |
+| CS      | IO 0.11                  |
+| RST      | IO 0.7                  |
+| SCLK      | IO 0.13                  |
+| MOSI      | IO 0.15                  |
+| MISO      | IO 0.17                  |
+| BUSY      | IO 0.14                  |
+| INT      | IO 1.8                  |
+| DIO1      | IO 1.8                  |
+| DIO2      | IO 0.5                  |
+| RF_VC1      | IO 0.27                  |
+| RF_VC2      | IO 1.1                  |
+
+| BOOT key pin          | nRF52840 pin      |
+| :------------------: | :------------------:|
+| BOOT      | IO 0.24                  |
+
+| Two SH1.0 external sockets pin          | nRF52840 pin      |
+| :------------------: | :------------------:|
+| SH1_0_1_1      | IO 0.25                  |
+| SH1_0_1_2      | IO 0.23                  |
+| SH1_0_2_1      | IO 1.2                  |
+| SH1_0_2_2      | IO 1.4                  |
+
+| Battery pin          | nRF52840 pin      |
+| :------------------: | :------------------:|
+| BATTERY_MEASUREMENT_CONTROL      | IO 0.31                  |
+| BATTERY_ADC_DATA      | IO 0.2                  |
+
+| RT9080 power supply 3.3V pin          | nRF52840 pin      |
+| :------------------: | :------------------:|
+| RT9080_EN      | IO 0.30                  |
+
+| GPS pin          | nRF52840 pin      |
+| :------------------: | :------------------:|
+| UART_RX      | IO 1.13                  |
+| UART_TX      | IO 1.15                  |
+| 1PPS      | IO 0.29                  |
+| WAKE_UP      | IO 1.10                  |
+| POWER_RT9080_EN      | IO 1.11                  |
+
+| IMU pin          | nRF52840 pin      |
+| :------------------: | :------------------:|
+| SDA      | IO 1.4                  |
+| SCL      | IO 1.2                  |
+| INT      | IO 0.16                  |
 
 ## FAQ
 
@@ -202,31 +288,21 @@
 
 <br />
 
-* Q. Why is there no serial data output on the "Uart" interface on my board? Is it defective and unusable?
-* A. The default project configuration uses the USB interface as Uart0 serial output for debugging purposes. The "Uart" interface is connected to Uart0, so it won't output any data without configuration.<br />For PlatformIO users, please open the project file "platformio.ini" and modify the option under "build_flags = xxx" from "-D ARDUINO_USB_CDC_ON_BOOT=true" to "-D ARDUINO_USB_CDC_ON_BOOT=false" to enable external "Uart" interface.<br />For Arduino users, open the "Tools" menu and select "USB CDC On Boot: Disabled" to enable the external "Uart" interface.
+* Q. Why is there no debug information output from my board's USB?
+* A. Please enable the "DTR" option in your serial assistant software.
 
 <br />
 
-* Q. Why is my board continuously failing to download the program?
-* A. Please hold down the "BOOT" button and try downloading the program again.The following is the illustration of the BOOT button.
+* Q. Why does my board fail to flash when I use USB directly?
+* A. Please press and release the RST chip reset button, wait for LED1 to light up (you must wait for LED1 to light up), then press and release the RST button again. Observe that LED1 gradually dims and then gradually lights up, indicating that the boot download mode has been entered. At this point, you can flash the board.
+<br />
 
-<p align="center" width="100%">
+<p align="center" width="100%">.
     <img src="image/12.jpg" alt="BOOT">
 </p>
 
 <br />
 
 ## Project
-* [SCH_T-Encoder-Pro_V1.0](project/[SCH][T-Encoder-Pro_V1.0].pdf)
-* [SCH_T-Encoder-Pro_V1.0_TFT_FPC](project/[SCH][T-Encoder-Pro_V1.0][TFT_FPC].pdf)
-
-## Information
-* [Espressif](https://www.espressif.com/en/support/documents/technical-documents)
-* [DXQ120MYB2416A](information/DXQ120MYB2416A.pdf)
-* [DS_CHSC5816_V1.1.5](information/DS_CHSC5816_V1.1.5.pdf)
-* [CHSC5816-ApplicationDoc_US_V04](information/CHSC5816-ApplicationDoc_US_V04.pdf)
-
-## DependentLibraries
-* [Arduino_GFX-1.5.0](https://github.com/moononournation/Arduino_GFX)
-* [lvgl-8.3.5](https://github.com/lvgl/lvgl)
-* [SensorLib-0.1.4](https://github.com/lewisxhe/SensorsLib)
+* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite_V1.0.pdf)
+* [T-Echo-Lite-Eapper_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite-Eapper_V1.0.pdf)
