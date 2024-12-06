@@ -2,7 +2,7 @@
 ### Installing t-echo-lite_v1.0.0 board type for VSCode PlatformIO on Windows 10
 
 * * *
-1. Install Python.
+1. Install [Python](https://www.python.org/downloads/).
     
 2. Install
     
