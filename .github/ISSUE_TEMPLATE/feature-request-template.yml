@@ -9,7 +9,7 @@ body:
   - type: textarea
     id: problem-related
     attributes:
-      label: What features or library support would you like to add?
+      label: What features or library support or other would you like to add?
       description: Please describe the new feature or other additions you would like to add..
       placeholder: ex. I would like to add xxx functionality or support for xxx libraries ...
   - type: textarea
