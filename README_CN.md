@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 11:45:17
+ * @LastEditTime: 2024-12-06 11:47:44
  * @License: GPL 3.0
 -->
 
@@ -11,10 +11,6 @@
 <p align="center" width="100%">
     <img src="image/13.jpg" alt="">
 </p>
-
-<p> 
-  <a href="https://www.arduino.cc/"> <img src="badges/Arduino_badge.png" height="25px" alt="Arduino_badge"></a>
-</p> 
 
 ## **[English](./README.md) | 中文**
 
@@ -79,8 +75,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 总线通信协议：QSPI
 * 其他说明：不支持快刷（咨询屏厂后他们回复不支持），建议只使用全刷
 * 依赖库：
-    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)
-    <br />
+    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
     >[Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)
    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)
 * 相关资料：
