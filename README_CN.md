@@ -79,7 +79,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
     >[Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)<br /> 
     >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)
 * 相关资料：
-    * [DXQ120MYB2416A](./information/DXQ120MYB2416A.pdf)
+    >[DXQ120MYB2416A](./information/DXQ120MYB2416A.pdf)
 
 
 ### 3. 触摸
