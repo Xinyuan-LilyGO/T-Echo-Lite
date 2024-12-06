@@ -2,7 +2,7 @@
  * @Description: Ink screen test
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2024-11-25 17:27:56
+ * @LastEditTime: 2024-12-03 11:20:39
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -27,6 +27,16 @@ void setup()
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
+    pinMode(SCREEN_BS1, OUTPUT);
+    digitalWrite(SCREEN_BS1, LOW);
+
+    pinMode(LED_1, OUTPUT);
+    pinMode(LED_2, OUTPUT);
+    pinMode(LED_3, OUTPUT);
+    digitalWrite(LED_1, HIGH);
+    digitalWrite(LED_2, HIGH);
+    digitalWrite(LED_3, HIGH);
+
     display.begin();
     display.setRotation(1);
     display.fillScreen(EPD_WHITE);
@@ -50,8 +60,22 @@ void loop()
     {
         display.display(display.update_mode::FAST_REFRESH, true);
         // display.display(display.update_mode::PARTIAL_REFRESH, true);
-        delay(5000);
+        delay(1000);
     }
     // delay(1000);
     Count++;
+    if ((Count % 2) == 0)
+    {
+        digitalWrite(LED_1, HIGH);
+        digitalWrite(LED_2, HIGH);
+        digitalWrite(LED_3, HIGH);
+        Serial.println("LED ON");
+    }
+    else
+    {
+        digitalWrite(LED_1, LOW);
+        digitalWrite(LED_2, LOW);
+        digitalWrite(LED_3, LOW);
+        Serial.println("LED OFF");
+    }
 }

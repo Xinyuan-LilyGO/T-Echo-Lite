@@ -2,7 +2,7 @@
  * @Description: Sleep wake-up test
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2024-11-27 10:43:26
+ * @LastEditTime: 2024-12-04 08:59:00
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -15,7 +15,7 @@
 #include "Display_Fonts.h"
 #include "ICM20948_WE.h"
 
-#define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 10000
+#define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
 
 struct Sleep_Operator
 {
@@ -198,7 +198,10 @@ void System_Sleep(bool mode)
         detachInterrupt(nRF52840_BOOT);
         pinMode(LED_1, INPUT);
         pinMode(LED_2, INPUT);
+        pinMode(LED_3, INPUT);
+        delay(1000);
         display.end();
+        pinMode(SCREEN_BS1, INPUT);
         delay(3000);
 
         radio.sleep();
@@ -222,6 +225,7 @@ void System_Sleep(bool mode)
 
         Serial2.end();
         pinMode(GPS_1PPS, INPUT);
+        digitalWrite(GPS_WAKE_UP, LOW);
         pinMode(GPS_WAKE_UP, INPUT_PULLDOWN);
         delay(3000);
 
@@ -231,6 +235,8 @@ void System_Sleep(bool mode)
         pinMode(ICM20948_SCL, INPUT);
         delay(3000);
 
+        digitalWrite(GPS_RT9080_EN, LOW);
+        pinMode(GPS_RT9080_EN, INPUT_PULLDOWN);
         digitalWrite(RT9080_EN, LOW);
         pinMode(RT9080_EN, INPUT_PULLDOWN);
         delay(3000);
@@ -241,6 +247,8 @@ void System_Sleep(bool mode)
         digitalWrite(RT9080_EN, HIGH);
 
         Serial.begin(115200);
+        pinMode(SCREEN_BS1, OUTPUT);
+        digitalWrite(SCREEN_BS1, LOW);
         display.begin();
         display.setRotation(1);
         Custom_SPI_3.begin();
@@ -251,8 +259,10 @@ void System_Sleep(bool mode)
         flashTransport.runCommand(0xAB); // Exit deep sleep mode
         pinMode(LED_1, OUTPUT);
         pinMode(LED_2, OUTPUT);
+        pinMode(LED_3, OUTPUT);
         digitalWrite(LED_1, LOW);
         digitalWrite(LED_2, LOW);
+        digitalWrite(LED_3, LOW);
 
         attachInterrupt(
             nRF52840_BOOT,
@@ -299,12 +309,17 @@ void setup()
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
+    pinMode(SCREEN_BS1, OUTPUT);
+    digitalWrite(SCREEN_BS1, LOW);
+
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
     pinMode(LED_1, OUTPUT);
     pinMode(LED_2, OUTPUT);
+    pinMode(LED_3, OUTPUT);
 
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
+    digitalWrite(LED_3, LOW);
 
     attachInterrupt(
         nRF52840_BOOT,
@@ -517,5 +532,4 @@ void loop()
             }
         }
     }
-
 }

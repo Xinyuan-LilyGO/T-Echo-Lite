@@ -2,7 +2,7 @@
  * @Description: Ink screen and Bluetooth BLE test
  * @Author: LILYGO_L
  * @Date: 2024-08-16 15:31:24
- * @LastEditTime: 2024-11-27 09:17:19
+ * @LastEditTime: 2024-12-03 11:36:24
  * @License: GPL 3.0
  */
 
@@ -286,6 +286,9 @@ void setup()
     //     delay(100);
     // }
     Serial.println("Ciallo");
+
+    pinMode(SCREEN_BS1, OUTPUT);
+    digitalWrite(SCREEN_BS1, LOW);
 
     display.begin();
     display.setRotation(1);

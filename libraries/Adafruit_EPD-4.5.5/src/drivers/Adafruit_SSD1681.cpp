@@ -4,7 +4,7 @@
 #define EPD_RAM_BW 0x10
 #define EPD_RAM_RED 0x13
 
-#define BUSY_WAIT 3000
+#define BUSY_WAIT 2000
 
 // clang-format off
 

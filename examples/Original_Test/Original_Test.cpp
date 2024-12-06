@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2024-11-27 10:40:48
+ * @LastEditTime: 2024-12-06 09:00:21
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,11 +17,11 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202410301332"
+#define SOFTWARE_LASTEDITTIME "202412031140"
 #define SOFTWARE_VERSION "V1.0.0"
 #define BOARD_VERSION "V1.0"
 
-#define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 10000
+#define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
 
 static const uint32_t Local_MAC[2] =
     {
@@ -141,7 +141,7 @@ struct SX1262_Operator
     } bandwidth;
     struct
     {
-        uint8_t value = 12;
+        uint8_t value = 9;
         bool change_flag = false;
     } spreading_factor;
     struct
@@ -286,7 +286,6 @@ bool Key_Scanning(void)
         if (digitalRead(Button_Triggered_OP.button_number) == LOW) // 低电平触发
         {
             Button_Triggered_OP.trigger_start_flag = true;
-
             Serial.println("Press button to trigger start");
             Button_Triggered_OP.high_triggered_count = 0;
             Button_Triggered_OP.low_triggered_count = 0;
@@ -368,7 +367,10 @@ void System_Sleep(bool mode)
         detachInterrupt(nRF52840_BOOT);
         pinMode(LED_1, INPUT);
         pinMode(LED_2, INPUT);
+        pinMode(LED_3, INPUT);
+        delay(1000);
         display.end();
+        pinMode(SCREEN_BS1, INPUT);
         // delay(3000);
 
         radio.sleep();
@@ -392,6 +394,7 @@ void System_Sleep(bool mode)
 
         Serial2.end();
         pinMode(GPS_1PPS, INPUT);
+        digitalWrite(GPS_WAKE_UP, LOW);
         pinMode(GPS_WAKE_UP, INPUT_PULLDOWN);
         // delay(3000);
 
@@ -401,6 +404,8 @@ void System_Sleep(bool mode)
         pinMode(ICM20948_SCL, INPUT);
         // delay(3000);
 
+        digitalWrite(GPS_RT9080_EN, LOW);
+        pinMode(GPS_RT9080_EN, INPUT_PULLDOWN);
         digitalWrite(RT9080_EN, LOW);
         pinMode(RT9080_EN, INPUT_PULLDOWN);
         // delay(3000);
@@ -411,6 +416,8 @@ void System_Sleep(bool mode)
         digitalWrite(RT9080_EN, HIGH);
 
         Serial.begin(115200);
+        pinMode(SCREEN_BS1, OUTPUT);
+        digitalWrite(SCREEN_BS1, LOW);
         display.begin();
         display.setRotation(1);
         Custom_SPI_3.begin();
@@ -421,8 +428,10 @@ void System_Sleep(bool mode)
         flashTransport.runCommand(0xAB); // Exit deep sleep mode
         pinMode(LED_1, OUTPUT);
         pinMode(LED_2, OUTPUT);
+        pinMode(LED_3, OUTPUT);
         digitalWrite(LED_1, LOW);
         digitalWrite(LED_2, LOW);
+        digitalWrite(LED_3, LOW);
 
         attachInterrupt(
             nRF52840_BOOT,
@@ -706,7 +715,7 @@ void GFX_Print_SX1262_Info_Loop(void)
                 SX1262_OP.device_1.send_data = 0;
                 SX1262_OP.device_1.connection_flag = SX1262_OP.state::UNCONNECTED;
             }
-            CycleTime_3 = millis() + 1000;
+            CycleTime_3 = millis() + 2000;
         }
     }
 }
@@ -1399,21 +1408,27 @@ void Original_Test_2()
 
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
+    digitalWrite(LED_3, LOW);
     delay(1000);
     digitalWrite(LED_1, HIGH);
     digitalWrite(LED_2, HIGH);
+    digitalWrite(LED_3, HIGH);
     delay(1000);
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
+    digitalWrite(LED_3, LOW);
     delay(1000);
     digitalWrite(LED_1, HIGH);
     digitalWrite(LED_2, HIGH);
+    digitalWrite(LED_3, HIGH);
     delay(1000);
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
+    digitalWrite(LED_3, LOW);
     delay(1000);
     digitalWrite(LED_1, HIGH);
     digitalWrite(LED_2, HIGH);
+    digitalWrite(LED_3, HIGH);
     delay(1000);
 
     GFX_Print_Finish();
@@ -1532,6 +1547,8 @@ void Original_Test_7()
     GFX_Print_GPS_Info();
 
     GFX_Print_GPS_Info_Loop();
+
+    display.display(display.update_mode::FAST_REFRESH, true);
 }
 
 void Original_Test_8()
@@ -1797,6 +1814,7 @@ void Original_Test_Loop()
 
             digitalWrite(LED_1, HIGH);
             digitalWrite(LED_2, HIGH);
+            digitalWrite(LED_3, HIGH);
             break;
         }
     }
@@ -1950,11 +1968,16 @@ void setup()
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
+    pinMode(SCREEN_BS1, OUTPUT);
+    digitalWrite(SCREEN_BS1, LOW);
+
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
     pinMode(LED_1, OUTPUT);
     pinMode(LED_2, OUTPUT);
+    pinMode(LED_3, OUTPUT);
     digitalWrite(LED_1, HIGH);
     digitalWrite(LED_2, HIGH);
+    digitalWrite(LED_3, HIGH);
 
     Wire.setPins(ICM20948_SDA, ICM20948_SCL);
     Wire.begin();
@@ -2007,10 +2030,11 @@ void setup()
 
     delay(5000);
 
-    Original_Test_Loop();
+    // Original_Test_Loop();
 
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
+    digitalWrite(LED_3, LOW);
 
     display.setFont(&FreeSans9pt7b);
     display.fillScreen(EPD_WHITE);

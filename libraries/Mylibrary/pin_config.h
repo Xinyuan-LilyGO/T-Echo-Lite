@@ -4,7 +4,7 @@
  * @Author: None
  * @Date: 2023-08-16 14:24:03
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2024-11-13 15:37:59
+ * @LastEditTime: 2024-12-03 17:02:16
  * @License: GPL 3.0
  */
 #pragma once
@@ -24,6 +24,7 @@
 // LED
 #define LED_1 _PINNUM(1, 7)
 #define LED_2 _PINNUM(1, 5)
+#define LED_3 _PINNUM(1, 14) 
 
 // GDEM0122T16
 #define SCREEN_WIDTH 176
@@ -67,11 +68,12 @@
 // RT9080
 #define RT9080_EN _PINNUM(0, 30)
 
-// GPS L76K
+// GPS L76K (debug)
 #define GPS_UART_RX _PINNUM(1, 13)
 #define GPS_UART_TX _PINNUM(1, 15)
 #define GPS_1PPS _PINNUM(0, 29)
 #define GPS_WAKE_UP _PINNUM(1, 10)
+#define GPS_RT9080_EN _PINNUM(1, 11)
 
 // ICM20948
 #define ICM20948_ADDRESS 0x68

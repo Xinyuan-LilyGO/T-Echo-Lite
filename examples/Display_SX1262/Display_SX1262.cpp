@@ -2,7 +2,7 @@
  * @Description: Ink screen and SX1262 test
  * @Author: LILYGO_L
  * @Date: 2023-07-25 13:45:02
- * @LastEditTime: 2024-11-27 09:17:13
+ * @LastEditTime: 2024-12-03 11:36:37
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -530,6 +530,9 @@ void setup(void)
 {
     Serial.begin(115200);
     Serial.println("Ciallo");
+
+    pinMode(SCREEN_BS1, OUTPUT);
+    digitalWrite(SCREEN_BS1, LOW);
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
     pinMode(LED_1, OUTPUT);
