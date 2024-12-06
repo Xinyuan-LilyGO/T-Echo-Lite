@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 16:23:22
+ * @LastEditTime: 2024-12-06 17:42:25
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -118,7 +118,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 ### Examples Support
 
-| Example | `[Arduino IDE][Adafruit_nRF52_V1.6.1]` <br /> `[PlatformIO][nordicnrf52_V10.6.0]` <br /> Support | Description | Picture |
+| Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
 | [Battery_Measurement](./examples/Battery_Measurement) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
 | [Original_Test](./examples/Original_Test) |<p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> | Product factory original testing |  |

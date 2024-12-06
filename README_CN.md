@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 16:23:10
+ * @LastEditTime: 2024-12-06 17:41:33
  * @License: GPL 3.0
 -->
 
@@ -126,10 +126,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 ### 例程支持
 
-[supported]: https://img.shields.io/badge/-supported-green "supported"
-[preview]: https://img.shields.io/badge/-preview-orange "preview"
-
-| Example | `[Arduino IDE][Adafruit_nRF52_V1.6.1]` <br /> `[PlatformIO][nordicnrf52_V10.6.0]` <br /> Support | Description | Picture |
+| Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
 | [Battery_Measurement](./examples/Battery_Measurement) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
 | [Original_Test](./examples/Original_Test) |<p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> | 出厂测试程序 |  |
