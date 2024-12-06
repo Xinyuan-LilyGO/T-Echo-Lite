@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 11:49:14
+ * @LastEditTime: 2024-12-06 12:04:54
  * @License: GPL 3.0
 -->
 
@@ -64,7 +64,8 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 芯片：nRF52840
 * RAM：256kB
 * FLASH：1M
-* 相关资料：更多资料请访问 [NORDIC官方nRF52840数据手册](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
+* 相关资料：
+    >[NORDIC官方nRF52840数据手册](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
 
 ### 2. 屏幕
 
@@ -72,26 +73,56 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 尺寸：1.22 英寸
 * 屏幕类型：E-PAPER
 * 驱动芯片：SSD1681
-* 总线通信协议：QSPI
+* 总线通信协议：IIC
 * 其他说明：不支持快刷（咨询屏厂后他们回复不支持），建议只使用全刷
 * 依赖库：
-    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
     >[Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)<br /> 
-    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)
+    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
+    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)<br /> 
+    >[Adafruit-GFX-Library-1.11.10](./libraries/Adafruit-GFX-Library-1.11.10/)<br /> 
 * 相关资料：
-    >[DXQ120MYB2416A](./information/DXQ120MYB2416A.pdf)
+    >[GDEM0122T61](./information/GDEM0122T61.pdf)<br /> 
+    >[SSD1681](./information/SSD1681.pdf)<br /> 
 
+### 3. LORA
 
-### 3. 触摸
+* 芯片模组：S62F
+* 芯片：SX1262
+* 总线通信协议：SPI
+* 依赖库：
+    >[RadioLib-6.6.0](./libraries/RadioLib-6.6.0/)<br /> 
+    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
+    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)<br /> 
+* 相关资料：
+    >[S62F](./information/S62F.pdf)<br /> 
 
-* 芯片：CHSC5816
+### 4. GPS
+
+* 芯片模组：L76K
+* 总线通信协议：UART
+* 依赖库：
+    >[TinyGPSPlus-1.0.3a](./libraries/TinyGPSPlus-1.0.3a/)<br /> 
+* 相关资料：
+    >[L76KB-A58](./information/L76KB-A58.pdf)<br /> 
+
+### 5. 惯性传感器
+
+* 芯片：ICM20948
 * 总线通信协议：IIC
+* 依赖库：
+    >[ICM20948_WE-1.1.11](./libraries/ICM20948_WE-1.1.11/) <br /> 
+* 相关资料：
+    >[ICM20948](./information/ICM20948.pdf)<br /> 
 
-### 4. 旋转编码器
+### 6. Flash
 
-* 特性：支持左右旋转
-
-### 5. 蜂鸣器
+* 芯片：ZD25WQ32CEIGR
+* 总线通信协议：SPI
+* 依赖库：
+    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
+    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)<br /> 
+* 相关资料：
+    >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)<br /> 
 
 ## 快速开始
 
