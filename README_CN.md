@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 15:44:32
+ * @LastEditTime: 2024-12-06 16:18:11
  * @License: GPL 3.0
 -->
 
@@ -131,22 +131,22 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 | Example | `[Arduino IDE][Adafruit_nRF52_V1.6.1]` <br /> `[PlatformIO][nordicnrf52_V10.6.0]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [Battery_Measurement](./examples/Battery_Measurement) | ![alt text][supported] |  |  |
-| [Original_Test](./examples/Original_Test) |![alt text][supported] | 出厂测试程序 |  |
-| [BLE_Uart](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [Button_Triggered](./examples/Button_Triggered) | ![alt text][supported] |  |  |
-| [Display](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [Display_BLE_Uart](./examples/Button_Triggered) | ![alt text][supported] |  |  |
-| [Display_SX1262](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [Flash](./examples/Button_Triggered) | ![alt text][supported] |  |  |
-| [Flash_Erase](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [GPS](./examples/Button_Triggered) | ![alt text][supported] |  |  |
-| [GPS_Full](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [ICM20948](./examples/Button_Triggered) | ![alt text][supported] |  |  |
-| [IIC_Scan_2](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [Sleep_Wake_Up](./examples/Button_Triggered) | ![alt text][supported] |  |  |
-| [SX126x_PingPong](./examples/BLE_Uart) | ![alt text][supported] |  |  |
-| [SX126x_PingPong_2](./examples/Button_Triggered) | ![alt text][supported] |  |  |
+| [Battery_Measurement](./examples/Battery_Measurement) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Original_Test](./examples/Original_Test) |<p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> | 出厂测试程序 |  |
+| [BLE_Uart](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Button_Triggered](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Display](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Display_BLE_Uart](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Display_SX1262](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Flash](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Flash_Erase](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [GPS](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [GPS_Full](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [ICM20948](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [IIC_Scan_2](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [Sleep_Wake_Up](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [SX126x_PingPong](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
+| [SX126x_PingPong_2](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="40%"> </p> |  |  |
 
 | Bootloader | Description | Picture |
 | ------  | ------  | ------ |
@@ -287,7 +287,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 ### 功耗
 | Firmware | Software| Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Light_Sleep` | 最低功耗: 2.54uA <br /> 更多信息请查看 [功耗测试日志](./relevant_test/PowerConsumptionTestLog_[T-Echo-Lite_V1.0]_20241030.pdf) | <p align="center" width="10%"> <img src="image/13.png" alt="example" width="100%"> </p> |
+| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Light_Sleep` | 最低功耗: 2.54uA <br /> 更多信息请查看 [功耗测试日志](./relevant_test/PowerConsumptionTestLog_[T-Echo-Lite_V1.0]_20241030.pdf) | <p align="center"> <img src="image/13.png" alt="example" width="100%"> </p> |
 
 ## 常见问题
 
