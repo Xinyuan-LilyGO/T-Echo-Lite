@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 16:20:57
+ * @LastEditTime: 2024-12-06 16:23:10
  * @License: GPL 3.0
 -->
 
@@ -287,7 +287,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 ### 功耗
 | Firmware | Software| Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Light_Sleep` | 最低功耗: 2.54uA <br /> 更多信息请查看 [功耗测试日志](./relevant_test/PowerConsumptionTestLog_[T-Echo-Lite_V1.0]_20241030.pdf) | <p align="center"> <img src="image/13.png" alt="example" width="100%"> </p> |
+| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Sleep_Wake_Up` | 最低功耗: 2.54uA <br /> 更多信息请查看 [功耗测试日志](./relevant_test/PowerConsumptionTestLog_[T-Echo-Lite_V1.0]_20241030.pdf) | <p align="center"> <img src="image/13.png" alt="example" width="100%"> </p> |
 
 ## 常见问题
 

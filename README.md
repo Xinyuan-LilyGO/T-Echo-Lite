@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 16:17:43
+ * @LastEditTime: 2024-12-06 16:23:22
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -276,7 +276,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 ### Power Dissipation
 | Firmware | Program| Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Light_Sleep` | Minimum power consumption: 2.54uA <br /> More information can be found in the [Power Consumption Test Log](./relevant_test/PowerConsumptionTestLog_%5BT-Echo-Lite_V1.0%5D_20241030.pdf) | <p align="center"> <img src="image/13.png" alt="example" width="100%"> </p> |
+| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Sleep_Wake_Up` | Minimum power consumption: 2.54uA <br /> More information can be found in the [Power Consumption Test Log](./relevant_test/PowerConsumptionTestLog_%5BT-Echo-Lite_V1.0%5D_20241030.pdf) | <p align="center"> <img src="image/13.png" alt="example" width="100%"> </p> |
 
 ## FAQ
 
