@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 11:47:44
+ * @LastEditTime: 2024-12-06 11:49:14
  * @License: GPL 3.0
 -->
 
@@ -76,8 +76,8 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 其他说明：不支持快刷（咨询屏厂后他们回复不支持），建议只使用全刷
 * 依赖库：
     >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
-    >[Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)
-   >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)
+    >[Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)<br /> 
+    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)
 * 相关资料：
     * [DXQ120MYB2416A](./information/DXQ120MYB2416A.pdf)
 
