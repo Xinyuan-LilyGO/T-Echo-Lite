@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 17:41:33
+ * @LastEditTime: 2024-12-06 17:49:11
  * @License: GPL 3.0
 -->
 
@@ -62,7 +62,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * RAM：256kB
 * FLASH：1M
 * 相关资料：
-    >[NORDIC官方nRF52840数据手册](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
+    >[nRF52840_Datasheet](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
 
 ### 2. 屏幕
 

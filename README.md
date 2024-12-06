@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 17:42:25
+ * @LastEditTime: 2024-12-06 17:49:17
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -59,7 +59,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   RAM: 256kB
 *   FLASH: 1M
 *   Related Documentation:
-    > [NORDIC Official nRF52840 Datasheet](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
+    > [nRF52840_Datasheet](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
 
 ### 2. Screen
 *   Name: GDEM0122T61
