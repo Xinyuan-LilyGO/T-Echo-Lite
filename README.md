@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 17:49:17
+ * @LastEditTime: 2024-12-06 18:13:48
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -23,7 +23,7 @@
 - [Describe](#describe)
 - [Preview](#preview)
 - [Module](#module)
-- [QuickStart](#quickstart)
+- [SoftwareDeployment](#SoftwareDeployment)
 - [PinOverview](#pinoverview)
 - [RelatedTests](#RelatedTests)
 - [FAQ](#faq)
@@ -114,7 +114,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Related Documentation:
     > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 
-## QuickStart
+## SoftwareDeployment
 
 ### Examples Support
 
@@ -145,7 +145,9 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 | ------  | ------  | ------ |
 | [Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.hex.bin) <br /> [Original_Test(uf2)](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.uf2)| Product factory original testing |  |
 
-### PlatformIO
+### IDE and Flashing
+
+#### PlatformIO
 1. Install [VisualStudioCode](https://code.visualstudio.com/Download),choose installation based on your system type.
 
 2. Open the "Extension" section of the Visual Studio Code software sidebar (Alternatively, use "<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>" to open the extension). Search for the "PlatformIO IDE" extension and download it.
@@ -158,7 +160,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 6. At this point, an error may occur, and you need to install [Python](https://www.python.org/downloads/). Open the folder "tool" -> "win10 vscode platformio start" sequentially, and execute the cmd command `python t-echo-lite_v1.0.0_setup.py` under the "win10 vscode platformio start" folder. This will complete the development board installation, and the compilation and flashing will no longer report errors.
 
-### Arduino
+#### Arduino
 
 1. Install [Arduino](https://www.arduino.cc/en/software), and select the installation based on your system type.
 
@@ -180,7 +182,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 8.  Click the top right "[√](image/8.png)" to compile. If there are no errors, connect the microcontroller to the computer and click the top right "[→](image/9.png)" to start the flashing process.
 
-### JLINK Flashing Firmware and Bootloader
+#### JLINK Flashing Firmware and Bootloader
 
 1.  Install the software [nRF-Connect-for-Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download#infotabs)
 

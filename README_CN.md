@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 17:49:11
+ * @LastEditTime: 2024-12-06 18:13:17
  * @License: GPL 3.0
 -->
 
@@ -24,7 +24,7 @@
 - [描述](#描述)
 - [预览](#预览)
 - [模块](#模块)
-- [快速开始](#快速开始)
+- [软件部署](#软件部署)
 - [引脚总览](#引脚总览)
 - [相关测试](#相关测试)
 - [常见问题](#常见问题)
@@ -122,9 +122,9 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 相关资料：
     >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)<br /> 
 
-## 快速开始
+## 软件部署
 
-### 例程支持
+### 示例支持
 
 | Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
@@ -153,7 +153,9 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 | ------  | ------  | ------ |
 | [Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.hex.bin) <br /> [Original_Test(uf2)](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware_202412040900.uf2)| 出厂测试程序 |  |
 
-### PlatformIO
+### IDE和烧录
+
+#### PlatformIO
 1. 安装 [VisualStudioCode](https://code.visualstudio.com/Download)，根据你的系统类型选择安装。
 
 2. 打开VisualStudioCode软件侧边栏的“扩展”（或者使用<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>打开扩展），搜索“PlatformIO IDE”扩展并下载。
@@ -166,7 +168,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 6. 此时可能会报错，你需要安装一个 [Python](https://www.python.org/downloads/) ，依次打开文件夹“tool”->“win10 vscode platformio start”，在“win10 vscode platformio start”文件夹下执行cmd命令`python t-echo-lite_v1.0.0_setup.py`，即可完成开发板安装，此时编译烧录就不会报错了。
 
-### Arduino
+#### Arduino
 1. 安装 [Arduino](https://www.arduino.cc/en/software)，根据你的系统类型选择安装。
 
 2. 打开项目文件夹的“example”目录，选择示例项目文件夹，打开以“.ino”结尾的文件即可打开Arduino IDE项目工作区。
@@ -187,7 +189,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 8. 点击右上角“<kbd>[√](image/8.png)</kbd>”进行编译，如果编译无误，将单片机连接电脑，点击右上角“<kbd>[→](image/9.png)</kbd>”即可进行烧录。
 
-### JLINK烧录firmware和bootloader
+#### JLINK烧录firmware和bootloader
 1. 安装软件 [nRF-Connect-for-Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download#infotabs)
 
 2. 安装软件 [JLINK](https://www.segger.com/downloads/jlink/)
