@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-12-06 15:57:40
+ * @LastEditTime: 2024-12-06 16:03:18
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -276,6 +276,11 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 | SCL      | IO 1.2                  |
 | INT      | IO 0.16                  |
 
+### Power Dissipation
+| Firmware | Program| Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Light_Sleep` | Minimum power consumption: 2.54uA <br /> More information can be found in the [Power Consumption Test Log](./relevant_test/PowerConsumptionTestLog_%5BT-Echo-Lite_V1.0%5D_20241030.pdf) | <p align="center" width="10%"> <img src="image/13.png" alt="example" width="100%"> </p> |
+
 ## FAQ
 
 * Q. After reading the above tutorials, I still don't know how to build a programming environment. What should I do?
@@ -295,11 +300,6 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 * Q. Why does my board fail to flash when I use USB directly?
 * A. Please press and release the RST chip reset button, wait for LED1 to light up (you must wait for LED1 to light up), then press and release the RST button again. Observe that LED1 gradually dims and then gradually lights up, indicating that the boot download mode has been entered. At this point, you can flash the board.
-<br />
-
-<p align="center" width="100%">.
-    <img src="image/12.jpg" alt="BOOT">
-</p>
 
 <br />
 
