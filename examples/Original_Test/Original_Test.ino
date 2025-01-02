@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2024-12-06 09:00:21
+ * @LastEditTime: 2024-12-28 11:40:11
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -18,7 +18,6 @@
 
 #define SOFTWARE_NAME "Original_Test"
 #define SOFTWARE_LASTEDITTIME "202412031140"
-#define SOFTWARE_VERSION "V1.0.0"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -678,7 +677,7 @@ void GFX_Print_SX1262_Info_Loop(void)
 
                         // print RSSI (Received Signal Strength Indicator)
                         SX1262_OP.receive_rssi = radio.getRSSI();
-                        Serial.printf("[SX1262] RSSI: %.1f dBm", SX1262_OP.receive_rssi);
+                        Serial.printf("[SX1262] RSSI: %.1f dBm\n", SX1262_OP.receive_rssi);
 
                         // print SNR (Signal-to-Noise Ratio)
                         SX1262_OP.receive_snr = radio.getSNR();
@@ -1581,148 +1580,148 @@ void Original_Test_8()
 
 void Original_Test_Loop()
 {
-    Original_Test_6();
+    // Original_Test_6();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (millis() > CycleTime)
-        {
-            GFX_Print_Battery_Info_Loop();
+    //     if (millis() > CycleTime)
+    //     {
+    //         GFX_Print_Battery_Info_Loop();
 
-            CycleTime = millis() + 5000;
-        }
+    //         CycleTime = millis() + 5000;
+    //     }
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                Battery_Measurement_Control_Flag = !Battery_Measurement_Control_Flag;
+    //             Battery_Measurement_Control_Flag = !Battery_Measurement_Control_Flag;
 
-                if (Battery_Measurement_Control_Flag == true)
-                {
-                    digitalWrite(LED_1, LOW);
-                    digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
+    //             if (Battery_Measurement_Control_Flag == true)
+    //             {
+    //                 digitalWrite(LED_1, LOW);
+    //                 digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
 
-                    delay(1000);
-                }
-                else
-                {
-                    digitalWrite(LED_1, HIGH);
-                    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+    //                 delay(1000);
+    //             }
+    //             else
+    //             {
+    //                 digitalWrite(LED_1, HIGH);
+    //                 digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
 
-                    delay(1000);
-                }
+    //                 delay(1000);
+    //             }
 
-                delay(300);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             delay(300);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_6();
+    //             Original_Test_6();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            digitalWrite(LED_1, HIGH);                      // 关闭LED灯
-            digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         digitalWrite(LED_1, HIGH);                      // 关闭LED灯
+    //         digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+    //         break;
+    //     }
+    // }
 
-    Original_Test_1();
+    // Original_Test_1();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_1();
+    //             Original_Test_1();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         break;
+    //     }
+    // }
 
-    Original_Test_2();
+    // Original_Test_2();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_2();
+    //             Original_Test_2();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         break;
+    //     }
+    // }
 
     Original_Test_3();
 
@@ -1757,7 +1756,7 @@ void Original_Test_Loop()
                 break;
             case Button_Triggered_OP.gesture::LONG_PRESS:
                 Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
+                // temp = true;
                 // delay(1000);
                 break;
 
@@ -1959,7 +1958,7 @@ void setup()
     // }
     Serial.println("Ciallo");
     Serial.println("[T-Echo-Lite_" + (String)BOARD_VERSION "][" + (String)SOFTWARE_NAME +
-                   "]_firmware_" + (String)SOFTWARE_VERSION + "_" + (String)SOFTWARE_LASTEDITTIME);
+                   "]_firmware_" + (String)SOFTWARE_LASTEDITTIME);
 
     Serial2.setPins(GPS_UART_RX, GPS_UART_TX);
     Serial2.begin(9600);
@@ -2002,35 +2001,35 @@ void setup()
     // display.clearBuffer();
     // display.display(display.update_mode::FULL_REFRESH, true);
 
-    display.fillScreen(EPD_WHITE);
-    display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
+    // display.fillScreen(EPD_WHITE);
+    // display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
 
-    display.setTextColor(EPD_WHITE);
-    display.setTextSize(1);
-    display.setFont(&Org_01);
-    display.setCursor(25, 90);
-    display.print("MCU: nRF52840");
-    display.setCursor(25, 100);
-    display.print("Screen: GDEM0122T61");
-    display.setCursor(25, 110);
-    display.print("LoRa: SX1262");
-    display.setCursor(25, 120);
-    display.print("Flash: ZD25WQ32C(4MB)");
-    display.setCursor(25, 130);
-    display.print("GPS: L76K");
-    display.setCursor(25, 140);
-    display.print("IMU: ICM20948");
+    // display.setTextColor(EPD_WHITE);
+    // display.setTextSize(1);
+    // display.setFont(&Org_01);
+    // display.setCursor(25, 90);
+    // display.print("MCU: nRF52840");
+    // display.setCursor(25, 100);
+    // display.print("Screen: GDEM0122T61");
+    // display.setCursor(25, 110);
+    // display.print("LoRa: SX1262");
+    // display.setCursor(25, 120);
+    // display.print("Flash: ZD25WQ32C(4MB)");
+    // display.setCursor(25, 130);
+    // display.print("GPS: L76K");
+    // display.setCursor(25, 140);
+    // display.print("IMU: ICM20948");
 
-    display.setCursor(25, 150);
-    display.print("Software: " + (String)SOFTWARE_NAME);
-    display.setCursor(25, 160);
-    display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
+    // display.setCursor(25, 150);
+    // display.print("Software: " + (String)SOFTWARE_NAME);
+    // display.setCursor(25, 160);
+    // display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
 
-    display.display(display.update_mode::FULL_REFRESH, true);
+    // display.display(display.update_mode::FULL_REFRESH, true);
 
-    delay(5000);
+    // delay(5000);
 
-    // Original_Test_Loop();
+    Original_Test_Loop();
 
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
