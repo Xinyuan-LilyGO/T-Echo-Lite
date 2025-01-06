@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-01-06 17:53:39
+ * @LastEditTime: 2025-01-06 17:07:11
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202501061741"
+#define SOFTWARE_LASTEDITTIME "202412031140"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -36,6 +36,7 @@ size_t CycleTime_5 = 0;
 
 bool Battery_Measurement_Control_Flag = false;
 
+bool GPS_Initialization_Successful_Flag = true;
 bool GPS_Info_Update_Flag = false;
 
 bool ICM20948_Initialization_Successful_Flag = false;
@@ -1088,96 +1089,116 @@ void GFX_Print_Battery_Info(void)
 
 void GFX_Print_GPS_Info_Loop(void)
 {
-    if (Serial2.available() > 0)
+    if (GPS_Initialization_Successful_Flag == true)
     {
-        if (millis() > CycleTime_2)
+        while (Serial2.available() > 0)
         {
-            // Serial.printf("%c", Serial2.read());
-            Serial.printf("Serial2.available successfully\n");
+            Serial.printf("%c", Serial2.read());
 
-            CycleTime_2 = millis() + 1000;
-        }
-
-        if (gps.encode(Serial2.read()))
-        {
-            display.setFont(&Org_01);
-            display.fillRect(0, 28 - 5, SCREEN_WIDTH, 100, EPD_WHITE);
-            display.setTextSize(1);
-            display.setCursor(10, 28);
-
-            Serial.println("GPS Initialization Successful");
-
-            display.printf("[Status]: Initialization Successful");
-
-            display.setCursor(10, 42);
-            if (gps.location.isValid())
+            if (gps.encode(Serial2.read()))
             {
-                double lng = gps.location.lng();
-                double lat = gps.location.lat();
+                display.setFont(&Org_01);
+                display.fillRect(0, 28 - 5, SCREEN_WIDTH, 100, EPD_WHITE);
+                display.setTextSize(1);
+                display.setCursor(10, 28);
 
-                Serial.printf("Coordinate LNG: %f LAT: %f \n", lng, lat);
-                display.printf("[Coordinate]: ");
-                display.setCursor(20, 49);
-                display.printf("LNG: %f ", lng);
-                display.setCursor(20, 56);
-                display.printf("LAT: %f", lat);
-            }
-            else
-            {
-                Serial.printf("Coordinate :Waiting to obtain......\n");
-                display.printf("[Coordinate]: Waiting to obtain......");
-            }
+                Serial.println("GPS Initialization Successful");
 
-            display.setCursor(10, 70);
-            if (gps.date.isValid())
-            {
-                uint16_t year = gps.date.year();
-                uint8_t month = gps.date.month();
-                uint8_t day = gps.date.day();
+                display.printf("[Status]: Initialization Successful");
 
-                Serial.printf("Data Year: %d Month: %f Day: %d\n", year, month, day);
-
-                display.printf("[Data]: %d , %d , %d", year, month, day);
-            }
-            else
-            {
-                Serial.printf("Data : Waiting to obtain......\n");
-                display.printf("[Data]: Waiting to obtain......");
-            }
-
-            display.setCursor(10, 77);
-            if (gps.time.isValid())
-            {
-                uint8_t hour = gps.time.hour();
-                uint8_t minute = gps.time.minute();
-                uint8_t second = gps.time.second();
-                uint8_t centisecond = gps.time.centisecond();
-
-                if ((hour + 8) == 24)
+                display.setCursor(10, 42);
+                if (gps.location.isValid())
                 {
-                    hour = 0;
-                }
-                else if ((hour + 8) > 24)
-                {
-                    hour = (hour + 8) - 24;
+                    double lng = gps.location.lng();
+                    double lat = gps.location.lat();
+
+                    Serial.printf("Coordinate LNG: %f LAT: %f \n", lng, lat);
+                    display.printf("[Coordinate]: ");
+                    display.setCursor(20, 49);
+                    display.printf("LNG: %f ", lng);
+                    display.setCursor(20, 56);
+                    display.printf("LAT: %f", lat);
                 }
                 else
                 {
-                    hour += 8;
+                    Serial.printf("Coordinate :Waiting to obtain......\n");
+                    display.printf("[Coordinate]: Waiting to obtain......");
                 }
 
-                Serial.printf("Time: %d:%d:%d:%d\n", hour, minute, second, centisecond);
+                display.setCursor(10, 70);
+                if (gps.date.isValid())
+                {
+                    uint16_t year = gps.date.year();
+                    uint8_t month = gps.date.month();
+                    uint8_t day = gps.date.day();
 
-                display.printf("[Time]: %d:%d:%d:%d", hour, minute, second, centisecond);
+                    Serial.printf("Data Year: %d Month: %f Day: %d\n", year, month, day);
+
+                    display.printf("[Data]: %d , %d , %d", year, month, day);
+                }
+                else
+                {
+                    Serial.printf("Data : Waiting to obtain......\n");
+                    display.printf("[Data]: Waiting to obtain......");
+                }
+
+                display.setCursor(10, 77);
+                if (gps.time.isValid())
+                {
+                    uint8_t hour = gps.time.hour();
+                    uint8_t minute = gps.time.minute();
+                    uint8_t second = gps.time.second();
+                    uint8_t centisecond = gps.time.centisecond();
+
+                    if ((hour + 8) == 24)
+                    {
+                        hour = 0;
+                    }
+                    else if ((hour + 8) > 24)
+                    {
+                        hour = (hour + 8) - 24;
+                    }
+                    else
+                    {
+                        hour += 8;
+                    }
+
+                    Serial.printf("Time: %d:%d:%d:%d\n", hour, minute, second, centisecond);
+
+                    display.printf("[Time]: %d:%d:%d:%d", hour, minute, second, centisecond);
+                }
+                else
+                {
+                    Serial.printf("Time: Waiting to obtain......\n");
+                    display.printf("[Time]: Waiting to obtain......");
+                }
+
+                GPS_Info_Update_Flag = true;
+                CycleTime = millis() - 1;
             }
             else
             {
-                Serial.printf("Time: Waiting to obtain......\n");
-                display.printf("[Time]: Waiting to obtain......");
-            }
+                display.setFont(&Org_01);
+                display.fillRect(0, 28 - 5, SCREEN_WIDTH, 100, EPD_WHITE);
+                display.setTextSize(1);
+                display.setCursor(10, 28);
 
-            GPS_Info_Update_Flag = true;
+                display.printf("[Status]: Waiting for connection......");
+            }
         }
+    }
+    else
+    {
+        display.setFont(&Org_01);
+        display.fillRect(0, 28 - 5, SCREEN_WIDTH, 40, EPD_WHITE);
+        display.setTextSize(1);
+        display.setCursor(10, 28);
+
+        Serial.println("GPS initialization failed");
+
+        display.printf("[Status]: Initialization failed");
+
+        delay(1000);
     }
 
     if ((millis() > CycleTime) && (GPS_Info_Update_Flag == true))
@@ -1239,13 +1260,6 @@ void GFX_Print_GPS_Info(void)
     display.setTextSize(1);
     display.setCursor(50, 15);
     display.printf("GPS Info");
-
-    display.setFont(&Org_01);
-    display.fillRect(0, 28 - 5, SCREEN_WIDTH, 100, EPD_WHITE);
-    display.setTextSize(1);
-    display.setCursor(10, 28);
-
-    display.printf("[Status]: Waiting for connection......");
 }
 
 void GFX_Print_ICM20948_Info(void)
@@ -1530,11 +1544,27 @@ void Original_Test_7()
     pinMode(GPS_WAKE_UP, OUTPUT);
     digitalWrite(GPS_WAKE_UP, HIGH);
 
+    GPS_Initialization_Successful_Flag = true;
+
+    CycleTime = millis() + 5000; // 超时判断
+
+    // while (Serial2.available() <= 0)
+    // {
+    //     if (millis() > CycleTime)
+    //     {
+    //         GPS_Initialization_Successful_Flag = false;
+
+    //         break;
+    //     }
+    // }
+
+    GPS_Info_Update_Flag = true;
+
     GFX_Print_GPS_Info();
 
-    display.display(display.update_mode::FAST_REFRESH, true);
-
     GFX_Print_GPS_Info_Loop();
+
+    display.display(display.update_mode::FAST_REFRESH, true);
 }
 
 void Original_Test_8()
@@ -1567,282 +1597,282 @@ void Original_Test_8()
 
 void Original_Test_Loop()
 {
-    Original_Test_6();
+    // Original_Test_6();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (millis() > CycleTime)
-        {
-            GFX_Print_Battery_Info_Loop();
+    //     if (millis() > CycleTime)
+    //     {
+    //         GFX_Print_Battery_Info_Loop();
 
-            CycleTime = millis() + 5000;
-        }
+    //         CycleTime = millis() + 5000;
+    //     }
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                Battery_Measurement_Control_Flag = !Battery_Measurement_Control_Flag;
+    //             Battery_Measurement_Control_Flag = !Battery_Measurement_Control_Flag;
 
-                if (Battery_Measurement_Control_Flag == true)
-                {
-                    digitalWrite(LED_1, LOW);
-                    digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
+    //             if (Battery_Measurement_Control_Flag == true)
+    //             {
+    //                 digitalWrite(LED_1, LOW);
+    //                 digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
 
-                    delay(1000);
-                }
-                else
-                {
-                    digitalWrite(LED_1, HIGH);
-                    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+    //                 delay(1000);
+    //             }
+    //             else
+    //             {
+    //                 digitalWrite(LED_1, HIGH);
+    //                 digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
 
-                    delay(1000);
-                }
+    //                 delay(1000);
+    //             }
 
-                delay(300);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             delay(300);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_6();
+    //             Original_Test_6();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            digitalWrite(LED_1, HIGH);                      // 关闭LED灯
-            digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         digitalWrite(LED_1, HIGH);                      // 关闭LED灯
+    //         digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+    //         break;
+    //     }
+    // }
 
-    Original_Test_1();
+    // Original_Test_1();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_1();
+    //             Original_Test_1();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         break;
+    //     }
+    // }
 
-    Original_Test_2();
+    // Original_Test_2();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_2();
+    //             Original_Test_2();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         break;
+    //     }
+    // }
 
-    Original_Test_3();
+    // Original_Test_3();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        GFX_Print_SX1262_Info_Loop();
+    //     GFX_Print_SX1262_Info_Loop();
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
-                SX1262_OP.device_1.send_flag = true;
-                SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTING;
-                // 清除错误计数看门狗
-                SX1262_OP.device_1.error_count = 0;
-                CycleTime_2 = millis() + 1000;
+    //             Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
+    //             SX1262_OP.device_1.send_flag = true;
+    //             SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTING;
+    //             // 清除错误计数看门狗
+    //             SX1262_OP.device_1.error_count = 0;
+    //             CycleTime_2 = millis() + 1000;
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_3();
+    //             Original_Test_3();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                // temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             // temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            radio.sleep();
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         radio.sleep();
+    //         break;
+    //     }
+    // }
 
-    Original_Test_4();
+    // Original_Test_4();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        GFX_Print_BLE_Uart_Info_Loop();
+    //     GFX_Print_BLE_Uart_Info_Loop();
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_4();
+    //             Original_Test_4();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            Bluefruit.Advertising.stop();
+    //     if (temp == true)
+    //     {
+    //         Bluefruit.Advertising.stop();
 
-            digitalWrite(LED_1, HIGH);
-            digitalWrite(LED_2, HIGH);
-            digitalWrite(LED_3, HIGH);
-            break;
-        }
-    }
+    //         digitalWrite(LED_1, HIGH);
+    //         digitalWrite(LED_2, HIGH);
+    //         digitalWrite(LED_3, HIGH);
+    //         break;
+    //     }
+    // }
 
-    Original_Test_5();
+    // Original_Test_5();
 
-    while (1)
-    {
-        bool temp = false;
+    // while (1)
+    // {
+    //     bool temp = false;
 
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
+    //     if (Key_Scanning() == true)
+    //     {
+    //         switch (Button_Triggered_OP.current_state)
+    //         {
+    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
+    //             Serial.println("Key triggered: SINGLE_CLICK");
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+    //             Serial.println("Key triggered: DOUBLE_CLICK");
 
-                Original_Test_5();
+    //             Original_Test_5();
 
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
+    //             // delay(1000);
+    //             break;
+    //         case Button_Triggered_OP.gesture::LONG_PRESS:
+    //             Serial.println("Key triggered: LONG_PRESS");
+    //             temp = true;
+    //             // delay(1000);
+    //             break;
 
-            default:
-                break;
-            }
-        }
+    //         default:
+    //             break;
+    //         }
+    //     }
 
-        if (temp == true)
-        {
-            break;
-        }
-    }
+    //     if (temp == true)
+    //     {
+    //         break;
+    //     }
+    // }
 
     Original_Test_7();
 

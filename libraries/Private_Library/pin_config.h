@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO
  * @Date: 2024-12-06 14:37:43
- * @LastEditTime: 2024-12-06 14:37:43
+ * @LastEditTime: 2025-01-06 17:28:23
  * @License: GPL 3.0
  */
 #pragma once
@@ -66,11 +66,17 @@
 // RT9080
 #define RT9080_EN _PINNUM(0, 30)
 
-// GPS L76K (debug)
-#define GPS_UART_RX _PINNUM(1, 13)
-#define GPS_UART_TX _PINNUM(1, 15)
-#define GPS_1PPS _PINNUM(0, 29)
-#define GPS_WAKE_UP _PINNUM(1, 10)
+// GPS T-Echo-Lite-L76K
+// #define GPS_UART_RX _PINNUM(1, 13)
+// #define GPS_UART_TX _PINNUM(1, 15)
+// #define GPS_1PPS _PINNUM(0, 29)
+// #define GPS_WAKE_UP _PINNUM(1, 10)
+// #define GPS_RT9080_EN _PINNUM(1, 11)
+
+#define GPS_WAKE_UP _PINNUM(1, 13)
+#define GPS_1PPS _PINNUM(1, 15)
+#define GPS_UART_RX _PINNUM(1, 10)
+#define GPS_UART_TX _PINNUM(0, 29)
 #define GPS_RT9080_EN _PINNUM(1, 11)
 
 // ICM20948
