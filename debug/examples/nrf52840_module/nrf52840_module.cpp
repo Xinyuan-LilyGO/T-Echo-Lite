@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: None
  * @Date: 2024-12-28 09:38:30
- * @LastEditTime: 2025-01-02 09:48:30
+ * @LastEditTime: 2025-01-23 15:36:55
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -12,7 +12,7 @@
 #include "RadioLib.h"
 
 #define SOFTWARE_NAME "nrf52840_module"
-#define SOFTWARE_LASTEDITTIME "202412280938"
+#define SOFTWARE_LASTEDITTIME "202501231537"
 #define BOARD_VERSION "V1.0"
 
 static const uint32_t Local_MAC[2] =
@@ -79,17 +79,17 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 914.8;
+        float value = 868.1;
         bool change_flag = false;
     } frequency;
     struct
     {
-        float value = 500.0;
+        float value = 125.0;
         bool change_flag = false;
     } bandwidth;
     struct
     {
-        uint8_t value = 9;
+        uint8_t value = 12;
         bool change_flag = false;
     } spreading_factor;
     struct
@@ -206,6 +206,20 @@ void Lora_Transmission_Interrupt(void)
 {
     // we sent or received a packet, set the flag
     SX1262_OP.operation_flag = true;
+}
+
+void Set_SX1262_RF_Transmitter_Switch(bool status)
+{
+    if (status == true)
+    {
+        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC2, LOW);
+    }
+    else
+    {
+        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC2, HIGH);
+    }
 }
 
 bool Key_Scanning(void)
@@ -410,7 +424,9 @@ void Serial_Print_SX1262_Info_Loop(void)
                 SX1262_OP.device_1.led.send_flag = true;
                 CycleTime_4 = millis() + 50; // 到点自动关灯
 
+                Set_SX1262_RF_Transmitter_Switch(true);
                 radio.transmit(SX1262_OP.send_package, 16);
+                Set_SX1262_RF_Transmitter_Switch(false);
                 radio.startReceive();
             }
         }
@@ -563,6 +579,10 @@ void setup()
     Serial.println("Ciallo");
     Serial.println("[nRF52840_Module_" + (String)BOARD_VERSION "][" + (String)SOFTWARE_NAME +
                    "]_firmware_" + (String)SOFTWARE_LASTEDITTIME);
+
+    pinMode(SX1262_RF_VC1, OUTPUT);
+    pinMode(SX1262_RF_VC2, OUTPUT);
+    Set_SX1262_RF_Transmitter_Switch(false);
 
     // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);

@@ -54,6 +54,20 @@ void setFlag(void)
     operationDone = true;
 }
 
+void Set_SX1262_RF_Transmitter_Switch(bool status)
+{
+    if (status == true)
+    {
+        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC2, LOW);
+    }
+    else
+    {
+        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC2, HIGH);
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -62,6 +76,10 @@ void setup()
         delay(100); // wait for native usb
     }
     Serial.println("Ciallo");
+
+    pinMode(SX1262_RF_VC1, OUTPUT);
+    pinMode(SX1262_RF_VC2, OUTPUT);
+    Set_SX1262_RF_Transmitter_Switch(false);
 
     // initialize SX1262 with default settings
     Serial.println("[SX1262] Initializing ... ");
@@ -167,10 +185,12 @@ void loop()
             // wait a second before transmitting again
             delay(1000);
 
+            Set_SX1262_RF_Transmitter_Switch(true);
             // send another one
             Serial.println("[SX1262] Sending another packet ... ");
             transmissionState = radio.startTransmit("Hello World!");
             transmitFlag = true;
+            Set_SX1262_RF_Transmitter_Switch(false);
         }
     }
 }

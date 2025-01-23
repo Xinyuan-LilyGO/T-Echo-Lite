@@ -2,7 +2,7 @@
  * @Description: Ink screen and SX1262 test
  * @Author: LILYGO_L
  * @Date: 2023-07-25 13:45:02
- * @LastEditTime: 2024-12-03 11:36:37
+ * @LastEditTime: 2025-01-23 11:46:18
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -46,12 +46,12 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 914.8;
+        float value = 868.1;
         bool change_flag = false;
     } frequency;
     struct
     {
-        float value = 500.0;
+        float value = 125.0;
         bool change_flag = false;
     } bandwidth;
     struct
@@ -139,46 +139,60 @@ void Dio1_Action_Interrupt(void)
     SX1262_OP.operation_flag = true;
 }
 
+void Set_SX1262_RF_Transmitter_Switch(bool status)
+{
+    if (status == true)
+    {
+        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC2, LOW);
+    }
+    else
+    {
+        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC2, HIGH);
+    }
+}
+
 bool SX1262_Set_Default_Parameters(String *assertion)
 {
-    if (radio.setFrequency(SX1262_OP.frequency.value) == RADIOLIB_ERR_INVALID_FREQUENCY)
+    if (radio.setFrequency(SX1262_OP.frequency.value) != RADIOLIB_ERR_NONE)
     {
         *assertion = "Failed to set frequency value";
         return false;
     }
-    if (radio.setBandwidth(SX1262_OP.bandwidth.value) == RADIOLIB_ERR_INVALID_BANDWIDTH)
+    if (radio.setBandwidth(SX1262_OP.bandwidth.value) != RADIOLIB_ERR_NONE)
     {
         *assertion = "Failed to set bandwidth value";
         return false;
     }
-    if (radio.setOutputPower(SX1262_OP.output_power.value) == RADIOLIB_ERR_INVALID_OUTPUT_POWER)
+    if (radio.setOutputPower(SX1262_OP.output_power.value) != RADIOLIB_ERR_NONE)
     {
         *assertion = "Failed to set output_power value";
         return false;
     }
-    if (radio.setCurrentLimit(SX1262_OP.current_limit.value) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT)
+    if (radio.setCurrentLimit(SX1262_OP.current_limit.value) != RADIOLIB_ERR_NONE)
     {
         *assertion = "Failed to set current_limit value";
         return false;
     }
-    if (radio.setPreambleLength(SX1262_OP.preamble_length.value) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH)
+    if (radio.setPreambleLength(SX1262_OP.preamble_length.value) != RADIOLIB_ERR_NONE)
     {
         *assertion = "Failed to set preamble_length value";
         return false;
     }
-    if (radio.setCRC(SX1262_OP.crc.value) == RADIOLIB_ERR_INVALID_CRC_CONFIGURATION)
+    if (radio.setCRC(SX1262_OP.crc.value) != RADIOLIB_ERR_NONE)
     {
         *assertion = "Failed to set crc value";
         return false;
     }
     if (SX1262_OP.current_mode == SX1262_OP.mode::LORA)
     {
-        if (radio.setSpreadingFactor(SX1262_OP.spreading_factor.value) == RADIOLIB_ERR_INVALID_SPREADING_FACTOR)
+        if (radio.setSpreadingFactor(SX1262_OP.spreading_factor.value) != RADIOLIB_ERR_NONE)
         {
             *assertion = "Failed to set spreading_factor value";
             return false;
         }
-        if (radio.setCodingRate(SX1262_OP.coding_rate.value) == RADIOLIB_ERR_INVALID_CODING_RATE)
+        if (radio.setCodingRate(SX1262_OP.coding_rate.value) != RADIOLIB_ERR_NONE)
         {
             *assertion = "Failed to set coding_rate value";
             return false;
@@ -373,7 +387,9 @@ void GFX_Print_SX1262_Info_Loop(void)
                 SX1262_OP.device_1.led.send_flag = true;
                 CycleTime_4 = millis() + 50; // 到点自动关灯
 
+                Set_SX1262_RF_Transmitter_Switch(true);
                 radio.transmit(SX1262_OP.send_package, 16);
+                Set_SX1262_RF_Transmitter_Switch(false);
                 radio.startReceive();
             }
         }
@@ -529,10 +545,22 @@ bool SX1262_Initialization(void)
 void setup(void)
 {
     Serial.begin(115200);
+    // while (!Serial)
+    // {
+    //     delay(100);
+    // }
     Serial.println("Ciallo");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     pinMode(SCREEN_BS1, OUTPUT);
     digitalWrite(SCREEN_BS1, LOW);
+
+    pinMode(SX1262_RF_VC1, OUTPUT);
+    pinMode(SX1262_RF_VC2, OUTPUT);
+    Set_SX1262_RF_Transmitter_Switch(false);
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
     pinMode(LED_1, OUTPUT);

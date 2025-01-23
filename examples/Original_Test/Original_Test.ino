@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-01-06 17:53:39
+ * @LastEditTime: 2025-01-23 15:42:12
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202501061741"
+#define SOFTWARE_LASTEDITTIME "202501231537"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -129,17 +129,17 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 914.8;
+        float value = 868.1;
         bool change_flag = false;
     } frequency;
     struct
     {
-        float value = 500.0;
+        float value = 125.0;
         bool change_flag = false;
     } bandwidth;
     struct
     {
-        uint8_t value = 9;
+        uint8_t value = 12;
         bool change_flag = false;
     } spreading_factor;
     struct
@@ -277,6 +277,20 @@ void Dio1_Action_Interrupt(void)
     SX1262_OP.operation_flag = true;
 }
 
+void Set_SX1262_RF_Transmitter_Switch(bool status)
+{
+    if (status == true)
+    {
+        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC2, LOW);
+    }
+    else
+    {
+        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC2, HIGH);
+    }
+}
+
 bool Key_Scanning(void)
 {
     if (Button_Triggered_OP.trigger_start_flag == false)
@@ -412,6 +426,8 @@ void System_Sleep(bool mode)
     {
         pinMode(RT9080_EN, OUTPUT);
         digitalWrite(RT9080_EN, HIGH);
+        pinMode(GPS_RT9080_EN, OUTPUT);
+        digitalWrite(GPS_RT9080_EN, HIGH);
 
         Serial.begin(115200);
         pinMode(SCREEN_BS1, OUTPUT);
@@ -607,7 +623,9 @@ void GFX_Print_SX1262_Info_Loop(void)
                 SX1262_OP.device_1.led.send_flag = true;
                 CycleTime_4 = millis() + 50; // 到点自动关灯
 
+                Set_SX1262_RF_Transmitter_Switch(true);
                 radio.transmit(SX1262_OP.send_package, 16);
+                Set_SX1262_RF_Transmitter_Switch(false);
                 radio.startReceive();
             }
         }
@@ -1526,6 +1544,9 @@ void Original_Test_7()
     Serial2.setPins(GPS_UART_RX, GPS_UART_TX);
     Serial2.begin(9600);
 
+    pinMode(GPS_RT9080_EN, OUTPUT);
+    digitalWrite(GPS_RT9080_EN, HIGH);
+
     pinMode(GPS_1PPS, INPUT);
     pinMode(GPS_WAKE_UP, OUTPUT);
     digitalWrite(GPS_WAKE_UP, HIGH);
@@ -1953,6 +1974,10 @@ void setup()
 
     pinMode(SCREEN_BS1, OUTPUT);
     digitalWrite(SCREEN_BS1, LOW);
+
+    pinMode(SX1262_RF_VC1, OUTPUT);
+    pinMode(SX1262_RF_VC2, OUTPUT);
+    Set_SX1262_RF_Transmitter_Switch(false);
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
     pinMode(LED_1, OUTPUT);

@@ -2,7 +2,7 @@
  * @Description: RadioLib SX126x Ping-Pong 2 Example
  * @Author: LILYGO_L
  * @Date: 2024-11-07 12:04:52
- * @LastEditTime: 2024-11-27 10:44:23
+ * @LastEditTime: 2025-01-23 15:39:09
  * @License: GPL 3.0
  */
 #include "RadioLib.h"
@@ -58,6 +58,20 @@ void setFlag(void)
     operationDone = true;
 }
 
+void Set_SX1262_RF_Transmitter_Switch(bool status)
+{
+    if (status == true)
+    {
+        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC2, LOW);
+    }
+    else
+    {
+        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC2, HIGH);
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -67,9 +81,13 @@ void setup()
     }
     Serial.println("Ciallo");
 
+    pinMode(SX1262_RF_VC1, OUTPUT);
+    pinMode(SX1262_RF_VC2, OUTPUT);
+    Set_SX1262_RF_Transmitter_Switch(false);
+
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
 
-        // 3.3V Power ON
+    // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
@@ -138,7 +156,9 @@ void loop()
             Send_Package[14] = (uint8_t)(Send_Data >> 8);
             Send_Package[15] = (uint8_t)Send_Data;
 
+            Set_SX1262_RF_Transmitter_Switch(true);
             radio.transmit(Send_Package, 16);
+            Set_SX1262_RF_Transmitter_Switch(false);
             radio.startReceive();
         }
     }

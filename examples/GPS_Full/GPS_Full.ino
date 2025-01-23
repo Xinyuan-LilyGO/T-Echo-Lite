@@ -2,13 +2,12 @@
  * @Description: GPS Full Function Test
  * @Author: LILYGO_L
  * @Date: 2024-10-28 11:13:13
- * @LastEditTime: 2024-11-27 09:19:13
+ * @LastEditTime: 2025-01-07 14:00:04
  * @License: GPL 3.0
  */
 #include "TinyGPSPlus.h"
 #include "pin_config.h"
 #include <Adafruit_TinyUSB.h>
-
 
 // The TinyGPSPlus object
 TinyGPSPlus gps;
@@ -108,6 +107,11 @@ void setup()
 
     Serial2.setPins(GPS_UART_RX, GPS_UART_TX);
     Serial2.begin(9600);
+
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
+    pinMode(GPS_RT9080_EN, OUTPUT);
+    digitalWrite(GPS_RT9080_EN, HIGH);
 
     Serial.println(F("FullExample.ino"));
     Serial.println(F("An extensive example of many interesting TinyGPSPlus features"));

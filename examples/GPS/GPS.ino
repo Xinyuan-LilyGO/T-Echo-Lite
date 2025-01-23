@@ -2,7 +2,7 @@
  * @Description: GPS test
  * @Author: LILYGO_L
  * @Date: 2024-10-25 17:57:30
- * @LastEditTime: 2024-11-27 09:16:43
+ * @LastEditTime: 2025-01-07 13:59:11
  * @License: GPL 3.0
  */
 #include "TinyGPSPlus.h"
@@ -23,6 +23,11 @@ void setup()
 
     Serial2.setPins(GPS_UART_RX, GPS_UART_TX);
     Serial2.begin(9600);
+
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
+    pinMode(GPS_RT9080_EN, OUTPUT);
+    digitalWrite(GPS_RT9080_EN, HIGH);
 
     pinMode(GPS_1PPS, INPUT);
     pinMode(GPS_WAKE_UP, OUTPUT);
@@ -46,8 +51,10 @@ void loop()
     if (millis() > 5000 && gps.charsProcessed() < 10)
     {
         Serial.println(F("No GPS detected: check wiring."));
-        while (true)
-            ;
+        // while (true)
+        //     ;
+
+        delay(1000);
     }
 }
 
