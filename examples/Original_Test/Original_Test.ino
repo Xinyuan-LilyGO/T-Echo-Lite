@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-01-23 15:42:12
+ * @LastEditTime: 2025-02-12 09:31:14
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202501231537"
+#define SOFTWARE_LASTEDITTIME "202502120929"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -1764,7 +1764,7 @@ void Original_Test_Loop()
                 break;
             case Button_Triggered_OP.gesture::LONG_PRESS:
                 Serial.println("Key triggered: LONG_PRESS");
-                // temp = true;
+                temp = true;
                 // delay(1000);
                 break;
 
