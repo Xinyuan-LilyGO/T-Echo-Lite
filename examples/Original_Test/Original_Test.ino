@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-02-12 09:31:14
+ * @LastEditTime: 2025-02-24 09:46:12
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202502120929"
+#define SOFTWARE_LASTEDITTIME "202502240938"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -129,7 +129,7 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 868.1;
+        float value = 915;
         bool change_flag = false;
     } frequency;
     struct

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-01-23 15:53:23
+ * @LastEditTime: 2025-02-24 10:08:16
  * @License: GPL 3.0
 -->
 
@@ -151,7 +151,8 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/(添加RF控制修复Lora通信距离短问题)[T-Echo-Lite_V1.0][Original_Test]_firmware_202501231537.hex) <br /> [Original_Test(uf2)](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/(添加RF控制修复Lora通信距离短问题)[T-Echo-Lite_V1.0][Original_Test]_firmware_202501231537.uf2)| 出厂测试程序 |  |
+| [Original_Test(lora 868.1mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868.1mhz)]_firmware/)| 出厂测试程序 |  |
+| [Original_Test(lora 915mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz)]_firmware/)| 出厂测试程序 |  |
 
 ### IDE和烧录
 

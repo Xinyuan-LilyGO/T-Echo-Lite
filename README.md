@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-01-23 15:54:27
+ * @LastEditTime: 2025-02-24 10:09:31
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -143,7 +143,8 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/(添加RF控制修复Lora通信距离短问题)[T-Echo-Lite_V1.0][Original_Test]_firmware_202501231537.hex) <br /> [Original_Test(uf2)](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/(添加RF控制修复Lora通信距离短问题)[T-Echo-Lite_V1.0][Original_Test]_firmware_202501231537.uf2)| Product factory original testing |  |
+| [Original_Test(lora 868.1mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868.1mhz)]_firmware/)| Product factory original testing |  |
+| [Original_Test(lora 915mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz)]_firmware/)| Product factory original testing |  |
 
 ### IDE and Flashing
 
