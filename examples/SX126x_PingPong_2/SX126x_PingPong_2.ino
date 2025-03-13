@@ -2,7 +2,7 @@
  * @Description: RadioLib SX126x Ping-Pong 2 Example
  * @Author: LILYGO_L
  * @Date: 2024-11-07 12:04:52
- * @LastEditTime: 2025-01-23 15:39:09
+ * @LastEditTime: 2025-03-13 17:58:00
  * @License: GPL 3.0
  */
 #include "RadioLib.h"
@@ -80,6 +80,10 @@ void setup()
         delay(100); // wait for native usb
     }
     Serial.println("Ciallo");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     pinMode(SX1262_RF_VC1, OUTPUT);
     pinMode(SX1262_RF_VC2, OUTPUT);

@@ -2,7 +2,7 @@
  * @Description: Flash test
  * @Author: LILYGO_L
  * @Date: 2024-08-06 14:03:06
- * @LastEditTime: 2024-11-27 09:17:09
+ * @LastEditTime: 2025-03-13 17:56:39
  * @License: GPL 3.0
  */
 #include <SPI.h>
@@ -39,6 +39,10 @@ void setup()
     Serial.println("Ciallo");
 
     Serial.println("Adafruit Serial Flash Info example");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     Custom_SPI.setClockDivider(SPI_CLOCK_DIV2); // 二分频 32Mhz
     while (flash.begin(&ZD25WQ32C) == false)

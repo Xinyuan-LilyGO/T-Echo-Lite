@@ -77,6 +77,10 @@ void setup()
     }
     Serial.println("Ciallo");
 
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
+
     pinMode(SX1262_RF_VC1, OUTPUT);
     pinMode(SX1262_RF_VC2, OUTPUT);
     Set_SX1262_RF_Transmitter_Switch(false);

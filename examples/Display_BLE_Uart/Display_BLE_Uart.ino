@@ -2,7 +2,7 @@
  * @Description: Ink screen and Bluetooth BLE test
  * @Author: LILYGO_L
  * @Date: 2024-08-16 15:31:24
- * @LastEditTime: 2024-12-03 11:36:24
+ * @LastEditTime: 2025-03-13 17:49:43
  * @License: GPL 3.0
  */
 
@@ -286,6 +286,10 @@ void setup()
     //     delay(100);
     // }
     Serial.println("Ciallo");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     pinMode(SCREEN_BS1, OUTPUT);
     digitalWrite(SCREEN_BS1, LOW);

@@ -2,7 +2,7 @@
  * @Description: GPS test
  * @Author: LILYGO_L
  * @Date: 2024-10-25 17:57:30
- * @LastEditTime: 2025-01-07 13:59:11
+ * @LastEditTime: 2025-03-13 17:57:07
  * @License: GPL 3.0
  */
 #include "TinyGPSPlus.h"
@@ -20,6 +20,10 @@ void setup()
         delay(100); // wait for native usb
     }
     Serial.println("Ciallo");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     Serial2.setPins(GPS_UART_RX, GPS_UART_TX);
     Serial2.begin(9600);

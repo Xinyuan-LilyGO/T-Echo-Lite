@@ -1,10 +1,10 @@
 /*
  * @Description: A BLE serial communication example
-            Upload the program, open the BLE Bluetooth debugging assistant, find the corresponding endpoint, 
+            Upload the program, open the BLE Bluetooth debugging assistant, find the corresponding endpoint,
         and Bluetooth serial communication can be achieved.
  * @Author: LILYGO_L
  * @Date: 2024-08-14 14:20:44
- * @LastEditTime: 2024-11-25 17:20:58
+ * @LastEditTime: 2025-03-13 17:56:13
  * @License: GPL 3.0
  */
 
@@ -110,6 +110,10 @@ void setup()
     while (!Serial)
         yield();
 #endif
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     Serial.println("BLE UART Example");
     Serial.println("---------------------------\n");

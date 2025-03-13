@@ -2,7 +2,7 @@
  * @Description: Key trigger test
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2024-11-25 17:25:33
+ * @LastEditTime: 2025-03-13 17:56:21
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -126,6 +126,10 @@ void setup()
     //     delay(100);
     // }
     Serial.println("Ciallo");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
 

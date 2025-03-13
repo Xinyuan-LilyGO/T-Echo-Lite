@@ -2,7 +2,7 @@
  * @Description: Flash speed test
  * @Author: LILYGO_L
  * @Date: 2024-08-06 14:03:06
- * @LastEditTime: 2024-11-27 09:15:43
+ * @LastEditTime: 2025-03-13 17:56:55
  * @License: GPL 3.0
  */
 #include <SPI.h>
@@ -169,6 +169,10 @@ void setup()
     Serial.println("Ciallo");
 
     Serial.println("Adafruit Serial Flash Info example");
+
+    // 3.3V Power ON
+    pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, HIGH);
 
     while (flash.begin(&ZD25WQ32C) == false)
     // while (flash.begin(&ZD25WQ16B_2) == false)
