@@ -2,7 +2,7 @@
  * @Description: Sleep wake-up test
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2024-12-04 08:59:00
+ * @LastEditTime: 2025-03-17 16:20:59
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -245,6 +245,8 @@ void System_Sleep(bool mode)
     {
         pinMode(RT9080_EN, OUTPUT);
         digitalWrite(RT9080_EN, HIGH);
+        pinMode(GPS_RT9080_EN, OUTPUT);
+        digitalWrite(GPS_RT9080_EN, HIGH);
 
         Serial.begin(115200);
         pinMode(SCREEN_BS1, OUTPUT);

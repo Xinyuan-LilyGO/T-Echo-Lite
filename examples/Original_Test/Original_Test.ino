@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-02-24 09:46:12
+ * @LastEditTime: 2025-03-17 17:01:29
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202502240938"
+#define SOFTWARE_LASTEDITTIME "202503171656"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -1901,7 +1901,7 @@ void Original_Test_Loop()
 
         if (temp == true)
         {
-            Serial2.end();
+            // Serial2.end();
 
             pinMode(GPS_WAKE_UP, INPUT_PULLDOWN);
             break;
@@ -1967,6 +1967,9 @@ void setup()
     Serial.println("Ciallo");
     Serial.println("[T-Echo-Lite_" + (String)BOARD_VERSION "][" + (String)SOFTWARE_NAME +
                    "]_firmware_" + (String)SOFTWARE_LASTEDITTIME);
+
+    Serial2.setPins(GPS_UART_RX, GPS_UART_TX);
+    Serial2.begin(9600);
 
     // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);
@@ -2036,7 +2039,7 @@ void setup()
 
     display.display(display.update_mode::FULL_REFRESH, true);
 
-    delay(5000);
+    delay(3000);
 
     Original_Test_Loop();
 
