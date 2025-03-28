@@ -105,7 +105,7 @@ void setup()
     radio.setCodingRate(6);
     radio.setSyncWord(0xAB);
     radio.setOutputPower(22);
-    radio.setCurrentLimit(0);
+    radio.setCurrentLimit(140);
     radio.setPreambleLength(16);
     radio.setCRC(false);
 

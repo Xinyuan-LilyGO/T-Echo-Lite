@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-03-17 17:01:29
+ * @LastEditTime: 2025-03-28 14:10:24
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -129,7 +129,7 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 915;
+        float value = 850.0;
         bool change_flag = false;
     } frequency;
     struct
