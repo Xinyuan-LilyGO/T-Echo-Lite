@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-03-28 14:10:24
+ * @LastEditTime: 2025-03-28 16:04:04
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202503171656"
+#define SOFTWARE_LASTEDITTIME "202503281556"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -139,17 +139,17 @@ struct SX1262_Operator
     } bandwidth;
     struct
     {
-        uint8_t value = 12;
+        uint8_t value = 9;
         bool change_flag = false;
     } spreading_factor;
     struct
     {
-        uint8_t value = 8;
+        uint8_t value = 7;
         bool change_flag = false;
     } coding_rate;
     struct
     {
-        uint8_t value = 0xAB;
+        uint8_t value = RADIOLIB_SX126X_SYNC_WORD_PRIVATE;
         bool change_flag = false;
     } sync_word;
     struct
