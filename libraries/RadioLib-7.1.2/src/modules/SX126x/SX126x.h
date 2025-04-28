@@ -1229,7 +1229,7 @@ class SX126x: public PhysicalLayer {
     int16_t setPaRampTime(uint8_t rampTime);
 
 #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
-  protected:
+  public:
 #endif
     Module* getMod() override;
     
