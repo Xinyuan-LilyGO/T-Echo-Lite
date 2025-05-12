@@ -90,7 +90,7 @@ void setup()
     radio.setSpreadingFactor(12);
     radio.setCodingRate(8);
     radio.setSyncWord(0xAB);
-    radio.setOutputPower(5);
+    radio.setOutputPower(3);
     radio.setCurrentLimit(140);
     radio.setPreambleLength(16);
     radio.setCRC(false);
@@ -110,7 +110,7 @@ void loop()
     // delay(3000);
 
     radio.setTx(0xFFFFFF);
-    delay(3000);
+    delay(300);
     radio.standby();
     delay(3000);
 }
