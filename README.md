@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-02-24 10:09:31
+ * @LastEditTime: 2025-05-24 09:27:54
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -215,8 +215,8 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 | LED pin          | nRF52840 pin      |
 | :------------------: | :------------------:|
 | LED_1      | IO 1.7                  |
-| LED_1      | IO 1.5                  |
-| LED_1      | IO 1.14                  |
+| LED_2      | IO 1.5                  |
+| LED_3      | IO 1.14                  |
 
 | Screen pin       | nRF52840 pin      |
 | :------------------: | :------------------:|
