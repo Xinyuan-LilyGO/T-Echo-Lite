@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-05-24 09:27:54
+ * @LastEditTime: 2025-06-04 17:32:49
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -302,6 +302,17 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 * A. Please press and release the RST chip reset button, wait for LED1 to light up (you must wait for LED1 to light up), then press and release the RST button again. Observe that LED1 gradually dims and then gradually lights up, indicating that the boot download mode has been entered. At this point, you can flash the board.
 
 <br />
+
+* Q. How should the Bluetooth antenna and Lora antenna of the T-Echo-Lite module be distinguished?
+* A. The Bluetooth antenna and Lora antenna of the T-Echo-Lite module are as shown in the following figure:
+
+<p align="center" width="100%">
+    <img src="image/14.png" alt="">
+</p>
+
+<br />
+
+
 
 ## Project
 * [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite_V1.0.pdf)

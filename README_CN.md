@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-05-24 09:26:25
+ * @LastEditTime: 2025-06-04 17:32:43
  * @License: GPL 3.0
 -->
 
@@ -308,6 +308,15 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 * Q. 为什么我直接使用USB烧录板子一直烧录失败呢？
 * A. 请按一下RST芯片复位按键后松开等待LED1亮后（一定要等待LED1亮）再按一下RST按键后松开，观察到LED1灯逐渐熄灭逐渐点亮，即已进入引导下载模式，这时候就能烧录了。
+
+<br />
+
+* Q. T-Echo-Lite模块的蓝牙天线和Lora天线应该如何区分呢？
+* A. T-Echo-Lite模块的蓝牙天线和Lora天线如下图所示：
+
+<p align="center" width="100%">
+    <img src="image/14.png" alt="">
+</p>
 
 <br />
 
