@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-06-04 17:32:49
+ * @LastEditTime: 2025-06-04 17:35:16
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
