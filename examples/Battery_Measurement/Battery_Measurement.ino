@@ -2,7 +2,7 @@
  * @Description: Battery voltage testing program
  * @Author: LILYGO_L
  * @Date: 2024-11-07 12:04:52
- * @LastEditTime: 2025-03-13 17:56:00
+ * @LastEditTime: 2025-06-05 14:51:04
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -31,21 +31,21 @@ void setup()
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
 
-    // // 呼吸灯
+    // // Breathing lamp
     // HwPWM0.addPin(LED_1);
     // HwPWM0.begin();
     // HwPWM0.setResolution(15);
     // HwPWM0.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_1); // freq = 16Mhz
-    // HwPWM0.writePin(LED_1, bit(15) - 1, false);        // 关闭呼吸灯
+    // HwPWM0.writePin(LED_1, bit(15) - 1, false);        // Turn off the breathing light
 
-    // 关闭LED
+    // Turn off LED
     pinMode(LED_1, OUTPUT);
     digitalWrite(LED_1, HIGH);
 
-    // 测量电池
+    // Measure battery
     pinMode(BATTERY_ADC_DATA, INPUT);
     pinMode(BATTERY_MEASUREMENT_CONTROL, OUTPUT);
-    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // Turn off battery voltage measurement
 
     attachInterrupt(nRF52840_BOOT, External_Interrupt_Triggered, FALLING);
 
@@ -74,7 +74,7 @@ void loop()
         {
             digitalWrite(LED_1, HIGH);
 
-            digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+            digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // Turn off battery voltage measurement
             Serial.print("Turn off battery voltage measurement\n");
 
             Serial.print("ADC Value:");
@@ -94,7 +94,7 @@ void loop()
         {
             digitalWrite(LED_1, LOW);
 
-            digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
+            digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // Enable battery voltage measurement
             Serial.print("Turn on battery voltage measurement\n");
 
             Serial.print("ADC Value:");

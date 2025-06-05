@@ -48,12 +48,12 @@ void Set_SX1262_RF_Transmitter_Switch(bool status)
 {
     if (status == true)
     {
-        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC1, HIGH); // send
         digitalWrite(SX1262_RF_VC2, LOW);
     }
     else
     {
-        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC1, LOW); // receive
         digitalWrite(SX1262_RF_VC2, HIGH);
     }
 }

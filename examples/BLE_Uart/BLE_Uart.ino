@@ -4,7 +4,7 @@
         and Bluetooth serial communication can be achieved.
  * @Author: LILYGO_L
  * @Date: 2024-08-14 14:20:44
- * @LastEditTime: 2025-03-13 17:56:13
+ * @LastEditTime: 2025-06-05 14:51:39
  * @License: GPL 3.0
  */
 
@@ -15,8 +15,8 @@
 struct BLE_Uart_Operator
 {
     using state = enum {
-        UNCONNECTED, // 未连接
-        CONNECTED,   // 已连接
+        UNCONNECTED, // not connected
+        CONNECTED,   // connected already
     };
 
     struct

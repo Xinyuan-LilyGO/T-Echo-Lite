@@ -2,7 +2,7 @@
  * @Description: Flash test
  * @Author: LILYGO_L
  * @Date: 2024-08-06 14:03:06
- * @LastEditTime: 2025-03-13 17:56:39
+ * @LastEditTime: 2025-06-05 14:56:10
  * @License: GPL 3.0
  */
 #include <SPI.h>
@@ -44,7 +44,7 @@ void setup()
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
-    Custom_SPI.setClockDivider(SPI_CLOCK_DIV2); // 二分频 32Mhz
+    Custom_SPI.setClockDivider(SPI_CLOCK_DIV2); // dual frequency 32MHz
     while (flash.begin(&ZD25WQ32C) == false)
     {
         Serial.println("Flash initialization failed");

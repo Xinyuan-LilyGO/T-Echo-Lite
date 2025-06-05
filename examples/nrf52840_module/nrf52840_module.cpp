@@ -1,8 +1,8 @@
 /*
- * @Description: None
- * @Author: None
+ * @Description: nrf52840_module
+ * @Author: LILYGO_L
  * @Date: 2024-12-28 09:38:30
- * @LastEditTime: 2025-05-28 09:25:42
+ * @LastEditTime: 2025-06-05 15:10:01
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -42,10 +42,10 @@ SPIFlash_Device_t ZD25WQ32C =
 struct Button_Triggered_Operator
 {
     using gesture = enum {
-        NOT_ACTIVE,   // 未激活
-        SINGLE_CLICK, // 单击
-        DOUBLE_CLICK, // 双击
-        LONG_PRESS,   // 长按
+        NOT_ACTIVE,   // not active
+        SINGLE_CLICK, // single click
+        DOUBLE_CLICK, // double click
+        LONG_PRESS,   // long press
     };
     const uint32_t button_number = nRF52840_BOOT;
 
@@ -67,14 +67,14 @@ struct Button_Triggered_Operator
 struct SX1262_Operator
 {
     using state = enum {
-        UNCONNECTED, // 未连接
-        CONNECTED,   // 已连接
-        CONNECTING,  // 正在连接
+        UNCONNECTED, // not connected
+        CONNECTED,   // connected already
+        CONNECTING,  // connecting
     };
 
     using mode = enum {
-        LORA, // 普通LoRa模式
-        FSK,  // 普通FSK模式
+        LORA, // lora mode
+        FSK,  // fsk mode
     };
 
     struct
@@ -212,12 +212,12 @@ void Set_SX1262_RF_Transmitter_Switch(bool status)
 {
     if (status == true)
     {
-        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC1, HIGH); // send
         digitalWrite(SX1262_RF_VC2, LOW);
     }
     else
     {
-        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC1, LOW); // receive
         digitalWrite(SX1262_RF_VC2, HIGH);
     }
 }
@@ -226,7 +226,7 @@ bool Key_Scanning(void)
 {
     if (Button_Triggered_OP.trigger_start_flag == false)
     {
-        if (digitalRead(Button_Triggered_OP.button_number) == LOW) // 低电平触发
+        if (digitalRead(Button_Triggered_OP.button_number) == LOW) // low level trigger
         {
             Button_Triggered_OP.trigger_start_flag = true;
             Serial.println("Press button to trigger start");
@@ -240,7 +240,7 @@ bool Key_Scanning(void)
     }
     if (Button_Triggered_OP.timing_flag == true)
     {
-        Button_Triggered_OP.cycletime_2 = millis() + 1000; // 计时1000ms关闭
+        Button_Triggered_OP.cycletime_2 = millis() + 1000; // timing 1000ms off
         Button_Triggered_OP.timing_flag = false;
     }
     if (Button_Triggered_OP.trigger_flag == true)
@@ -280,17 +280,17 @@ bool Key_Scanning(void)
                 Button_Triggered_OP.trigger_flag = false;
                 Button_Triggered_OP.trigger_start_flag = false;
 
-                if ((Button_Triggered_OP.paragraph_triggered_count == 2)) // 单击
+                if ((Button_Triggered_OP.paragraph_triggered_count == 2)) // single click
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::SINGLE_CLICK;
                     return true;
                 }
-                else if ((Button_Triggered_OP.paragraph_triggered_count == 4)) // 双击
+                else if ((Button_Triggered_OP.paragraph_triggered_count == 4)) // double click
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::DOUBLE_CLICK;
                     return true;
                 }
-                else if ((Button_Triggered_OP.paragraph_triggered_count == 1)) // 长按
+                else if ((Button_Triggered_OP.paragraph_triggered_count == 1)) // long press
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::LONG_PRESS;
                     return true;
@@ -420,9 +420,9 @@ void Serial_Print_SX1262_Info_Loop(void)
                 // send another one
                 Serial.println("[SX1262] Sending another packet ... ");
 
-                digitalWrite(LED_1, LOW); // 开灯
+                digitalWrite(LED_1, LOW); 
                 SX1262_OP.device_1.led.send_flag = true;
-                CycleTime_4 = millis() + 50; // 到点自动关灯
+                CycleTime_4 = millis() + 50; // automatically turn off the lights at the designated time
 
                 Set_SX1262_RF_Transmitter_Switch(true);
                 radio.transmit(SX1262_OP.send_package, 16);
@@ -440,7 +440,7 @@ void Serial_Print_SX1262_Info_Loop(void)
                 for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
                 {
                     digitalWrite(Pin_Test[i], LOW);
-                } // 开灯
+                } 
             }
         }
         if (SX1262_OP.device_1.led.receive_flag == true)
@@ -451,7 +451,7 @@ void Serial_Print_SX1262_Info_Loop(void)
                 for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
                 {
                     digitalWrite(Pin_Test[i], LOW);
-                } // 开灯
+                } 
             }
         }
 
@@ -519,10 +519,10 @@ void Serial_Print_SX1262_Info_Loop(void)
                         for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
                         {
                             digitalWrite(Pin_Test[i], HIGH);
-                        } // 关灯
+                        } 
                         SX1262_OP.device_1.led.receive_flag = true;
 
-                        CycleTime_5 = millis() + 50; // 到点自动关灯
+                        CycleTime_5 = millis() + 50; // automatically turn off the lights at the designated time
                         CycleTime_2 = millis() + 8000;
                     }
                 }
@@ -590,10 +590,10 @@ void setup()
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
 
-    // 测量电池
+    // measure battery
     pinMode(BATTERY_ADC_DATA, INPUT);
     pinMode(BATTERY_MEASUREMENT_CONTROL, OUTPUT);
-    digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
+    digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // enable battery voltage measurement
 
     // Set the analog reference to 3.0V (default = 3.6V)
     analogReference(AR_INTERNAL_3_0);

@@ -2,7 +2,7 @@
  * @Description: Ink screen and SX1262 test
  * @Author: LILYGO_L
  * @Date: 2023-07-25 13:45:02
- * @LastEditTime: 2025-01-23 11:46:18
+ * @LastEditTime: 2025-06-05 14:55:44
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -34,14 +34,14 @@ struct Display_Refresh_Operator
 struct SX1262_Operator
 {
     using state = enum {
-        UNCONNECTED, // 未连接
-        CONNECTED,   // 已连接
-        CONNECTING,  // 正在连接
+        UNCONNECTED, // not connected
+        CONNECTED,   // connected already
+        CONNECTING,  // connecting
     };
 
     using mode = enum {
-        LORA, // 普通LoRa模式
-        FSK,  // 普通FSK模式
+        LORA, // lora mode
+        FSK,  // fsk mode
     };
 
     struct
@@ -143,12 +143,12 @@ void Set_SX1262_RF_Transmitter_Switch(bool status)
 {
     if (status == true)
     {
-        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC1, HIGH); // send
         digitalWrite(SX1262_RF_VC2, LOW);
     }
     else
     {
-        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC1, LOW); // receive
         digitalWrite(SX1262_RF_VC2, HIGH);
     }
 }
@@ -383,9 +383,9 @@ void GFX_Print_SX1262_Info_Loop(void)
                 // send another one
                 Serial.println("[SX1262] Sending another packet ... ");
 
-                digitalWrite(LED_1, LOW); // 开灯
+                digitalWrite(LED_1, LOW);  // turn on the light
                 SX1262_OP.device_1.led.send_flag = true;
-                CycleTime_4 = millis() + 50; // 到点自动关灯
+                CycleTime_4 = millis() + 50;  // automatically turn off the lights at the designated time
 
                 Set_SX1262_RF_Transmitter_Switch(true);
                 radio.transmit(SX1262_OP.send_package, 16);
@@ -400,7 +400,7 @@ void GFX_Print_SX1262_Info_Loop(void)
             if (millis() > CycleTime_4)
             {
                 SX1262_OP.device_1.led.send_flag = false;
-                digitalWrite(LED_1, HIGH); // 关灯
+                digitalWrite(LED_1, HIGH); 
             }
         }
         if (SX1262_OP.device_1.led.receive_flag == true)
@@ -408,7 +408,7 @@ void GFX_Print_SX1262_Info_Loop(void)
             if (millis() > CycleTime_5)
             {
                 SX1262_OP.device_1.led.receive_flag = false;
-                digitalWrite(LED_2, HIGH); // 关灯
+                digitalWrite(LED_2, HIGH); 
             }
         }
 
@@ -470,12 +470,12 @@ void GFX_Print_SX1262_Info_Loop(void)
                         SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTED;
                         Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
 
-                        digitalWrite(LED_2, LOW); // 开灯
+                        digitalWrite(LED_2, LOW); 
                         SX1262_OP.device_1.led.receive_flag = true;
 
-                        // 清除错误计数看门狗
+                        // clear error count watchdog
                         SX1262_OP.device_1.error_count = 0;
-                        CycleTime_5 = millis() + 50; // 到点自动关灯
+                        CycleTime_5 = millis() + 50; // automatically turn off the lights at the designated time
                         CycleTime_2 = millis() + 100;
                     }
                 }
@@ -600,7 +600,7 @@ void loop()
         Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
         SX1262_OP.device_1.send_flag = true;
         SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTING;
-        // 清除错误计数看门狗
+        // clear error count watchdog
         SX1262_OP.device_1.error_count = 0;
         CycleTime_2 = millis() + 1000;
     }

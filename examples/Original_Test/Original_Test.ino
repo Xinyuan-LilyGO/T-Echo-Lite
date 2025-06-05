@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-04-23 16:24:19
+ * @LastEditTime: 2025-06-05 15:02:53
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -92,10 +92,10 @@ SPIFlash_Device_t ZD25WQ32C =
 struct Button_Triggered_Operator
 {
     using gesture = enum {
-        NOT_ACTIVE,   // 未激活
-        SINGLE_CLICK, // 单击
-        DOUBLE_CLICK, // 双击
-        LONG_PRESS,   // 长按
+        NOT_ACTIVE,   // not active
+        SINGLE_CLICK, // single click
+        DOUBLE_CLICK, // double click
+        LONG_PRESS,   // long press
     };
     const uint32_t button_number = nRF52840_BOOT;
 
@@ -117,14 +117,14 @@ struct Button_Triggered_Operator
 struct SX1262_Operator
 {
     using state = enum {
-        UNCONNECTED, // 未连接
-        CONNECTED,   // 已连接
-        CONNECTING,  // 正在连接
+        UNCONNECTED, // not connected
+        CONNECTED,   // connected already
+        CONNECTING,  // connecting
     };
 
     using mode = enum {
-        LORA, // 普通LoRa模式
-        FSK,  // 普通FSK模式
+        LORA, // lora mode
+        FSK,  // fsk mode
     };
 
     struct
@@ -217,8 +217,8 @@ struct Display_Refresh_Operator
 struct BLE_Uart_Operator
 {
     using state = enum {
-        UNCONNECTED, // 未连接
-        CONNECTED,   // 已连接
+        UNCONNECTED, // not connected
+        CONNECTED,   // connected already
     };
 
     struct
@@ -281,12 +281,12 @@ void Set_SX1262_RF_Transmitter_Switch(bool status)
 {
     if (status == true)
     {
-        digitalWrite(SX1262_RF_VC1, HIGH); // 发送
+        digitalWrite(SX1262_RF_VC1, HIGH); // send
         digitalWrite(SX1262_RF_VC2, LOW);
     }
     else
     {
-        digitalWrite(SX1262_RF_VC1, LOW); // 接收
+        digitalWrite(SX1262_RF_VC1, LOW); // receive
         digitalWrite(SX1262_RF_VC2, HIGH);
     }
 }
@@ -295,7 +295,7 @@ bool Key_Scanning(void)
 {
     if (Button_Triggered_OP.trigger_start_flag == false)
     {
-        if (digitalRead(Button_Triggered_OP.button_number) == LOW) // 低电平触发
+        if (digitalRead(Button_Triggered_OP.button_number) == LOW) // low level trigger
         {
             Button_Triggered_OP.trigger_start_flag = true;
             Serial.println("Press button to trigger start");
@@ -309,7 +309,7 @@ bool Key_Scanning(void)
     }
     if (Button_Triggered_OP.timing_flag == true)
     {
-        Button_Triggered_OP.cycletime_2 = millis() + 1000; // 计时1000ms关闭
+        Button_Triggered_OP.cycletime_2 = millis() + 1000; // timing 1000ms off
         Button_Triggered_OP.timing_flag = false;
     }
     if (Button_Triggered_OP.trigger_flag == true)
@@ -349,17 +349,17 @@ bool Key_Scanning(void)
                 Button_Triggered_OP.trigger_flag = false;
                 Button_Triggered_OP.trigger_start_flag = false;
 
-                if ((Button_Triggered_OP.paragraph_triggered_count == 2)) // 单击
+                if ((Button_Triggered_OP.paragraph_triggered_count == 2)) // single click
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::SINGLE_CLICK;
                     return true;
                 }
-                else if ((Button_Triggered_OP.paragraph_triggered_count == 4)) // 双击
+                else if ((Button_Triggered_OP.paragraph_triggered_count == 4)) // double click
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::DOUBLE_CLICK;
                     return true;
                 }
-                else if ((Button_Triggered_OP.paragraph_triggered_count == 1)) // 长按
+                else if ((Button_Triggered_OP.paragraph_triggered_count == 1)) // long press
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::LONG_PRESS;
                     return true;
@@ -619,9 +619,9 @@ void GFX_Print_SX1262_Info_Loop(void)
                 // send another one
                 Serial.println("[SX1262] Sending another packet ... ");
 
-                digitalWrite(LED_1, LOW); // 开灯
+                digitalWrite(LED_1, LOW); // turn on the light
                 SX1262_OP.device_1.led.send_flag = true;
-                CycleTime_4 = millis() + 50; // 到点自动关灯
+                CycleTime_4 = millis() + 50; // automatically turn off the lights at the designated time
 
                 Set_SX1262_RF_Transmitter_Switch(true);
                 radio.transmit(SX1262_OP.send_package, 16);
@@ -636,7 +636,7 @@ void GFX_Print_SX1262_Info_Loop(void)
             if (millis() > CycleTime_4)
             {
                 SX1262_OP.device_1.led.send_flag = false;
-                digitalWrite(LED_1, HIGH); // 关灯
+                digitalWrite(LED_1, HIGH);
             }
         }
         if (SX1262_OP.device_1.led.receive_flag == true)
@@ -644,7 +644,7 @@ void GFX_Print_SX1262_Info_Loop(void)
             if (millis() > CycleTime_5)
             {
                 SX1262_OP.device_1.led.receive_flag = false;
-                digitalWrite(LED_2, HIGH); // 关灯
+                digitalWrite(LED_2, HIGH);
             }
         }
 
@@ -706,12 +706,12 @@ void GFX_Print_SX1262_Info_Loop(void)
                         SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTED;
                         Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
 
-                        digitalWrite(LED_2, LOW); // 开灯
+                        digitalWrite(LED_2, LOW);
                         SX1262_OP.device_1.led.receive_flag = true;
 
-                        // 清除错误计数看门狗
+                        // clear error count watchdog
                         SX1262_OP.device_1.error_count = 0;
-                        CycleTime_5 = millis() + 50; // 到点自动关灯
+                        CycleTime_5 = millis() + 50; // automatically turn off the lights at the designated time
                         CycleTime_2 = millis() + 8000;
                     }
                 }
@@ -1226,8 +1226,7 @@ void GFX_Print_ICM20948_Info_Loop(void)
         float roll = myIMU.getRoll();
 
         xyzFloat magValues = myIMU.getMagValues();
-        float yaw = atan2(magValues.y, magValues.x) * (180.0 / M_PI); // 计算航向角
-
+        float yaw = atan2(magValues.y, magValues.x) * (180.0 / M_PI); // calculate heading angle
         display.setCursor(10, 42);
         Serial.printf("Pitch: %.6f", pitch);
         display.printf("[Pitch]: %.6f", pitch);
@@ -1377,14 +1376,14 @@ void Original_Test_6()
 {
     GFX_Print_TEST("Solar charging, battery testing and inspection");
 
-    // 关闭LED
+    // turn off LED
     pinMode(LED_1, OUTPUT);
     digitalWrite(LED_1, HIGH);
 
-    // 测量电池
+    // measure battery
     pinMode(BATTERY_ADC_DATA, INPUT);
     pinMode(BATTERY_MEASUREMENT_CONTROL, OUTPUT);
-    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // turn off battery voltage measurement
 
     // Set the analog reference to 3.0V (default = 3.6V)
     analogReference(AR_INTERNAL_3_0);
@@ -1588,148 +1587,148 @@ void Original_Test_8()
 
 void Original_Test_Loop()
 {
-    // Original_Test_6();
+    Original_Test_6();
 
-    // while (1)
-    // {
-    //     bool temp = false;
+    while (1)
+    {
+        bool temp = false;
 
-    //     if (millis() > CycleTime)
-    //     {
-    //         GFX_Print_Battery_Info_Loop();
+        if (millis() > CycleTime)
+        {
+            GFX_Print_Battery_Info_Loop();
 
-    //         CycleTime = millis() + 5000;
-    //     }
+            CycleTime = millis() + 5000;
+        }
 
-    //     if (Key_Scanning() == true)
-    //     {
-    //         switch (Button_Triggered_OP.current_state)
-    //         {
-    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
-    //             Serial.println("Key triggered: SINGLE_CLICK");
+        if (Key_Scanning() == true)
+        {
+            switch (Button_Triggered_OP.current_state)
+            {
+            case Button_Triggered_OP.gesture::SINGLE_CLICK:
+                Serial.println("Key triggered: SINGLE_CLICK");
 
-    //             Battery_Measurement_Control_Flag = !Battery_Measurement_Control_Flag;
+                Battery_Measurement_Control_Flag = !Battery_Measurement_Control_Flag;
 
-    //             if (Battery_Measurement_Control_Flag == true)
-    //             {
-    //                 digitalWrite(LED_1, LOW);
-    //                 digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // 开启电池电压测量
+                if (Battery_Measurement_Control_Flag == true)
+                {
+                    digitalWrite(LED_1, LOW);
+                    digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH); // enable battery voltage measurement
 
-    //                 delay(1000);
-    //             }
-    //             else
-    //             {
-    //                 digitalWrite(LED_1, HIGH);
-    //                 digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
+                    delay(1000);
+                }
+                else
+                {
+                    digitalWrite(LED_1, HIGH);
+                    digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // turn off battery voltage measurement
 
-    //                 delay(1000);
-    //             }
+                    delay(1000);
+                }
 
-    //             delay(300);
-    //             break;
-    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-    //             Serial.println("Key triggered: DOUBLE_CLICK");
+                delay(300);
+                break;
+            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+                Serial.println("Key triggered: DOUBLE_CLICK");
 
-    //             Original_Test_6();
+                Original_Test_6();
 
-    //             // delay(1000);
-    //             break;
-    //         case Button_Triggered_OP.gesture::LONG_PRESS:
-    //             Serial.println("Key triggered: LONG_PRESS");
-    //             temp = true;
-    //             // delay(1000);
-    //             break;
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::LONG_PRESS:
+                Serial.println("Key triggered: LONG_PRESS");
+                temp = true;
+                // delay(1000);
+                break;
 
-    //         default:
-    //             break;
-    //         }
-    //     }
+            default:
+                break;
+            }
+        }
 
-    //     if (temp == true)
-    //     {
-    //         digitalWrite(LED_1, HIGH);                      // 关闭LED灯
-    //         digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // 关闭电池电压测量
-    //         break;
-    //     }
-    // }
+        if (temp == true)
+        {
+            digitalWrite(LED_1, HIGH);                      // turn off the LED lights
+            digitalWrite(BATTERY_MEASUREMENT_CONTROL, LOW); // turn off battery voltage measurement
+            break;
+        }
+    }
 
-    // Original_Test_1();
+    Original_Test_1();
 
-    // while (1)
-    // {
-    //     bool temp = false;
+    while (1)
+    {
+        bool temp = false;
 
-    //     if (Key_Scanning() == true)
-    //     {
-    //         switch (Button_Triggered_OP.current_state)
-    //         {
-    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
-    //             Serial.println("Key triggered: SINGLE_CLICK");
+        if (Key_Scanning() == true)
+        {
+            switch (Button_Triggered_OP.current_state)
+            {
+            case Button_Triggered_OP.gesture::SINGLE_CLICK:
+                Serial.println("Key triggered: SINGLE_CLICK");
 
-    //             // delay(1000);
-    //             break;
-    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-    //             Serial.println("Key triggered: DOUBLE_CLICK");
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+                Serial.println("Key triggered: DOUBLE_CLICK");
 
-    //             Original_Test_1();
+                Original_Test_1();
 
-    //             // delay(1000);
-    //             break;
-    //         case Button_Triggered_OP.gesture::LONG_PRESS:
-    //             Serial.println("Key triggered: LONG_PRESS");
-    //             temp = true;
-    //             // delay(1000);
-    //             break;
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::LONG_PRESS:
+                Serial.println("Key triggered: LONG_PRESS");
+                temp = true;
+                // delay(1000);
+                break;
 
-    //         default:
-    //             break;
-    //         }
-    //     }
+            default:
+                break;
+            }
+        }
 
-    //     if (temp == true)
-    //     {
-    //         break;
-    //     }
-    // }
+        if (temp == true)
+        {
+            break;
+        }
+    }
 
-    // Original_Test_2();
+    Original_Test_2();
 
-    // while (1)
-    // {
-    //     bool temp = false;
+    while (1)
+    {
+        bool temp = false;
 
-    //     if (Key_Scanning() == true)
-    //     {
-    //         switch (Button_Triggered_OP.current_state)
-    //         {
-    //         case Button_Triggered_OP.gesture::SINGLE_CLICK:
-    //             Serial.println("Key triggered: SINGLE_CLICK");
+        if (Key_Scanning() == true)
+        {
+            switch (Button_Triggered_OP.current_state)
+            {
+            case Button_Triggered_OP.gesture::SINGLE_CLICK:
+                Serial.println("Key triggered: SINGLE_CLICK");
 
-    //             // delay(1000);
-    //             break;
-    //         case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-    //             Serial.println("Key triggered: DOUBLE_CLICK");
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+                Serial.println("Key triggered: DOUBLE_CLICK");
 
-    //             Original_Test_2();
+                Original_Test_2();
 
-    //             // delay(1000);
-    //             break;
-    //         case Button_Triggered_OP.gesture::LONG_PRESS:
-    //             Serial.println("Key triggered: LONG_PRESS");
-    //             temp = true;
-    //             // delay(1000);
-    //             break;
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::LONG_PRESS:
+                Serial.println("Key triggered: LONG_PRESS");
+                temp = true;
+                // delay(1000);
+                break;
 
-    //         default:
-    //             break;
-    //         }
-    //     }
+            default:
+                break;
+            }
+        }
 
-    //     if (temp == true)
-    //     {
-    //         break;
-    //     }
-    // }
+        if (temp == true)
+        {
+            break;
+        }
+    }
 
     Original_Test_3();
 
@@ -1749,7 +1748,7 @@ void Original_Test_Loop()
                 Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
                 SX1262_OP.device_1.send_flag = true;
                 SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTING;
-                // 清除错误计数看门狗
+                // clear error count watchdog
                 SX1262_OP.device_1.error_count = 0;
                 CycleTime_2 = millis() + 1000;
 

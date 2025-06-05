@@ -2,7 +2,7 @@
  * @Description: Sleep wake-up test
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-03-17 16:20:59
+ * @LastEditTime: 2025-06-05 15:04:55
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -69,10 +69,10 @@ SPIFlash_Device_t ZD25WQ32C =
 struct Button_Triggered_Operator
 {
     using gesture = enum {
-        NOT_ACTIVE,   // 未激活
-        SINGLE_CLICK, // 单击
-        DOUBLE_CLICK, // 双击
-        LONG_PRESS,   // 长按
+        NOT_ACTIVE,   // not active
+        SINGLE_CLICK, // single click
+        DOUBLE_CLICK, // double click
+        LONG_PRESS,   // long press
     };
     const uint32_t button_number = nRF52840_BOOT;
 
@@ -113,7 +113,7 @@ bool Key_Scanning(void)
 {
     if (Button_Triggered_OP.trigger_start_flag == false)
     {
-        if (digitalRead(Button_Triggered_OP.button_number) == LOW) // 低电平触发
+        if (digitalRead(Button_Triggered_OP.button_number) == LOW) // low level trigger
         {
             Button_Triggered_OP.trigger_start_flag = true;
 
@@ -128,7 +128,7 @@ bool Key_Scanning(void)
     }
     if (Button_Triggered_OP.timing_flag == true)
     {
-        Button_Triggered_OP.cycletime_2 = millis() + 1000; // 计时1000ms关闭
+        Button_Triggered_OP.cycletime_2 = millis() + 1000; // timing 1000ms off
         Button_Triggered_OP.timing_flag = false;
     }
     if (Button_Triggered_OP.trigger_flag == true)
@@ -168,17 +168,17 @@ bool Key_Scanning(void)
                 Button_Triggered_OP.trigger_flag = false;
                 Button_Triggered_OP.trigger_start_flag = false;
 
-                if ((Button_Triggered_OP.paragraph_triggered_count == 2)) // 单击
+                if ((Button_Triggered_OP.paragraph_triggered_count == 2)) // single click
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::SINGLE_CLICK;
                     return true;
                 }
-                else if ((Button_Triggered_OP.paragraph_triggered_count == 4)) // 双击
+                else if ((Button_Triggered_OP.paragraph_triggered_count == 4)) // double click
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::DOUBLE_CLICK;
                     return true;
                 }
-                else if ((Button_Triggered_OP.paragraph_triggered_count == 1)) // 长按
+                else if ((Button_Triggered_OP.paragraph_triggered_count == 1)) // long press
                 {
                     Button_Triggered_OP.current_state = Button_Triggered_OP.gesture::LONG_PRESS;
                     return true;

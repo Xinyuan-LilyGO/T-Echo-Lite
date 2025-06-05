@@ -2,7 +2,7 @@
  * @Description: Flash speed test
  * @Author: LILYGO_L
  * @Date: 2024-08-06 14:03:06
- * @LastEditTime: 2025-03-13 17:56:55
+ * @LastEditTime: 2025-06-05 14:56:34
  * @License: GPL 3.0
  */
 #include <SPI.h>
@@ -183,7 +183,7 @@ void setup()
     Serial.println("Flash initialization successful");
 
     // SPI
-    // Custom_SPI.setClockDivider(SPI_CLOCK_DIV2); // 二分频 32Mhz
+    // Custom_SPI.setClockDivider(SPI_CLOCK_DIV2); // dual frequency 32MHz
 
     // QSPI
     flashTransport.setClockSpeed(32000000UL, 0);

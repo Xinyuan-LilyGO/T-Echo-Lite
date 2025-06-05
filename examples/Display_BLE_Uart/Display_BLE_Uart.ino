@@ -2,7 +2,7 @@
  * @Description: Ink screen and Bluetooth BLE test
  * @Author: LILYGO_L
  * @Date: 2024-08-16 15:31:24
- * @LastEditTime: 2025-03-13 17:49:43
+ * @LastEditTime: 2025-06-05 14:53:41
  * @License: GPL 3.0
  */
 
@@ -14,8 +14,8 @@
 struct BLE_Uart_Operator
 {
     using state = enum {
-        UNCONNECTED, // 未连接
-        CONNECTED,   // 已连接
+        UNCONNECTED, // not connected
+        CONNECTED,   // connected already
     };
 
     struct

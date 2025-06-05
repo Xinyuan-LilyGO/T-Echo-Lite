@@ -2,7 +2,7 @@
  * @Description: ICM20948 Sensor Test
  * @Author: LILYGO_L
  * @Date: 2024-11-07 12:04:52
- * @LastEditTime: 2024-11-27 10:37:34
+ * @LastEditTime: 2025-06-05 14:57:14
  * @License: GPL 3.0
  */
 
@@ -134,9 +134,9 @@ void loop()
     float pitch = myIMU.getPitch();
     float roll = myIMU.getRoll();
 
-    // 获取磁力计的 x, y 值以计算航向角（Yaw）
+    // obtain the x and y values of the magnetometer to calculate the heading angle (Yaw)
     xyzFloat magValues = myIMU.getMagValues();
-    float yaw = atan2(magValues.y, magValues.x) * (180.0 / M_PI); // 计算航向角
+    float yaw = atan2(magValues.y, magValues.x) * (180.0 / M_PI); // calculate heading angle
 
     Serial.println("G values (x,y,z):");
     Serial.print(gValue.x);
