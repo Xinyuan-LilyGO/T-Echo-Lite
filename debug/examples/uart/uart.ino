@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-10-25 17:57:30
- * @LastEditTime: 2025-01-20 17:18:09
+ * @LastEditTime: 2025-06-05 17:50:26
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,7 +17,7 @@ void setup()
     Serial.println("Ciallo");
 
     Serial2.setPins(_PINNUM(0, 8), _PINNUM(0, 6));
-    Serial2.begin(115200);
+    Serial2.begin(115200);`
 }
 
 void loop()

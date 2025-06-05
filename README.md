@@ -2,10 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-06-04 17:35:16
+ * @LastEditTime: 2025-06-05 17:54:15
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
+
+<p align="center" width="100%">
+    <img src="image/3.jpg" alt="">
+</p>
 
 ## **English | [中文](./README_CN.md)**
 
@@ -37,21 +41,21 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 ### Actual Product Image
 
-<!-- <p align="center" width="100%">
-    <img src="image/14.jpg" alt="">
+<p align="center" width="100%">
+    <img src="image/1.jpg" alt="">
 </p>
 
 ---
 
 <p align="center" width="100%">
-    <img src="image/13.jpg" alt="">
+    <img src="image/2.jpg" alt="">
 </p>
 
 ---
 
 <p align="center" width="100%">
-    <img src="image/15.jpg" alt="">
-</p> -->
+    <img src="image/3.jpg" alt="">
+</p>
 
 ## Module
 ### 1. MCU
