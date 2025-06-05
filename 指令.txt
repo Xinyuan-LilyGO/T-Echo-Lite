@@ -1,0 +1,23 @@
+说明：
+在 Nordic PCA10056 DK 板上，连接到 Button1，并连接到 Button2。 因此，按住 Button1 的同时单击 RESET 
+将使开发板进入 USB 引导加载程序模式，并支持 UF2 和 CDC。 按住 Button2 同时单击 FRESET 将使开发板进入 
+OTA（无线）引导加载程序模式
+
+指令
+1. 
+git clone https://github.com/adafruit/Adafruit_nRF52_Bootloader
+cd Adafruit_nRF52_Bootloader
+git submodule update --init
+
+2.
+sudo pip3 install intelhex
+
+3.
+sudo make CROSS_COMPILE=/home/xxx/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi- BOARD=t-echo_lite_nrf52840 all
+
+4. 给权限
+sudo chown -R $USER /home/xxx
+
+5.增加debug信息
+sudo make CROSS_COMPILE=/home/xxx/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi- BOARD=t-echo_lite_nrf52840 DEBUG=1 all
+

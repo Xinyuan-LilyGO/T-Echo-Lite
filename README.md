@@ -1,323 +1,204 @@
-<!--
- * @Description: None
- * @Author: LILYGO_L
- * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-06-05 17:54:15
- * @License: GPL 3.0
--->
-<h1 align = "center">T-Echo-Lite</h1>
-
-<p align="center" width="100%">
-    <img src="image/3.jpg" alt="">
-</p>
-
-## **English | [中文](./README_CN.md)**
-
-## Version iteration:
-| Version                              | Update date                       |
-| :-------------------------------: | :-------------------------------: |
-| T-Echo-Lite_V1.0            | 2024-12-06                         |
-
-## PurchaseLink
-| Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
-| :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| NULL |
-
-## Directory
-- [Describe](#describe)
-- [Preview](#preview)
-- [Module](#module)
-- [SoftwareDeployment](#SoftwareDeployment)
-- [PinOverview](#pinoverview)
-- [RelatedTests](#RelatedTests)
-- [FAQ](#faq)
-- [Project](#project)
-
-## Describe
-
-T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume and lower power consumption design compared to T-Echo. Its minimum deep sleep power consumption can reach 2μA to 10μA (due to differences in onboard components on different boards, power consumption performance may vary; the minimum power consumption mentioned here is based on the engineering board tested by the LILYGO laboratory). The board is equipped with a rich set of features, including an inertial sensor, LORA module, solar charging function (5V), external GPS, and more. Its excellent power consumption performance allows T-Echo-Lite to achieve superior battery life.
-
-## Preview
-
-### Actual Product Image
-
-<p align="center" width="100%">
-    <img src="image/1.jpg" alt="">
-</p>
-
----
-
-<p align="center" width="100%">
-    <img src="image/2.jpg" alt="">
-</p>
-
----
-
-<p align="center" width="100%">
-    <img src="image/3.jpg" alt="">
-</p>
-
-## Module
-### 1. MCU
-*   Chip: nRF52840
-*   RAM: 256kB
-*   FLASH: 1M
-*   Related Documentation:
-    > [nRF52840_Datasheet](https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html)
-
-### 2. Screen
-*   Name: GDEM0122T61
-*   Size: 1.22 inches
-*   Resolution: 176x192px
-*   Screen Type: E-PAPER
-*   Driver Chip: SSD1681
-*   Bus Communication Protocol: IIC
-*   Additional Notes: Fast refresh is not supported (after consulting the screen manufacturer, they replied that it is not supported), it is recommended to use full refresh only
-*   Dependent Libraries:
-    > [Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)  
-    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
-    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
-    > [Adafruit-GFX-Library-1.11.10](./libraries/Adafruit-GFX-Library-1.11.10/)  
-*   Related Documentation:
-    > [GDEM0122T61](./information/GDEM0122T61.pdf)  
-    > [SSD1681](./information/SSD1681.pdf)  
-
-### 3. LORA
-*   Chip Module: S62F
-*   Chip: SX1262
-*   Bus Communication Protocol: SPI
-*   Dependent Libraries:
-    > [RadioLib-6.6.0](./libraries/RadioLib-6.6.0/)  
-    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
-    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
-*   Related Documentation:
-    > [S62F](./information/S62F.pdf)  
-
-### 4. GPS
-*   Chip Module: L76K
-*   Bus Communication Protocol: UART
-*   Dependent Libraries:
-    > [TinyGPSPlus-1.0.3a](./libraries/TinyGPSPlus-1.0.3a/)  
-*   Related Documentation:
-    > [L76KB-A58](./information/L76KB-A58.pdf)  
+# Adafruit nRF52 Bootloader
 
-### 5. Inertial Measurement Unit
-*   Chip: ICM20948
-*   Bus Communication Protocol: IIC
-*   Dependent Libraries:
-    > [ICM20948_WE-1.1.11](./libraries/ICM20948_WE-1.1.11/)  
-*   Related Documentation:
-    > [ICM20948](./information/ICM20948.pdf)  
+[![Build Status](https://github.com/adafruit/Adafruit_nRF52_Bootloader/workflows/Build/badge.svg)](https://github.com/adafruit/Adafruit_nRF52_Bootloader/actions)
 
-### 6. Flash
-*   Chip: ZD25WQ32CEIGR
-*   Bus Communication Protocol: SPI
-*   Dependent Libraries:
-    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
-    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
-*   Related Documentation:
-    > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
+A CDC/DFU/UF2 bootloader for Nordic nRF52 microcontroller. UF2 is an easy-to-use bootloader that appears as a flash drive. You can just copy `.uf2`-format application images to the flash drive to load new firmware. See https://github.com/Microsoft/uf2 for more information.
 
-## SoftwareDeployment
+DFU via serial/CDC requires [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil), a modified version of [Nordic nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil). Install `python3` if it is not installed already and run this command to install adafruit-nrfutil from PyPi:
 
-### Examples Support
+```
+$ pip3 install --user adafruit-nrfutil
+```
 
-| Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
-| ------  | ------  | ------ | ------ | 
-| [Battery_Measurement](./examples/Battery_Measurement) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Original_Test](./examples/Original_Test) |<p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> | Product factory original testing |  |
-| [BLE_Uart](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Button_Triggered](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Display](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Display_BLE_Uart](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Display_SX1262](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Flash](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Flash_Erase](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [GPS](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [GPS_Full](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [ICM20948](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [IIC_Scan_2](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Sleep_Wake_Up](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [SX126x_PingPong](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [SX126x_PingPong_2](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-
-| Bootloader | Description | Picture |
-| ------  | ------  | ------ |
-| [Bootloader_V1.0.0](./bootloader/t-echo_lite_nrf52840_bootloader-0.9.2-dirty_s140_6.1.1_v1.0.0.hex) <br /> [Bootloader_V1.0.0(uf2)](./bootloader/update-t-echo_lite_nrf52840_bootloader-0.9.2-dirty_nosd_v1.0.0.uf2) | Original |  |
-
-| Firmware | Description | Picture |
-| ------  | ------  | ------ |
-| [Original_Test(lora 868.1mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868.1mhz)]_firmware/)| Product factory original testing |  |
-| [Original_Test(lora 915mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz)]_firmware/)| Product factory original testing |  |
-
-### IDE and Flashing
-
-#### PlatformIO
-1. Install [VisualStudioCode](https://code.visualstudio.com/Download),choose installation based on your system type.
-
-2. Open the "Extension" section of the Visual Studio Code software sidebar (Alternatively, use "<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>" to open the extension). Search for the "PlatformIO IDE" extension and download it.
-
-3. During the installation of the extension, you can go to GitHub to download the program. You can download the main branch by clicking on the "<> Code" with green text, or you can download the program versions from the "Releases" section in the sidebar.
-
-4. After the installation of the extension is completed, open the Explorer in the sidebar (Alternatively, use "<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd>" go open it). Click on "Open Folder", locate the project code you just downloaded (the entire folder), and click "Add." At this point, the project files will be added to your workspace.
-
-5. Open the "platformio.ini" file in the project folder (PlatformIO will automatically open the "platformio.ini" file corresponding to the added folder). Under the "[platformio]" section, uncomment and select the example program you want to burn (it should start with "default_envs = xxx") Then click "<kbd>[√](image/4.png)</kbd>" in the bottom left corner to compile. If the compilation is correct, connect the microcontroller to the computer and click "<kbd>[→](image/5.png)</kbd>" in the bottom left corner to download the program.
-
-6. At this point, an error may occur, and you need to install [Python](https://www.python.org/downloads/). Open the folder "tool" -> "win10 vscode platformio start" sequentially, and execute the cmd command `python t-echo-lite_v1.0.0_setup.py` under the "win10 vscode platformio start" folder. This will complete the development board installation, and the compilation and flashing will no longer report errors.
-
-#### Arduino
-
-1. Install [Arduino](https://www.arduino.cc/en/software), and select the installation based on your system type.
-
-2. Open the "example" directory of the project folder, select the example project folder, and open the file ending with ".ino" to open the Arduino IDE project workspace.
-
-3. Open the "Tools" menu bar at the top right -> Select "Board" -> "Board Manager", find or search for "Adafruit_nRF52", and download the board file with the author named "Adafruit". Then return to the "Board" menu bar, select the board type under the "Adafruit_nRF52" board, and the selected board type is determined by the "board = xxx" header under the [env] directory in the "platformio.ini" file. If there is no corresponding board, you need to manually add the board under the "board" directory in the project folder. (If "Adafruit_nRF52" cannot be found, you need to open Preferences -> Add `https://www.adafruit.com/package_adafruit_index.json` to "Additional Board Manager URLs")
-    
-4. Open the menu bar "[File](image/6.png)" -> "[Preferences](image/6.png)", find the "[Project Folder Location](image/7.png)" section, and copy and paste all the library files along with the folders in the "libraries" folder under the project directory into the "libraries" folder in this directory.
-    
-5. Select the correct settings in the "Tools" menu, as shown in the table below.
-    
-| Setting                               | Value                                 |
-| :-------------------------------: | :-------------------------------: |
-| Board                                 | Nordic nRF52840 DK           |
-
-6.  Select the correct port.
-
-7.  Enable boot download mode: Press and release the RST chip reset button, wait for LED1 to light up (you must wait for LED1 to light up), then press and release the RST button again. Observe that LED1 gradually dims and then gradually lights up, indicating that the boot download mode has been entered.
-
-8.  Click the top right "[√](image/8.png)" to compile. If there are no errors, connect the microcontroller to the computer and click the top right "[→](image/9.png)" to start the flashing process.
-
-#### JLINK Flashing Firmware and Bootloader
-
-1.  Install the software [nRF-Connect-for-Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download#infotabs)
-
-2.  Install the software [JLINK](https://www.segger.com/downloads/jlink/)
-
-3.  Connect the JLINK pins correctly as shown in the figure below
-
-<p align="center" width="100%">
-    <img src="image/12.jpg" alt="">
-</p>
-
-4.  Open the software nRF-Connect-for-Desktop and install the tool [Programmer](./image/10.png) and open it
-
-5.  Add files, select both the bootloader file and the firmware file at the same time, click [Erase&write](./image/11.png), and the flashing will be completed.
-
-## PinOverview
-
-| Flash pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| CS      | IO 0.12                  |
-| SCLK      | IO 0.4                  |
-| (SPI)MOSI      | IO 0.6                  |
-| (SPI)MISO      | IO 0.8                  |
-| (QSPI)IO0      | IO 0.6                  |
-| (QSPI)IO1      | IO 0.8                  |
-| (QSPI)IO2      | IO 1.9                  |
-| (QSPI)IO3      | IO 0.26                  |
-
-| LED pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| LED_1      | IO 1.7                  |
-| LED_2      | IO 1.5                  |
-| LED_3      | IO 1.14                  |
-
-| Screen pin       | nRF52840 pin      |
-| :------------------: | :------------------:|
-| BS1                     | IO 1.12                  |
-| BUSY                     | IO 0.3                  |
-| RST                     | IO 0.28                  |
-| DC                     | IO 0.21                  |
-| CS                    | IO 0.22                  |
-| SCLK                  | IO 0.19                  |
-| MOSI                  | IO 0.20                  |
-
-| LORA pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| CS      | IO 0.11                  |
-| RST      | IO 0.7                  |
-| SCLK      | IO 0.13                  |
-| MOSI      | IO 0.15                  |
-| MISO      | IO 0.17                  |
-| BUSY      | IO 0.14                  |
-| INT      | IO 1.8                  |
-| DIO1      | IO 1.8                  |
-| DIO2      | IO 0.5                  |
-| RF_VC1      | IO 0.27                  |
-| RF_VC2      | IO 1.1                  |
-
-| BOOT key pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| BOOT      | IO 0.24                  |
-
-| Two SH1.0 external sockets pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| SH1_0_1_1      | IO 0.25                  |
-| SH1_0_1_2      | IO 0.23                  |
-| SH1_0_2_1      | IO 1.2                  |
-| SH1_0_2_2      | IO 1.4                  |
-
-| Battery pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| BATTERY_MEASUREMENT_CONTROL      | IO 0.31                  |
-| BATTERY_ADC_DATA      | IO 0.2                  |
-
-| RT9080 power supply 3.3V pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| RT9080_EN      | IO 0.30                  |
-
-| GPS pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| UART_RX      | IO 1.13                  |
-| UART_TX      | IO 1.15                  |
-| 1PPS      | IO 0.29                  |
-| WAKE_UP      | IO 1.10                  |
-| POWER_RT9080_EN      | IO 1.11                  |
-
-| IMU pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| SDA      | IO 1.4                  |
-| SCL      | IO 1.2                  |
-| INT      | IO 0.16                  |
-
-### Power Dissipation
-| Firmware | Program| Description | Picture |
-| ------  | ------  | ------ | ------ | 
-| [Sleep_Wake_Up](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.hex) <br /> [Sleep_Wake_Up(uf2)](./firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware/[T-Echo-Lite_V1.0][Sleep_Wake_Up]_firmware_202412040900.uf2) | `Sleep_Wake_Up` | Minimum power consumption: 2.54uA <br /> More information can be found in the [Power Consumption Test Log](./relevant_test/PowerConsumptionTestLog_[T-Echo-Lite_V1.0]_20241210.pdf) | <p align="center"> <img src="image/13.png" alt="example" width="100%"> </p> |
-
-## FAQ
-
-* Q. After reading the above tutorials, I still don't know how to build a programming environment. What should I do?
-* A. If you still don't understand how to build an environment after reading the above tutorials, you can refer to the [LilyGo-Document](https://github.com/Xinyuan-LilyGO/LilyGo-Document) document instructions to build it.
-
-<br />
-
-* Q. Why does Arduino IDE prompt me to update library files when I open it? Should I update them or not?
-* A. Choose not to update library files. Different versions of library files may not be mutually compatible, so it is not recommended to update library files.
-
-<br />
-
-* Q. Why is there no debug information output from my board's USB?
-* A. Please enable the "DTR" option in your serial assistant software.
-
-<br />
-
-* Q. Why does my board fail to flash when I use USB directly?
-* A. Please press and release the RST chip reset button, wait for LED1 to light up (you must wait for LED1 to light up), then press and release the RST button again. Observe that LED1 gradually dims and then gradually lights up, indicating that the boot download mode has been entered. At this point, you can flash the board.
-
-<br />
-
-* Q. How should the Bluetooth antenna and Lora antenna of the T-Echo-Lite module be distinguished?
-* A. The Bluetooth antenna and Lora antenna of the T-Echo-Lite module are as shown in the following figure:
-
-<p align="center" width="100%">
-    <img src="image/14.png" alt="">
-</p>
-
-<br />
-
-
-
-## Project
-* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite_V1.0.pdf)
-* [T-Echo-Lite-Eapper_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite-Eapper_V1.0.pdf)
+## Supported Boards
+
+Officially supported boards are:
+
+- [Adafruit CLUE](https://www.adafruit.com/product/4500)
+- [Adafruit Circuit Playground Bluefruit](https://www.adafruit.com/product/4333)
+- [Adafruit Feather nRF52832](https://www.adafruit.com/product/3406)
+- [Adafruit Feather nRF52840 Express](https://www.adafruit.com/product/4062)
+- [Adafruit Feather nRF52840 Sense](https://www.adafruit.com/product/4516)
+- [Adafruit ItsyBitsy nRF52840 Express](https://www.adafruit.com/product/4481)
+- [Adafruit LED Glasses Driver nRF52840](https://www.adafruit.com/product/5217)
+- Adafruit Metro nRF52840 Express
+- [Raytac MDBT50Q-RX Dongle](https://www.adafruit.com/product/5199)
+
+In addition, there is also lots of other 3rd-party boards which are added by other makers, users and community. Check out the [complete list of all boards here](/src/boards).
+
+## Features
+
+- DFU over Serial and OTA ( application, Bootloader+SD )
+- Self-upgradable via Serial and OTA
+- DFU using UF2 (https://github.com/Microsoft/uf2) (application only)
+- Auto-enter DFU briefly on startup for DTR auto-reset trick (832 only)
+
+## How to use
+
+There are two pins, `DFU` and `FRST` that bootloader will check upon reset/power:
+
+- `Double Reset` Reset twice within 500 ms will enter DFU with UF2 and CDC support (only works with nRF52840)
+- `DFU = LOW` and `FRST = HIGH`: Enter bootloader with UF2 and CDC support
+- `DFU = LOW` and `FRST = LOW`: Enter bootloader with OTA, to upgrade with a mobile application such as Nordic nrfConnect/Toolbox
+- <s>`DFU = HIGH` and `FRST = LOW`: Factory Reset mode: erase firmware application and its data</s>
+- `DFU = HIGH` and `FRST = HIGH`: Go to application code if it is present, otherwise enter DFU with UF2
+- The `GPREGRET` register can also be set to force the bootloader can enter any of above modes (plus a CDC-only mode for Arduino).
+`GPREGRET` is set by the application before performing a soft reset.
+
+```c
+#include "nrf_nvic.h"
+void reset_to_uf2(void) {
+  NRF_POWER->GPREGRET = 0x57; // 0xA8 OTA, 0x4e Serial
+  NVIC_SystemReset();         // or sd_nvic_SystemReset();
+}
+```
+
+On the Nordic PCA10056 DK board, `DFU` is connected to **Button1**, and `FRST` is connected to **Button2**.
+So holding down **Button1** while clicking **RESET** will put the board into USB bootloader mode, with UF2 and CDC support.
+Holding down **Button2** while clicking **RESET** will put the board into OTA (over-the-air) bootloader mode.
+
+On the Nordic PCA10059 Dongle board, `DFU` is connected to the white button.
+`FRST` is connected to pin 1.10. Ground it to pull `FRST` low, as if you had pushed an `FRST`  button.
+There is an adjacent ground pad.
+
+For other boards, please check the board definition for details.
+
+### Making your own UF2
+
+To create your own UF2 DFU update image, simply use the [Python conversion script](https://github.com/Microsoft/uf2/blob/master/utils/uf2conv.py) on a .bin file or .hex file, specifying the family as **0xADA52840** (nRF52840) or **0x621E937A** (nRF52833).
+
+```
+nRF52840
+uf2conv.py firmware.hex -c -f 0xADA52840
+
+nRF52833
+uf2conv.py firmware.hex -c -f 0x621E937A
+```
+
+If using a .bin file with the conversion script you must specify application address with the -b switch, this address depend on the SoftDevice size/version e.g S140 v6 is 0x26000, v7 is 0x27000
+
+```
+nRF52840
+uf2conv.py firmware.bin -c -b 0x26000 -f 0xADA52840
+
+nRF52833
+uf2conv.py firmware.bin -c -b 0x27000 -f 0x621E937A
+```
+
+To create a UF2 image for bootloader from a .hex file using separated family of **0xd663823c**
+
+```
+uf2conv.py bootloader.hex -c -f 0xd663823c
+```
+
+## Burn & Upgrade with pre-built binaries
+
+You can burn and/or upgrade the bootloader with either a J-link or DFU (serial) to a specific pre-built binary version
+without the hassle of installing a toolchain and compiling the code.
+This is preferred if you are not developing/customizing the bootloader.
+Pre-builtin binaries are available on GitHub [releases](https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases)
+
+Note: The bootloader can be downgraded. Since the binary release is a merged version of
+both bootloader and the Nordic SoftDevice, you can freely upgrade/downgrade to any version you like.
+
+## How to compile and build
+
+You should only continue if you are looking to develop bootloader for your own.
+You must have have a J-Link available to "unbrick" your device.
+
+### Prerequisites
+
+- ARM GCC
+- Nordic's [nRF5x Command Line Tools](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Command-Line-Tools)
+- [Python IntelHex](https://pypi.org/project/IntelHex/)
+
+### Build:
+
+Firstly clone this repo with following commands
+
+```
+git clone https://github.com/adafruit/Adafruit_nRF52_Bootloader
+cd Adafruit_nRF52_Bootloader
+git submodule update --init
+```
+
+Then build it with `make BOARD={board} all`, for example:
+
+```
+make BOARD=feather_nrf52840_express all
+```
+
+For the list of supported boards, run `make` without `BOARD=` :
+
+```
+$ make
+You must provide a BOARD parameter with 'BOARD='
+Supported boards are: feather_nrf52840_express feather_nrf52840_express pca10056
+Makefile:90: *** BOARD not defined.  Stop
+```
+
+### Flash
+
+To flash the bootloader (without softdevice/mbr) using JLink:
+
+```
+make BOARD=feather_nrf52840_express flash
+```
+
+If you are using pyocd as debugger, add `FLASHER=pyocd` to make command:
+
+```
+make BOARD=feather_nrf52840_express FLASHER=pyocd flash
+```
+
+To upgrade the bootloader using DFU Serial via port /dev/ttyACM0
+
+```
+make BOARD=feather_nrf52840_express SERIAL=/dev/ttyACM0 flash-dfu
+```
+
+To flash SoftDevice (will also erase chip):
+
+```
+make BOARD=feather_nrf52840_express flash-sd
+```
+
+To flash MBR only
+
+```
+make BOARD=feather_nrf52840_express flash-mbr
+```
+
+### Common makefile problems
+
+#### `arm-none-eabi-gcc`: No such file or directory
+
+If you get the following error ...
+
+```
+$ make BOARD=feather_nrf52840_express all
+Compiling file: main.c
+/bin/sh: /usr/bin/arm-none-eabi-gcc: No such file or directory
+make: *** [_build/main.o] Error 127
+```
+
+... you may need to pass the location of the GCC ARM toolchain binaries to `make` using
+the variable `CROSS_COMPILE` as below:
+```
+$ make CROSS_COMPILE=/opt/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi- BOARD=feather_nrf52832 all
+```
+
+For other compile errors, check the gcc version with `arm-none-eabi-gcc --version` to insure it is at least 9.x.
+
+#### `ModuleNotFoundError: No module named 'intelhex'`
+
+Install python-intelhex with
+
+```
+pip install intelhex
+```
+
+#### `make: nrfjprog: No such file or directory`
+
+Make sure that `nrfjprog` is available from the command-line. This binary is
+part of Nordic's nRF5x Command Line Tools.
