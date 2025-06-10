@@ -112,9 +112,9 @@ if __name__ == "__main__":
         Installation_judgment = False
 
     if Installation_judgment == False:
-        print("\nt-echo-lite_v1.0.0 board installation failed")
+        print("\nt-echo-lite board installation failed")
     else:
-        print("\nt-echo-lite_v1.0.0 board installation successful")
+        print("\nt-echo-lite board installation successful")
     
 
 
