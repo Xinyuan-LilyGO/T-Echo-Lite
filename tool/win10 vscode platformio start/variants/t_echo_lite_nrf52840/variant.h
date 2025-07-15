@@ -16,8 +16,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _VARIANT_PCA10056_
-#define _VARIANT_PCA10056_
+#ifndef _VARIANT_T_ECHO_LITE_NRF52840_
+#define _VARIANT_T_ECHO_LITE_NRF52840_
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
@@ -124,10 +124,13 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 /*
  * Wire Interfaces
  */
-#define WIRE_INTERFACES_COUNT 1
+#define WIRE_INTERFACES_COUNT 2
 
 #define PIN_WIRE_SDA         (26)
 #define PIN_WIRE_SCL         (27)
+
+#define PIN_WIRE1_SDA         (26)
+#define PIN_WIRE1_SCL         (27)
 
 // QSPI Pins
 #define PIN_QSPI_SCK         19
