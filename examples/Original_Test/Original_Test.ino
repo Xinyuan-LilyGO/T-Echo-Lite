@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-06-05 15:02:53
+ * @LastEditTime: 2025-07-15 14:38:02
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -2008,37 +2008,37 @@ void setup()
     display.begin();
     display.setRotation(1);
 
-    // display.fillScreen(EPD_WHITE);
-    // display.clearBuffer();
-    // display.display(display.update_mode::FULL_REFRESH, true);
+    display.fillScreen(EPD_WHITE);
+    display.clearBuffer();
+    display.display(display.update_mode::FULL_REFRESH, true);
 
-    // display.fillScreen(EPD_WHITE);
-    // display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
+    display.fillScreen(EPD_WHITE);
+    display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
 
-    // display.setTextColor(EPD_WHITE);
-    // display.setTextSize(1);
-    // display.setFont(&Org_01);
-    // display.setCursor(25, 90);
-    // display.print("MCU: nRF52840");
-    // display.setCursor(25, 100);
-    // display.print("Screen: GDEM0122T61");
-    // display.setCursor(25, 110);
-    // display.print("LoRa: SX1262");
-    // display.setCursor(25, 120);
-    // display.print("Flash: ZD25WQ32C(4MB)");
-    // display.setCursor(25, 130);
-    // display.print("GPS: L76K");
-    // display.setCursor(25, 140);
-    // display.print("IMU: ICM20948");
+    display.setTextColor(EPD_WHITE);
+    display.setTextSize(1);
+    display.setFont(&Org_01);
+    display.setCursor(25, 90);
+    display.print("MCU: nRF52840");
+    display.setCursor(25, 100);
+    display.print("Screen: GDEM0122T61");
+    display.setCursor(25, 110);
+    display.print("LoRa: SX1262");
+    display.setCursor(25, 120);
+    display.print("Flash: ZD25WQ32C(4MB)");
+    display.setCursor(25, 130);
+    display.print("GPS: L76K");
+    display.setCursor(25, 140);
+    display.print("IMU: ICM20948");
 
-    // display.setCursor(25, 150);
-    // display.print("Software: " + (String)SOFTWARE_NAME);
-    // display.setCursor(25, 160);
-    // display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
+    display.setCursor(25, 150);
+    display.print("Software: " + (String)SOFTWARE_NAME);
+    display.setCursor(25, 160);
+    display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
 
-    // display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.update_mode::FULL_REFRESH, true);
 
-    // delay(3000);
+    delay(3000);
 
     Original_Test_Loop();
 
