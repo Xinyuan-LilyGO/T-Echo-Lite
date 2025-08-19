@@ -6,7 +6,7 @@
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
-#include "pin_config.h"
+#include "t_echo_lite_config.h"
 #include "material_monochrome_176x192px.h"
 #include "Display_Fonts.h"
 

@@ -85,12 +85,12 @@ void setup()
     }
     Serial.println("SX1262 initialization successful");
 
-    radio.setFrequency(923.0);
+    radio.setFrequency(868.0);
     radio.setBandwidth(125.0);
-    radio.setSpreadingFactor(12);
-    radio.setCodingRate(8);
+    radio.setSpreadingFactor(9);
+    radio.setCodingRate(6);
     radio.setSyncWord(0xAB);
-    radio.setOutputPower(3);
+    radio.setOutputPower(22);
     radio.setCurrentLimit(140);
     radio.setPreambleLength(16);
     radio.setCRC(false);
@@ -100,17 +100,9 @@ void setup()
     radio.setDio1Action(setFlag);
 
     Set_SX1262_RF_Transmitter_Switch(true);
+    radio.transmitDirect();
 }
 
 void loop()
 {
-    // radio.transmitDirect();
-    // delay(3000);
-    // radio.standby();
-    // delay(3000);
-
-    radio.setTx(0xFFFFFF);
-    delay(300);
-    radio.standby();
-    delay(3000);
 }

@@ -8,7 +8,7 @@
 
 #include "GxEPD2_BW.h"
 #include "Fonts.h"
-#include "pin_config.h"
+#include "t_echo_lite_config.h"
 #include "Adafruit_EPD.h"
 
 static size_t Count = 0;

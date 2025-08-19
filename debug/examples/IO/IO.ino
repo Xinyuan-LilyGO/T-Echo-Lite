@@ -7,7 +7,7 @@
  */
 #include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
-#include "pin_config.h"
+#include "t_echo_lite_config.h"
 
 bool i = 0;
 

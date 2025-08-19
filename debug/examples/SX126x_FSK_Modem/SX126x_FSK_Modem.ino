@@ -18,7 +18,7 @@
 
 // include the library
 #include "RadioLib.h"
-#include "pin_config.h"
+#include "t_echo_lite_config.h"
 
 SPIClass Custom_SPI(NRF_SPIM3, SX1262_MISO, SX1262_SCLK, SX1262_MOSI);
 
