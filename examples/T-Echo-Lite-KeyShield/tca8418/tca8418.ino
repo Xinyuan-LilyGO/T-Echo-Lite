@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-08-20 15:51:42
+ * @LastEditTime: 2025-08-20 16:03:50
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -39,6 +39,7 @@ void setup()
     // 必须加上电延时
     delay(500);
 
+    pinMode(TCA8418_INT, INPUT_PULLUP);
     attachInterrupt(TCA8418_INT, []() -> void
                     { Interrupt_Flag = true; }, FALLING);
 
@@ -50,59 +51,59 @@ void setup()
 
 void loop()
 {
-    // if (Interrupt_Flag == true)
-    // {
-    Cpp_Bus_Driver::Tca8418::Irq_Status is;
+    if (Interrupt_Flag == true)
+    {
+        Cpp_Bus_Driver::Tca8418::Irq_Status is;
 
-    if (TCA8418->parse_irq_status(TCA8418->get_irq_flag(), is) == false)
-    {
-        printf("parse_irq_status fail\n");
-    }
-    else
-    {
-        if (is.key_events_flag == true)
+        if (TCA8418->parse_irq_status(TCA8418->get_irq_flag(), is) == false)
         {
-            Cpp_Bus_Driver::Tca8418::Touch_Point tp;
-            if (TCA8418->get_multiple_touch_point(tp) == true)
+            printf("parse_irq_status fail\n");
+        }
+        else
+        {
+            if (is.key_events_flag == true)
             {
-                printf("touch finger: %d\n", tp.finger_count);
-
-                for (uint8_t i = 0; i < tp.info.size(); i++)
+                Cpp_Bus_Driver::Tca8418::Touch_Point tp;
+                if (TCA8418->get_multiple_touch_point(tp) == true)
                 {
-                    switch (tp.info[i].event_type)
+                    printf("touch finger: %d\n", tp.finger_count);
+
+                    for (uint8_t i = 0; i < tp.info.size(); i++)
                     {
-                    case Cpp_Bus_Driver::Tca8418::Event_Type::KEYPAD:
-                    {
-                        Cpp_Bus_Driver::Tca8418::Touch_Position tp_2;
-                        if (TCA8418->parse_touch_num(tp.info[i].num, tp_2) == true)
+                        switch (tp.info[i].event_type)
                         {
-                            printf("keypad event\n");
-                            printf("   touch num:[%d] num: %d x: %d y: %d press_flag: %d\n", i + 1, tp.info[i].num, tp_2.x, tp_2.y, tp.info[i].press_flag);
-                            if (tp.info[i].num <= (sizeof(Tca8418_Map) / sizeof(std::string)))
+                        case Cpp_Bus_Driver::Tca8418::Event_Type::KEYPAD:
+                        {
+                            Cpp_Bus_Driver::Tca8418::Touch_Position tp_2;
+                            if (TCA8418->parse_touch_num(tp.info[i].num, tp_2) == true)
                             {
-                                printf("   touch string: %s\n", Tca8418_Map[tp.info[i].num - 1].c_str());
+                                printf("keypad event\n");
+                                printf("   touch num:[%d] num: %d x: %d y: %d press_flag: %d\n", i + 1, tp.info[i].num, tp_2.x, tp_2.y, tp.info[i].press_flag);
+                                if (tp.info[i].num <= (sizeof(Tca8418_Map) / sizeof(std::string)))
+                                {
+                                    printf("   touch string: %s\n", Tca8418_Map[tp.info[i].num - 1].c_str());
+                                }
                             }
+
+                            break;
                         }
+                        case Cpp_Bus_Driver::Tca8418::Event_Type::GPIO:
+                            printf("gpio event\n");
+                            printf("   touch num:[%d] num: %d press_flag: %d\n", i + 1, tp.info[i].num, tp.info[i].press_flag);
+                            break;
 
-                        break;
-                    }
-                    case Cpp_Bus_Driver::Tca8418::Event_Type::GPIO:
-                        printf("gpio event\n");
-                        printf("   touch num:[%d] num: %d press_flag: %d\n", i + 1, tp.info[i].num, tp.info[i].press_flag);
-                        break;
-
-                    default:
-                        break;
+                        default:
+                            break;
+                        }
                     }
                 }
+
+                TCA8418->clear_irq_flag(Cpp_Bus_Driver::Tca8418::Irq_Flag::KEY_EVENTS);
             }
-
-            TCA8418->clear_irq_flag(Cpp_Bus_Driver::Tca8418::Irq_Flag::KEY_EVENTS);
         }
-    }
 
-    //     Interrupt_Flag = false;
-    // }
+        Interrupt_Flag = false;
+    }
 
     delay(10);
 }
