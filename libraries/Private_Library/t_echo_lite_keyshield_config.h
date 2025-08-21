@@ -2,7 +2,7 @@
  * @Description: t_echo_lite_keyshield_config
  * @Author: LILYGO
  * @Date: 2024-12-06 14:37:43
- * @LastEditTime: 2025-08-20 15:45:51
+ * @LastEditTime: 2025-08-21 18:12:15
  * @License: GPL 3.0
  */
 #pragma once
@@ -28,12 +28,10 @@
 // TCA8418键盘按键映射
 const std::string Tca8418_Map[] =
     {
-        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10",
-        "Esc", "Esc", "1", "2", "3", "4", "5", "6", "7", "8",
-        "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
-        "Caps", "A", "S", "D", "F", "G", "H", "J", "K", "L",
-        "Alt", "Z", "X", "C", "V", "B", "N", "M", "Ctrl", "Up",
-        "Fn", "Win", "Shift", "Tab", "Space", "Space", "Space", "Fn", "Left", "Down",
-        "F11", "9", "Del", "Enter", "Record", "Enter", "0", "Right"};
+        "Yes", "*", "0", "#", "Null", "Null", "Null", "Null", "Null", "Null",
+        "No", "7", "8", "9", "Null", "Null", "Null", "Null", "Null", "Null",
+        "Down", "4", "5", "6", "Null", "Null", "Null", "Null", "Null", "Null",
+        "Center", "1", "2", "3", "Null", "Null", "Null", "Null", "Null", "Null",
+        "Up", "Esc", "Home", "Mail", "Null", "Null", "Null", "Null", "Null", "Null"};
 
 ////////////////////////////////////////////////// other define config //////////////////////////////////////////////////
