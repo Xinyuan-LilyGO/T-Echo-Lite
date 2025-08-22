@@ -61,10 +61,16 @@ void Set_SX1262_RF_Transmitter_Switch(bool status)
 void setup()
 {
     Serial.begin(115200);
-    // while (!Serial)
-    // {
-    //     delay(100); // wait for native usb
-    // }
+    uint8_t serial_init_count = 0;
+    while (!Serial)
+    {
+        delay(100); // wait for native usb
+        serial_init_count++;
+        if (serial_init_count > 30)
+        {
+            break;
+        }
+    }
     Serial.println("Ciallo");
 
     // 3.3V Power ON
