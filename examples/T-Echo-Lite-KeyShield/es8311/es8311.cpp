@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-08-29 17:44:17
+ * @LastEditTime: 2025-08-29 18:06:37
  * @License: GPL 3.0
  */
 
@@ -32,15 +32,32 @@ auto IIS_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iis>(ES8311_ADC_DATA, E
 
 auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(IIC_Bus_0, IIS_Bus, ES8311_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
 
+// void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t start_index, size_t length)
+// {
+//     for (size_t i = 0; i < length; i++)
+//     {
+//         uint16_t sample_l = input_data[start_index + i * 2];
+//         uint16_t sample_r = input_data[start_index + i * 2 + 1];
+
+//         // 小端序：低位存储左声道，高位存储右声道
+//         out_buffer[i] = (sample_r << 16) | sample_l;
+//     }
+// }
+
 void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t start_index, size_t length)
 {
-    for (size_t i = 0; i < length; i++)
-    {
-        uint16_t sample_l = input_data[start_index + i * 2];
-        uint16_t sample_r = input_data[start_index + i * 2 + 1];
+    const uint16_t *input_ptr = input_data + start_index * 2;
+    uint32_t *out_ptr = out_buffer;
 
-        // 小端序：低位存储左声道，高位存储右声道
-        out_buffer[i] = (sample_r << 16) | sample_l;
+    for (size_t i = 0; i < length; ++i)
+    {
+        // 使用 memcpy 直接将两个 uint16_t 复制到 uint32_t 中，并进行字节序调整
+        uint32_t temp;
+        std::memcpy(&temp, input_ptr, 2);                      // 复制 sample_l
+        std::memcpy(((uint8_t *)&temp) + 2, input_ptr + 1, 2); // 复制 sample_r 到高位
+
+        *out_ptr++ = temp;
+        input_ptr += 2;
     }
 }
 
