@@ -2,7 +2,7 @@
  * @Description: t_echo_lite_keyshield_config
  * @Author: LILYGO
  * @Date: 2024-12-06 14:37:43
- * @LastEditTime: 2025-08-26 09:18:49
+ * @LastEditTime: 2025-09-01 10:55:43
  * @License: GPL 3.0
  */
 #pragma once
@@ -26,6 +26,10 @@
 #define ES8311_MCLK EXT_2X5P_2_IO_0_9
 #define ES8311_WS_LRCK EXT_2X5P_2_IO_0_25
 
+// AW86224
+#define AW86224_SDA IIC_1_SCL
+#define AW86224_SCL IIC_1_SDA
+
 ////////////////////////////////////////////////// gpio config //////////////////////////////////////////////////
 
 ////////////////////////////////////////////////// other define config //////////////////////////////////////////////////
@@ -45,5 +49,8 @@ const std::string Tca8418_Map[] =
 
 // ES8311
 #define ES8311_IIC_ADDRESS 0x18
+
+// AW86224
+#define AW86224_IIC_ADDRESS 0x58
 
 ////////////////////////////////////////////////// other define config //////////////////////////////////////////////////
