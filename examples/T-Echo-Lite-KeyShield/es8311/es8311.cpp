@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-08-29 18:06:37
+ * @LastEditTime: 2025-09-01 10:19:07
  * @License: GPL 3.0
  */
 
@@ -32,32 +32,43 @@ auto IIS_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iis>(ES8311_ADC_DATA, E
 
 auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(IIC_Bus_0, IIS_Bus, ES8311_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
 
-// void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t start_index, size_t length)
+// void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t input_data_start_index, size_t length)
 // {
 //     for (size_t i = 0; i < length; i++)
 //     {
-//         uint16_t sample_l = input_data[start_index + i * 2];
-//         uint16_t sample_r = input_data[start_index + i * 2 + 1];
+//         uint16_t sample_l = input_data[input_data_start_index + i * 2];
+//         uint16_t sample_r = input_data[input_data_start_index + i * 2 + 1];
 
 //         // 小端序：低位存储左声道，高位存储右声道
 //         out_buffer[i] = (sample_r << 16) | sample_l;
 //     }
 // }
 
-void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t start_index, size_t length)
+// void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t input_data_start_index, size_t out_data_length)
+// {
+//     const uint16_t *input_ptr = input_data + input_data_start_index;
+//     uint32_t *out_ptr = out_buffer;
+
+//     for (size_t i = 0; i < out_data_length; ++i)
+//     {
+//         // 使用 memcpy 直接将两个 uint16_t 复制到 uint32_t 中，并进行字节序调整
+//         memcpy(out_ptr, input_ptr, 2);                      // 复制 sample_l
+//         memcpy(((uint8_t *)out_ptr) + 2, input_ptr + 1, 2); // 复制 sample_r 到高位
+
+//         out_ptr++;
+//         input_ptr += 2;
+//     }
+// }
+
+void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t input_data_start_index, size_t out_data_length)
 {
-    const uint16_t *input_ptr = input_data + start_index * 2;
-    uint32_t *out_ptr = out_buffer;
+    const uint8_t *input_ptr = (const uint8_t *)(input_data + input_data_start_index);
 
-    for (size_t i = 0; i < length; ++i)
+    for (size_t i = 0; i < out_data_length; i++)
     {
-        // 使用 memcpy 直接将两个 uint16_t 复制到 uint32_t 中，并进行字节序调整
-        uint32_t temp;
-        std::memcpy(&temp, input_ptr, 2);                      // 复制 sample_l
-        std::memcpy(((uint8_t *)&temp) + 2, input_ptr + 1, 2); // 复制 sample_r 到高位
-
-        *out_ptr++ = temp;
-        input_ptr += 2;
+        // 明确复制字节，避免字节序混淆
+        memcpy(&out_buffer[i], input_ptr, 4);
+        input_ptr += 4;
     }
 }
 
@@ -103,19 +114,14 @@ void setup()
 
     ES8311->begin(nrf_i2s_ratio_t ::NRF_I2S_RATIO_32X, SAMPLE_RATE, nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT);
 
-    // while (1)
-    // {
     if (ES8311->begin(50000) == true)
     {
         printf("es8311 initialization success\n");
-        // break;
     }
     else
     {
         printf("es8311 initialization fail\n");
-        delay(100);
     }
-    // }
 
     ES8311->set_master_clock_source(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_MCLK);
     ES8311->set_clock(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_MCLK, true);
@@ -493,23 +499,29 @@ void loop()
 
     if (Iis_Transmit_Flag == true)
     {
-        if (Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE > (sizeof(c2_b16_s44100) / sizeof(uint16_t)))
+        if ((Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE) > (sizeof(c2_b16_s44100) / sizeof(uint32_t)))
         {
             printf("music play finish\n");
-
             ES8311->stop_transmit();
+
+            Iis_Data_Convert_Wait = false;
             Iis_Transmit_Flag = false;
         }
         else
         {
             if (Iis_Data_Convert_Wait == false)
             {
-                size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE, (sizeof(c2_b16_s44100) / sizeof(uint16_t)) - (Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE));
+                size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE,
+                                           sizeof(c2_b16_s44100) / sizeof(uint32_t) - (Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE));
 
                 printf("iis_send_data_count: %d\n", Iis_Send_Data_Count);
                 printf("iis send data length: %d\n", buffer_length);
 
-                Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE, buffer_length);
+                if (buffer_length != MAX_IIS_DATA_TRANSMIT_SIZE)
+                {
+                    memset(Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
+                }
+                Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint16_t), buffer_length);
 
                 Iis_Send_Data_Count++;
 
@@ -521,7 +533,7 @@ void loop()
         {
             if (Iis_Data_Convert_Wait == true)
             {
-                ES8311->set_next_write_buffer(Iis_Tx_Buffer);
+                ES8311->set_next_write_data(Iis_Tx_Buffer);
                 Iis_Data_Convert_Wait = false;
             }
         }
