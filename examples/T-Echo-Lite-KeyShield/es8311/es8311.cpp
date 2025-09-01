@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-09-01 10:19:07
+ * @LastEditTime: 2025-09-01 11:16:23
  * @License: GPL 3.0
  */
 
@@ -114,13 +114,18 @@ void setup()
 
     ES8311->begin(nrf_i2s_ratio_t ::NRF_I2S_RATIO_32X, SAMPLE_RATE, nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT);
 
-    if (ES8311->begin(50000) == true)
+    while (1)
     {
-        printf("es8311 initialization success\n");
-    }
-    else
-    {
-        printf("es8311 initialization fail\n");
+        if (ES8311->begin(50000) == true)
+        {
+            printf("es8311 initialization success\n");
+            break;
+        }
+        else
+        {
+            printf("es8311 initialization fail\n");
+            delay(100);
+        }
     }
 
     ES8311->set_master_clock_source(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_MCLK);
