@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-09-01 11:16:23
+ * @LastEditTime: 2025-09-02 14:27:28
  * @License: GPL 3.0
  */
 
@@ -19,12 +19,13 @@
 
 uint32_t Iis_Tx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
 
-size_t Iis_Send_Data_Count = 0;
+// 已经发送的数据大小
+size_t Iis_Send_Data_Size = 0;
 bool Iis_Transmit_Flag = false;
 
 bool Iis_Data_Convert_Wait = false;
 
-size_t Play_Count = 1;
+size_t Play_Count = 0;
 
 auto IIC_Bus_0 = std::make_shared<Cpp_Bus_Driver::Hardware_Iic_2>(ES8311_SDA, ES8311_SCL, &Wire);
 
@@ -60,16 +61,25 @@ auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(IIC_Bus_0, IIS_Bus, ES831
 //     }
 // }
 
-void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t input_data_start_index, size_t out_data_length)
-{
-    const uint8_t *input_ptr = (const uint8_t *)(input_data + input_data_start_index);
+// void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t input_data_start_index, size_t out_data_length)
+// {
+//     const uint8_t *input_ptr = (const uint8_t *)(input_data + input_data_start_index);
 
-    for (size_t i = 0; i < out_data_length; i++)
-    {
-        // 明确复制字节，避免字节序混淆
-        memcpy(&out_buffer[i], input_ptr, 4);
-        input_ptr += 4;
-    }
+//     for (size_t i = 0; i < out_data_length; i++)
+//     {
+//         // 明确复制字节，避免字节序混淆
+//         memcpy(&out_buffer[i], input_ptr, 4);
+//         input_ptr += 4;
+//     }
+// }
+
+void Iis_Data_Convert(const void *input_data, void *out_buffer, size_t input_data_start_index, size_t byte)
+{
+    // 正确计算起始指针：先将 void* 转换为 byte 指针，然后进行字节偏移
+    const uint8_t *input_ptr = (const uint8_t *)input_data + input_data_start_index;
+    uint8_t *out_ptr = (uint8_t *)out_buffer;
+
+    memcpy(out_buffer, input_ptr, byte);
 }
 
 void Iic_Scan(void)
@@ -481,18 +491,15 @@ void loop()
         //     printf("es8311 register[%d]: %#X\n", i, buffer);
         // }
 
-        //     Play_Count++;
-        //     printf("play_count: %d\n", Play_Count);
-
         // 播放音乐测试
         printf("music play start\n");
 
-        Iis_Send_Data_Count = 0;
-        Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE);
+        Iis_Send_Data_Size = 0;
+        Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
 
         if (ES8311->start_transmit(Iis_Tx_Buffer, nullptr, MAX_IIS_DATA_TRANSMIT_SIZE) == true)
         {
-            Iis_Send_Data_Count++;
+            Iis_Send_Data_Size += MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t);
             Iis_Transmit_Flag = true;
         }
         else
@@ -500,13 +507,16 @@ void loop()
             Iis_Transmit_Flag = false;
             printf("music play fail (ES8311->start_transmit fail)\n");
         }
+
+        Play_Count++;
+        printf("play_count: %d\n", Play_Count);
     }
 
     if (Iis_Transmit_Flag == true)
     {
-        if ((Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE) > (sizeof(c2_b16_s44100) / sizeof(uint32_t)))
+        if (Iis_Send_Data_Size >= sizeof(c2_b16_s44100))
         {
-            printf("music play finish\n");
+            printf("music play finish iis_send_data_size: %d\n", Iis_Send_Data_Size);
             ES8311->stop_transmit();
 
             Iis_Data_Convert_Wait = false;
@@ -516,19 +526,18 @@ void loop()
         {
             if (Iis_Data_Convert_Wait == false)
             {
-                size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE,
-                                           sizeof(c2_b16_s44100) / sizeof(uint32_t) - (Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE));
+                size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t), sizeof(c2_b16_s44100) - Iis_Send_Data_Size);
 
-                printf("iis_send_data_count: %d\n", Iis_Send_Data_Count);
-                printf("iis send data length: %d\n", buffer_length);
+                // printf("iis_send_data_size: %d\n", Iis_Send_Data_Size);
+                // printf("iis send data length: %d\n", buffer_length);
 
-                if (buffer_length != MAX_IIS_DATA_TRANSMIT_SIZE)
+                if (buffer_length != MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t))
                 {
                     memset(Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
                 }
-                Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, Iis_Send_Data_Count * MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint16_t), buffer_length);
+                Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, Iis_Send_Data_Size, buffer_length);
 
-                Iis_Send_Data_Count++;
+                Iis_Send_Data_Size += buffer_length;
 
                 Iis_Data_Convert_Wait = true;
             }
