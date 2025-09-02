@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-09-02 14:27:28
+ * @LastEditTime: 2025-09-02 15:11:55
  * @License: GPL 3.0
  */
 
@@ -75,11 +75,10 @@ auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(IIC_Bus_0, IIS_Bus, ES831
 
 void Iis_Data_Convert(const void *input_data, void *out_buffer, size_t input_data_start_index, size_t byte)
 {
-    // 正确计算起始指针：先将 void* 转换为 byte 指针，然后进行字节偏移
     const uint8_t *input_ptr = (const uint8_t *)input_data + input_data_start_index;
     uint8_t *out_ptr = (uint8_t *)out_buffer;
 
-    memcpy(out_buffer, input_ptr, byte);
+    memcpy(out_ptr, input_ptr, byte);
 }
 
 void Iic_Scan(void)
