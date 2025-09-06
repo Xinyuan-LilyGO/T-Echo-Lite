@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-07-15 14:38:02
+ * @LastEditTime: 2025-09-06 09:43:21
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -17,7 +17,7 @@
 #include "ICM20948_WE.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202504151713"
+#define SOFTWARE_LASTEDITTIME "202509060902"
 #define BOARD_VERSION "V1.0"
 
 #define AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME 5000
@@ -129,12 +129,12 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 850.0;
+        float value = 915.0;
         bool change_flag = false;
     } frequency;
     struct
     {
-        float value = 62.5;
+        float value = 125.0;
         bool change_flag = false;
     } bandwidth;
     struct
@@ -627,6 +627,7 @@ void GFX_Print_SX1262_Info_Loop(void)
                 radio.transmit(SX1262_OP.send_package, 16);
                 Set_SX1262_RF_Transmitter_Switch(false);
                 radio.startReceive();
+                SX1262_OP.operation_flag = false;
             }
         }
         // }
@@ -650,8 +651,6 @@ void GFX_Print_SX1262_Info_Loop(void)
 
         if (SX1262_OP.operation_flag == true)
         {
-            SX1262_OP.operation_flag = false;
-
             uint8_t receive_package[16] = {'\0'};
             if (radio.readData(receive_package, 16) == RADIOLIB_ERR_NONE)
             {
@@ -716,6 +715,8 @@ void GFX_Print_SX1262_Info_Loop(void)
                     }
                 }
             }
+
+            SX1262_OP.operation_flag = false;
         }
 
         if (millis() > CycleTime_3)
@@ -1763,7 +1764,7 @@ void Original_Test_Loop()
                 break;
             case Button_Triggered_OP.gesture::LONG_PRESS:
                 Serial.println("Key triggered: LONG_PRESS");
-                // temp = true;
+                temp = true;
                 // delay(1000);
                 break;
 
@@ -1959,10 +1960,16 @@ void Original_Test_Loop()
 void setup()
 {
     Serial.begin(115200);
-    // while (!Serial)
-    // {
-    //     delay(100);
-    // }
+    uint8_t serial_init_count = 0;
+    while (!Serial)
+    {
+        delay(100); // wait for native usb
+        serial_init_count++;
+        if (serial_init_count > 30)
+        {
+            break;
+        }
+    }
     Serial.println("Ciallo");
     Serial.println("[T-Echo-Lite_" + (String)BOARD_VERSION "][" + (String)SOFTWARE_NAME +
                    "]_firmware_" + (String)SOFTWARE_LASTEDITTIME);
