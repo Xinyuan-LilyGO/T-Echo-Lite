@@ -2,7 +2,7 @@
  * @Description: t_echo_lite_keyshield_config
  * @Author: LILYGO
  * @Date: 2024-12-06 14:37:43
- * @LastEditTime: 2025-09-02 09:54:20
+ * @LastEditTime: 2025-09-12 15:40:01
  * @License: GPL 3.0
  */
 #pragma once
@@ -29,10 +29,6 @@
 // AW86224
 #define AW86224_SDA IIC_1_SCL
 #define AW86224_SCL IIC_1_SDA
-
-// microphone
-#define MICROPHONE_SCLK EXT_2X5P_2_IO_0_9
-#define MICROPHONE_DATA EXT_2X5P_2_IO_0_23
 
 // microphone
 #define MICROPHONE_SCLK EXT_2X5P_2_IO_0_9
