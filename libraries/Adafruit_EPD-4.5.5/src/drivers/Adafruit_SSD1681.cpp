@@ -203,7 +203,7 @@ void Adafruit_SSD1681::begin(bool reset)
     @brief signal the display to update
 */
 /**************************************************************************/
-void Adafruit_SSD1681::update()
+void Adafruit_SSD1681::update(bool busy_enable)
 {
     uint8_t buf[1];
 
@@ -212,11 +212,15 @@ void Adafruit_SSD1681::update()
     EPD_command(SSD1681_DISP_CTRL2, buf, 1);
 
     EPD_command(SSD1681_MASTER_ACTIVATE);
-    busy_wait();
 
-    if (_busy_pin <= -1)
+    if (busy_enable == true)
     {
-        delay(1000);
+        busy_wait();
+
+        if (_busy_pin <= -1)
+        {
+            delay(1000);
+        }
     }
 }
 
@@ -225,7 +229,7 @@ void Adafruit_SSD1681::update()
     @brief signal the display to update
 */
 /**************************************************************************/
-void Adafruit_SSD1681::updatePartial(void)
+void Adafruit_SSD1681::updatePartial(bool busy_enable)
 {
     uint8_t buf[1];
 
@@ -234,15 +238,19 @@ void Adafruit_SSD1681::updatePartial(void)
     EPD_command(SSD1681_DISP_CTRL2, buf, 1);
 
     EPD_command(SSD1681_MASTER_ACTIVATE);
-    busy_wait();
 
-    if (_busy_pin <= -1)
+    if (busy_enable == true)
     {
-        delay(1000);
+        busy_wait();
+
+        if (_busy_pin <= -1)
+        {
+            delay(1000);
+        }
     }
 }
 
-void Adafruit_SSD1681::updateFast(void)
+void Adafruit_SSD1681::updateFast(bool busy_enable)
 {
     uint8_t buf[1];
 
@@ -251,11 +259,15 @@ void Adafruit_SSD1681::updateFast(void)
     EPD_command(SSD1681_DISP_CTRL2, buf, 1);
 
     EPD_command(SSD1681_MASTER_ACTIVATE);
-    busy_wait();
 
-    if (_busy_pin <= -1)
+    if (busy_enable == true)
     {
-        delay(1000);
+        busy_wait();
+
+        if (_busy_pin <= -1)
+        {
+            delay(1000);
+        }
     }
 }
 

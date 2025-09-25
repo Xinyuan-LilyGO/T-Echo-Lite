@@ -479,7 +479,7 @@ void Adafruit_EPD::writeSRAMFramebufferToEPD(uint16_t SRAM_buffer_addr,
 //     }
 // }
 
-void Adafruit_EPD::display(uint8_t mode, bool sleep)
+void Adafruit_EPD::display(uint8_t mode, bool sleep, bool busy_enable)
 {
     switch (mode)
     {
@@ -530,13 +530,13 @@ void Adafruit_EPD::display(uint8_t mode, bool sleep)
     switch (mode)
     {
     case update_mode::FULL_REFRESH:
-        update();
+        update(busy_enable);
         break;
     case update_mode::PARTIAL_REFRESH:
-        updatePartial();
+        updatePartial(busy_enable);
         break;
     case update_mode::FAST_REFRESH:
-        updateFast();
+        updateFast(busy_enable);
         break;
 
     default:

@@ -47,9 +47,9 @@ public:
 
     void begin(bool reset = true);
     void powerUp(uint8_t mode = update_mode::FULL_REFRESH);
-    void update(void);
-    void updatePartial(void);
-    void updateFast(void);
+    void update(bool busy_enable = true);
+    void updatePartial(bool busy_enable = true);
+    void updateFast(bool busy_enable = true);
     void powerDown();
     void displayPartial(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 

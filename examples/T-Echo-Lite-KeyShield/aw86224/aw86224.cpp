@@ -2,7 +2,7 @@
  * @Description: aw86224
  * @Author: LILYGO_L
  * @Date: 2024-12-25 10:33:25
- * @LastEditTime: 2025-09-01 11:04:35
+ * @LastEditTime: 2025-09-24 15:22:27
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -45,9 +45,11 @@ void setup()
     // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
-
-    // 必须加上电延时
-    delay(500);
+    delay(100);
+    digitalWrite(RT9080_EN, LOW);
+    delay(100);
+    digitalWrite(RT9080_EN, HIGH);
+    delay(1000);
 
     AW86224->begin(500000);
     // printf("AW86224 input voltage: %.06f V\n", AW86224->get_input_voltage());

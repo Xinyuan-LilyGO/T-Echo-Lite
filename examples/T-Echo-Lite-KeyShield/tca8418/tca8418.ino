@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-08-20 16:03:50
+ * @LastEditTime: 2025-09-24 15:20:36
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -35,9 +35,11 @@ void setup()
     // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
-
-    // 必须加上电延时
-    delay(500);
+    delay(100);
+    digitalWrite(RT9080_EN, LOW);
+    delay(100);
+    digitalWrite(RT9080_EN, HIGH);
+    delay(1000);
 
     pinMode(TCA8418_INT, INPUT_PULLUP);
     attachInterrupt(TCA8418_INT, []() -> void

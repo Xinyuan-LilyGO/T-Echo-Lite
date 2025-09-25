@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-09-02 17:19:55
+ * @LastEditTime: 2025-09-24 15:22:02
  * @License: GPL 3.0
  */
 
@@ -69,9 +69,11 @@ void setup()
     // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
-
-    // 必须加上电延时
-    delay(500);
+    delay(100);
+    digitalWrite(RT9080_EN, LOW);
+    delay(100);
+    digitalWrite(RT9080_EN, HIGH);
+    delay(1000);
 
     PDM.setPins(MICROPHONE_DATA, MICROPHONE_SCLK, -1);
     PDM.onReceive(Pdm_Callback);

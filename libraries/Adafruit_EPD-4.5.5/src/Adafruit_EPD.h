@@ -88,7 +88,7 @@ public:
     void setBlackBuffer(int8_t index, bool inverted);
     void setColorBuffer(int8_t index, bool inverted);
     // void display(bool sleep = false);
-    void display(uint8_t mode = update_mode::FULL_REFRESH, bool sleep = false);
+    void display(uint8_t mode = update_mode::FULL_REFRESH, bool sleep = false, bool busy_enable = true);
 
     thinkinkmode_t getMode(void) { return inkmode; }
 
@@ -135,11 +135,11 @@ protected:
       @brief signal the display to update
     */
     /**************************************************************************/
-    virtual void update(void) = 0;
+    virtual void update(bool busy_enable = true) = 0;
 
-    virtual void updatePartial(void) = 0;
+    virtual void updatePartial(bool busy_enable = true) = 0;
 
-    virtual void updateFast(void) = 0;
+    virtual void updateFast(bool busy_enable = true) = 0;
 
     /**************************************************************************/
     /*!

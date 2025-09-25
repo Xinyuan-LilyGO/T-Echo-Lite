@@ -2,7 +2,7 @@
  * @Description: t_echo_lite_keyshield_config
  * @Author: LILYGO
  * @Date: 2024-12-06 14:37:43
- * @LastEditTime: 2025-09-23 12:08:55
+ * @LastEditTime: 2025-09-24 17:18:42
  * @License: GPL 3.0
  */
 #pragma once
@@ -30,14 +30,18 @@
 #define AW86224_SDA IIC_1_SDA
 #define AW86224_SCL IIC_1_SCL
 
-// microphone
-#define MICROPHONE_SCLK EXT_2X5P_2_IO_0_9
-#define MICROPHONE_DATA EXT_2X5P_2_IO_0_23
+// // microphone
+// #define MICROPHONE_SCLK EXT_2X5P_2_IO_0_9
+// #define MICROPHONE_DATA EXT_2X5P_2_IO_0_23
 
-// speaker
-#define SPEAKER_BCLK EXT_2X5P_2_IO_0_10
-#define SPEAKER_DATA EXT_2X5P_2_IO_1_6
-#define SPEAKER_WS_LRCK EXT_2X5P_2_IO_0_25
+// // speaker
+// #define SPEAKER_BCLK EXT_2X5P_2_IO_0_10
+// #define SPEAKER_DATA EXT_2X5P_2_IO_1_6
+// #define SPEAKER_WS_LRCK EXT_2X5P_2_IO_0_25
+
+// AW21009QNR
+#define AW21009QNR_SDA IIC_1_SDA
+#define AW21009QNR_SCL IIC_1_SCL
 
 ////////////////////////////////////////////////// gpio config //////////////////////////////////////////////////
 
@@ -61,5 +65,8 @@ const std::string Tca8418_Map[] =
 
 // AW86224
 #define AW86224_IIC_ADDRESS 0x58
+
+// AW21009QNR
+#define AW21009QNR_IIC_ADDRESS 0x20
 
 ////////////////////////////////////////////////// other define config //////////////////////////////////////////////////
