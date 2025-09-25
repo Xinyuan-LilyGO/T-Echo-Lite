@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-09-25 09:13:05
+ * @LastEditTime: 2025-09-25 15:20:59
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -296,7 +296,7 @@ void setup()
 
     vibration_start();
 
-    Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL, 500);
+    Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL, 4096);
 
     Screen_Refresh_Flag = true;
 }
@@ -403,7 +403,8 @@ void loop()
                 display.setCursor(0, 13);
                 display.print(show_text.c_str());
 
-                display.display(display.update_mode::FAST_REFRESH, true, false);
+                // display.display(display.update_mode::FAST_REFRESH, true, false);
+                display.display(display.update_mode::FULL_REFRESH, true, false);
             }
 
             Screen_Refresh_Flag = false;
