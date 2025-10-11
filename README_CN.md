@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-06-05 17:50:43
+ * @LastEditTime: 2025-10-11 14:34:59
  * @License: GPL 3.0
 -->
 
@@ -132,22 +132,27 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 | Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
-| [Battery_Measurement](./examples/Battery_Measurement) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Original_Test](./examples/Original_Test) |<p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> | 出厂测试程序 |  |
-| [BLE_Uart](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Button_Triggered](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Display](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Display_BLE_Uart](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Display_SX1262](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Flash](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Flash_Erase](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [GPS](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [GPS_Full](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [ICM20948](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [IIC_Scan_2](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [Sleep_Wake_Up](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [SX126x_PingPong](./examples/BLE_Uart) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
-| [SX126x_PingPong_2](./examples/Button_Triggered) | <p align="center"> <img src="https://img.shields.io/badge/-supported-green" alt="example" width="25%"> </p> |  |  |
+| [Battery_Measurement](./examples/T-Echo-Lite/Battery_Measurement) | <p align="center">![alt text][supported]  |  |  |
+| [BLE_Uart](./examples/T-Echo-Lite/BLE_Uart) | <p align="center">![alt text][supported]  |  |  |
+| [Button_Triggered](./examples/T-Echo-Lite/Button_Triggered) | <p align="center">![alt text][supported]  |  |  |
+| [Display](./examples/T-Echo-Lite/Display) | <p align="center">![alt text][supported]  |  |  |
+| [Display_BLE_Uart](./examples/T-Echo-Lite/Display_BLE_Uart) | <p align="center">![alt text][supported]  |  |  |
+| [Display_SX1262](./examples/T-Echo-Lite/Display_SX1262) | <p align="center">![alt text][supported]  |  |  |
+| [Flash](./examples/T-Echo-Lite/Flash) | <p align="center">![alt text][supported]  |  |  |
+| [Flash_Erase](./examples/T-Echo-Lite/Flash_Erase) | <p align="center">![alt text][supported]  |  |  |
+| [Flash_Speed_Test](./examples/T-Echo-Lite/Flash_Speed_Test) | <p align="center">![alt text][supported]  |  |  |
+| [GPS](./examples/T-Echo-Lite/GPS) | <p align="center">![alt text][supported]  |  |  |
+| [GPS_Full](./examples/T-Echo-Lite/GPS_Full) | <p align="center">![alt text][supported]  |  |  |
+| [ICM20948](./examples/T-Echo-Lite/ICM20948) | <p align="center">![alt text][supported]  |  |  |
+| [IIC_Scan_2](./examples/T-Echo-Lite/IIC_Scan_2) | <p align="center">![alt text][supported]  |  |  |
+| [nrf52840_module](./examples/T-Echo-Lite/nrf52840_module) | <p align="center">![alt text][supported]  |  |  |
+| [Original_Test](./examples/T-Echo-Lite/Original_Test) |<p align="center">![alt text][supported]  | 出厂测试程序 |  |
+| [Sleep_Wake_Up](./examples/T-Echo-Lite/Sleep_Wake_Up) | <p align="center">![alt text][supported]  |  |  |
+| [SX126x_PingPong](./examples/T-Echo-Lite/SX126x_PingPong) | <p align="center">![alt text][supported]  |  |  |
+| [SX126x_PingPong_2](./examples/T-Echo-Lite/SX126x_PingPong_2) | <p align="center">![alt text][supported]  |  |  |
+| [sx126x_tx_continuous_wave](./examples/T-Echo-Lite/sx126x_tx_continuous_wave) | <p align="center">![alt text][supported]  |  |  |
+
+[supported]: https://img.shields.io/badge/-supported-green "example"
 
 | Bootloader | Description | Picture |
 | ------  | ------  | ------ |
