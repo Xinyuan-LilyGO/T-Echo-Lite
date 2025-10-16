@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-11 14:35:15
+ * @LastEditTime: 2025-10-16 13:42:50
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -74,10 +74,10 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Bus Communication Protocol: IIC
 *   Additional Notes: Fast refresh is not supported (after consulting the screen manufacturer, they replied that it is not supported), it is recommended to use full refresh only
 *   Dependent Libraries:
-    > [Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)  
-    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
-    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
-    > [Adafruit-GFX-Library-1.11.10](./libraries/Adafruit-GFX-Library-1.11.10/)  
+    >[Adafruit_EPD](https://github.com/adafruit/Adafruit_EPD)  
+    >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
+    >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)  
+    >[Adafruit-GFX-Library](https://github.com/adafruit/Adafruit-GFX-Library)
 *   Related Documentation:
     > [GDEM0122T61](./information/GDEM0122T61.pdf)  
     > [SSD1681](./information/SSD1681.pdf)  
@@ -87,9 +87,9 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Chip: SX1262
 *   Bus Communication Protocol: SPI
 *   Dependent Libraries:
-    > [RadioLib-6.6.0](./libraries/RadioLib-6.6.0/)  
-    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
-    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
+    >[RadioLib](https://github.com/jgromes/RadioLib)  
+    >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
+    >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)
 *   Related Documentation:
     > [S62F](./information/S62F.pdf)  
 
@@ -97,7 +97,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Chip Module: L76K
 *   Bus Communication Protocol: UART
 *   Dependent Libraries:
-    > [TinyGPSPlus-1.0.3a](./libraries/TinyGPSPlus-1.0.3a/)  
+    >[TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus)
 *   Related Documentation:
     > [L76KB-A58](./information/L76KB-A58.pdf)  
 
@@ -105,7 +105,7 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Chip: ICM20948
 *   Bus Communication Protocol: IIC
 *   Dependent Libraries:
-    > [ICM20948_WE-1.1.11](./libraries/ICM20948_WE-1.1.11/)  
+    >[ICM20948_WE](https://github.com/wollewald/ICM20948_WE)
 *   Related Documentation:
     > [ICM20948](./information/ICM20948.pdf)  
 
@@ -113,8 +113,8 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Chip: ZD25WQ32CEIGR
 *   Bus Communication Protocol: SPI
 *   Dependent Libraries:
-    > [Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/)  
-    > [Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)  
+    >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
+    >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)  
 *   Related Documentation:
     > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-11 14:34:59
+ * @LastEditTime: 2025-10-16 13:43:43
  * @License: GPL 3.0
 -->
 
@@ -78,13 +78,13 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 总线通信协议：IIC
 * 其他说明：不支持快刷（咨询屏厂后他们回复不支持），建议只使用全刷
 * 依赖库：
-    >[Adafruit_EPD-4.5.5](./libraries/Adafruit_EPD-4.5.5/)<br /> 
-    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
-    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)<br /> 
-    >[Adafruit-GFX-Library-1.11.10](./libraries/Adafruit-GFX-Library-1.11.10/)<br /> 
+    >[Adafruit_EPD](https://github.com/adafruit/Adafruit_EPD)  
+    >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
+    >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)  
+    >[Adafruit-GFX-Library](https://github.com/adafruit/Adafruit-GFX-Library)
 * 相关资料：
-    >[GDEM0122T61](./information/GDEM0122T61.pdf)<br /> 
-    >[SSD1681](./information/SSD1681.pdf)<br /> 
+    >[GDEM0122T61](./information/GDEM0122T61.pdf)  
+    >[SSD1681](./information/SSD1681.pdf)
 
 ### 3. LORA
 
@@ -92,39 +92,39 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 芯片：SX1262
 * 总线通信协议：SPI
 * 依赖库：
-    >[RadioLib-6.6.0](./libraries/RadioLib-6.6.0/)<br /> 
-    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
-    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)<br /> 
+    >[RadioLib](https://github.com/jgromes/RadioLib)  
+    >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
+    >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)
 * 相关资料：
-    >[S62F](./information/S62F.pdf)<br /> 
+    >[S62F](./information/S62F.pdf)
 
 ### 4. GPS
 
 * 芯片模组：L76K
 * 总线通信协议：UART
 * 依赖库：
-    >[TinyGPSPlus-1.0.3a](./libraries/TinyGPSPlus-1.0.3a/)<br /> 
+    >[TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus)
 * 相关资料：
-    >[L76KB-A58](./information/L76KB-A58.pdf)<br /> 
+    >[L76KB-A58](./information/L76KB-A58.pdf)
 
 ### 5. 惯性传感器
 
 * 芯片：ICM20948
 * 总线通信协议：IIC
 * 依赖库：
-    >[ICM20948_WE-1.1.11](./libraries/ICM20948_WE-1.1.11/) <br /> 
+    >[ICM20948_WE](https://github.com/wollewald/ICM20948_WE)
 * 相关资料：
-    >[ICM20948](./information/ICM20948.pdf)<br /> 
+    >[ICM20948](./information/ICM20948.pdf)
 
 ### 6. Flash
 
 * 芯片：ZD25WQ32CEIGR
 * 总线通信协议：SPI
 * 依赖库：
-    >[Adafruit_BusIO-1.16.1](./libraries/Adafruit_BusIO-1.16.1/) <br /> 
-    >[Adafruit_SPIFlash-4.3.4](./libraries/Adafruit_SPIFlash-4.3.4/)<br /> 
+    >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
+    >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)
 * 相关资料：
-    >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)<br /> 
+    >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 
 ## 软件部署
 
