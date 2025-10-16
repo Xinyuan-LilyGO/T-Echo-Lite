@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-16 14:51:13
+ * @LastEditTime: 2025-10-16 14:55:19
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -269,6 +269,8 @@ For pin definitions, please refer to the configuration file:
 
 [t_echo_lite_config.h](./libraries/private_library/t_echo_lite_config.h)  
 [t_echo_lite_keyshield_config.h](./libraries/private_library/t_echo_lite_keyshield_config.h)
+
+## RelatedTests
 
 ### Power Dissipation
 | Firmware | Program| Description | Picture |
