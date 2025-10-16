@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-16 13:42:50
+ * @LastEditTime: 2025-10-16 14:51:13
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -17,11 +17,13 @@
 | Version                              | Update date                       |
 | :-------------------------------: | :-------------------------------: |
 | T-Echo-Lite_V1.0            | 2024-12-06                         |
+| T-Echo-Lite-KeyShield_V1.0            | 2025-10-14                         |
 
 ## PurchaseLink
 | Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| NULL |
+| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| [LILYGO Mall](https://lilygo.cc/products/t-echo-lite?_pos=1&_sid=79b4c08e7&_ss=r&variant=45331277906101) |
+| T-Echo-Lite-KeyShield_V1.0   |  |  || NULL |
 
 ## Directory
 - [Describe](#describe)
@@ -36,6 +38,8 @@
 ## Describe
 
 T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume and lower power consumption design compared to T-Echo. Its minimum deep sleep power consumption can reach 2μA to 10μA (due to differences in onboard components on different boards, power consumption performance may vary; the minimum power consumption mentioned here is based on the engineering board tested by the LILYGO laboratory). The board is equipped with a rich set of features, including an inertial sensor, LORA module, solar charging function (5V), external GPS, and more. Its excellent power consumption performance allows T-Echo-Lite to achieve superior battery life.
+
+T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extending peripherals such as a keyboard, speaker, microphone, and vibration motor.
 
 ## Preview
 
@@ -58,6 +62,8 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 </p>
 
 ## Module
+
+### T-Echo-Lite Section
 ### 1. MCU
 *   Chip: nRF52840
 *   RAM: 256kB
@@ -118,10 +124,48 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 *   Related Documentation:
     > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 
+### T-Echo-Lite-KeyShield Section
+### 1. Keyboard Backlight
+
+* Driver Chip: AW21009QNR
+* Bus Communication Protocol: IIC
+* Dependent Libraries:
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* Related Information:
+    >[AW21009QNR](./information/AW21009QNR.pdf)
+
+### 2. Vibration
+
+* Driver Chip: AW86224
+* Bus Communication Protocol: IIC
+* Dependent Libraries:
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* Related Information:
+    >[AW86224AFCR](./information/AW86224AFCR.pdf)
+
+### 3. Speaker Microphone
+
+* Driver Chip: ES8311
+* Bus Communication Protocols: IIC, IIS
+* Dependent Libraries:
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* Related Information:
+    >[ES8311](./information/ES8311.pdf)
+
+### 4. Keyboard
+
+* Driver Chip: TCA8418
+* Bus Communication Protocol: IIC
+* Dependent Libraries:
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* Related Information:
+    >[tca8418](./information/tca8418.pdf)
+
 ## SoftwareDeployment
 
 ### Examples Support
 
+### T-Echo-Lite Examples
 | Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
 | [Battery_Measurement](./examples/T-Echo-Lite/Battery_Measurement) | <p align="center">![alt text][supported]  |  |  |
@@ -144,11 +188,21 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 | [SX126x_PingPong_2](./examples/T-Echo-Lite/SX126x_PingPong_2) | <p align="center">![alt text][supported]  |  |  |
 | [sx126x_tx_continuous_wave](./examples/T-Echo-Lite/sx126x_tx_continuous_wave) | <p align="center">![alt text][supported]  |  |  |
 
+### T-Echo-Lite-KeyShield Examples
+| Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [aw21009qnr](./examples/T-Echo-Lite-KeyShield/aw21009qnr) | <p align="center">![alt text][supported]  |  |  |
+| [aw86224](./examples/T-Echo-Lite-KeyShield/aw86224) | <p align="center">![alt text][supported]  |  |  |
+| [es8311](./examples/T-Echo-Lite-KeyShield/es8311) | <p align="center">![alt text][supported]  |  |  |
+| [original_test](./examples/T-Echo-Lite-KeyShield/original_test) | <p align="center">![alt text][supported]  | Product factory original testing  |  |
+| [tca8418](./examples/T-Echo-Lite-KeyShield/tca8418) | <p align="center">![alt text][supported]  |  |  |
+| [voice_speaker](./examples/T-Echo-Lite-KeyShield/voice_speaker) | <p align="center">![alt text][supported]  |  |  |
+
 [supported]: https://img.shields.io/badge/-supported-green "example"
 
 | Bootloader | Description | Picture |
 | ------  | ------  | ------ |
-| [Bootloader_V1.0.0](./bootloader/t-echo_lite_nrf52840_bootloader-0.9.2-dirty_s140_6.1.1_v1.0.0.hex) <br /> [Bootloader_V1.0.0(uf2)](./bootloader/update-t-echo_lite_nrf52840_bootloader-0.9.2-dirty_nosd_v1.0.0.uf2) | Original |  |
+| [bootloader](./bootloader/) | |  |
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
@@ -210,80 +264,11 @@ T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume
 
 ## PinOverview
 
-| Flash pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| CS      | IO 0.12                  |
-| SCLK      | IO 0.4                  |
-| (SPI)MOSI      | IO 0.6                  |
-| (SPI)MISO      | IO 0.8                  |
-| (QSPI)IO0      | IO 0.6                  |
-| (QSPI)IO1      | IO 0.8                  |
-| (QSPI)IO2      | IO 1.9                  |
-| (QSPI)IO3      | IO 0.26                  |
+For pin definitions, please refer to the configuration file: 
+<br />
 
-| LED pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| LED_1      | IO 1.7                  |
-| LED_2      | IO 1.5                  |
-| LED_3      | IO 1.14                  |
-
-| Screen pin       | nRF52840 pin      |
-| :------------------: | :------------------:|
-| BS1                     | IO 1.12                  |
-| BUSY                     | IO 0.3                  |
-| RST                     | IO 0.28                  |
-| DC                     | IO 0.21                  |
-| CS                    | IO 0.22                  |
-| SCLK                  | IO 0.19                  |
-| MOSI                  | IO 0.20                  |
-
-| LORA pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| CS      | IO 0.11                  |
-| RST      | IO 0.7                  |
-| SCLK      | IO 0.13                  |
-| MOSI      | IO 0.15                  |
-| MISO      | IO 0.17                  |
-| BUSY      | IO 0.14                  |
-| INT      | IO 1.8                  |
-| DIO1      | IO 1.8                  |
-| DIO2      | IO 0.5                  |
-| RF_VC1      | IO 0.27                  |
-| RF_VC2      | IO 1.1                  |
-
-| BOOT key pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| BOOT      | IO 0.24                  |
-
-| Two SH1.0 external sockets pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| SH1_0_1_1      | IO 0.25                  |
-| SH1_0_1_2      | IO 0.23                  |
-| SH1_0_2_1      | IO 1.2                  |
-| SH1_0_2_2      | IO 1.4                  |
-
-| Battery pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| BATTERY_MEASUREMENT_CONTROL      | IO 0.31                  |
-| BATTERY_ADC_DATA      | IO 0.2                  |
-
-| RT9080 power supply 3.3V pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| RT9080_EN      | IO 0.30                  |
-
-| GPS pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| UART_RX      | IO 1.13                  |
-| UART_TX      | IO 1.15                  |
-| 1PPS      | IO 0.29                  |
-| WAKE_UP      | IO 1.10                  |
-| POWER_RT9080_EN      | IO 1.11                  |
-
-| IMU pin          | nRF52840 pin      |
-| :------------------: | :------------------:|
-| SDA      | IO 1.4                  |
-| SCL      | IO 1.2                  |
-| INT      | IO 0.16                  |
+[t_echo_lite_config.h](./libraries/private_library/t_echo_lite_config.h)  
+[t_echo_lite_keyshield_config.h](./libraries/private_library/t_echo_lite_keyshield_config.h)
 
 ### Power Dissipation
 | Firmware | Program| Description | Picture |

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-16 13:43:43
+ * @LastEditTime: 2025-10-16 14:45:12
  * @License: GPL 3.0
 -->
 
@@ -18,11 +18,13 @@
 | Version                               | Update date                       |
 | :-------------------------------: | :-------------------------------: |
 | T-Echo-Lite_V1.0            | 2024-12-06                         |
+| T-Echo-Lite-KeyShield_V1.0            | 2025-10-14                         |
 
 ## 购买链接
 | Product                     | SOC           |  FLASH  |  RAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| NULL |
+| T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| [LILYGO Mall](https://lilygo.cc/products/t-echo-lite?_pos=1&_sid=79b4c08e7&_ss=r&variant=45331277906101) |
+| T-Echo-Lite-KeyShield_V1.0   |  |  || NULL |
 
 ## 目录
 - [描述](#描述)
@@ -37,6 +39,8 @@
 ## 描述
 
 T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更小的功耗设计，最低深度睡眠功耗可达2μA-10μA（不同板子由于板载元器件差异功耗的表现可能不同，这里最低功耗采用LILYGO实验室测定的工程板），板载丰富的功能，惯性传感器、LORA模块、太阳能充电功能（5V）、外置GPS等功能，及其优秀的功耗表现使得T-Echo-Lite能够拥有更为出色的续航。
+
+T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬声器、麦克风、振动等外设。
 
 ## 预览
 
@@ -60,6 +64,7 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 ## 模块
 
+### T-Echo-Lite部分
 ### 1. MCU
 
 * 芯片：nRF52840
@@ -126,10 +131,48 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 * 相关资料：
     >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 
+### T-Echo-Lite-KeyShield部分
+### 1. 键盘背光
+
+* 驱动芯片：AW21009QNR
+* 总线通信协议：IIC
+* 依赖库：
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* 相关资料：
+    >[AW21009QNR](./information/AW21009QNR.pdf)
+
+### 2. 振动
+
+* 驱动芯片：AW86224
+* 总线通信协议：IIC
+* 依赖库：
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* 相关资料：
+    >[AW86224AFCR](./information/AW86224AFCR.pdf)
+
+### 3. 扬声器麦克风
+
+* 驱动芯片：ES8311
+* 总线通信协议：IIC、IIS
+* 依赖库：
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* 相关资料：
+    >[ES8311](./information/ES8311.pdf)
+
+### 4. 键盘
+
+* 驱动芯片：TCA8418
+* 总线通信协议：IIC
+* 依赖库：
+    >[cpp_bus_driver](https://github.com/Llgok/cpp_bus_driver)
+* 相关资料：
+    >[tca8418](./information/tca8418.pdf)
+
 ## 软件部署
 
 ### 示例支持
 
+### T-Echo-Lite示例
 | Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
 | [Battery_Measurement](./examples/T-Echo-Lite/Battery_Measurement) | <p align="center">![alt text][supported]  |  |  |
@@ -152,11 +195,21 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 | [SX126x_PingPong_2](./examples/T-Echo-Lite/SX126x_PingPong_2) | <p align="center">![alt text][supported]  |  |  |
 | [sx126x_tx_continuous_wave](./examples/T-Echo-Lite/sx126x_tx_continuous_wave) | <p align="center">![alt text][supported]  |  |  |
 
+### T-Echo-Lite-KeyShield示例
+| Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [aw21009qnr](./examples/T-Echo-Lite-KeyShield/aw21009qnr) | <p align="center">![alt text][supported]  |  |  |
+| [aw86224](./examples/T-Echo-Lite-KeyShield/aw86224) | <p align="center">![alt text][supported]  |  |  |
+| [es8311](./examples/T-Echo-Lite-KeyShield/es8311) | <p align="center">![alt text][supported]  |  |  |
+| [original_test](./examples/T-Echo-Lite-KeyShield/original_test) | <p align="center">![alt text][supported]  | 出厂测试程序  |  |
+| [tca8418](./examples/T-Echo-Lite-KeyShield/tca8418) | <p align="center">![alt text][supported]  |  |  |
+| [voice_speaker](./examples/T-Echo-Lite-KeyShield/voice_speaker) | <p align="center">![alt text][supported]  |  |  |
+
 [supported]: https://img.shields.io/badge/-supported-green "example"
 
 | Bootloader | Description | Picture |
 | ------  | ------  | ------ |
-| [Bootloader_V1.0.0](./bootloader/t-echo_lite_nrf52840_bootloader-0.9.2-dirty_s140_6.1.1_v1.0.0.hex) <br /> [Bootloader_V1.0.0(uf2)](./bootloader/update-t-echo_lite_nrf52840_bootloader-0.9.2-dirty_nosd_v1.0.0.uf2) | Original |  |
+| [bootloader](./bootloader/) | |  |
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
@@ -216,80 +269,11 @@ T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更
 
 ## 引脚总览
 
-| Flash引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| CS      | IO 0.12                  |
-| SCLK      | IO 0.4                  |
-| (SPI)MOSI      | IO 0.6                  |
-| (SPI)MISO      | IO 0.8                  |
-| (QSPI)IO0      | IO 0.6                  |
-| (QSPI)IO1      | IO 0.8                  |
-| (QSPI)IO2      | IO 1.9                  |
-| (QSPI)IO3      | IO 0.26                  |
+引脚定义请参考配置文件：
+<br />
 
-| LED引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| LED_1      | IO 1.7                  |
-| LED_2      | IO 1.5                  |
-| LED_3      | IO 1.14                  |
-
-| 屏幕引脚       | nRF52840引脚      |
-| :------------------: | :------------------:|
-| BS1                     | IO 1.12                  |
-| BUSY                     | IO 0.3                  |
-| RST                     | IO 0.28                  |
-| DC                     | IO 0.21                  |
-| CS                    | IO 0.22                  |
-| SCLK                  | IO 0.19                  |
-| MOSI                  | IO 0.20                  |
-
-| LORA引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| CS      | IO 0.11                  |
-| RST      | IO 0.7                  |
-| SCLK      | IO 0.13                  |
-| MOSI      | IO 0.15                  |
-| MISO      | IO 0.17                  |
-| BUSY      | IO 0.14                  |
-| INT      | IO 1.8                  |
-| DIO1      | IO 1.8                  |
-| DIO2      | IO 0.5                  |
-| RF_VC1      | IO 0.27                  |
-| RF_VC2      | IO 1.1                  |
-
-| BOOT按键引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| BOOT      | IO 0.24                  |
-
-| 2个SH1.0外接座子引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| SH1_0_1_1      | IO 0.25                  |
-| SH1_0_1_2      | IO 0.23                  |
-| SH1_0_2_1      | IO 1.2                  |
-| SH1_0_2_2      | IO 1.4                  |
-
-| 电池引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| BATTERY_MEASUREMENT_CONTROL      | IO 0.31                  |
-| BATTERY_ADC_DATA      | IO 0.2                  |
-
-| RT9080电源3.3V引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| RT9080_EN      | IO 0.30                  |
-
-| GPS引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| UART_RX      | IO 1.13                  |
-| UART_TX      | IO 1.15                  |
-| 1PPS      | IO 0.29                  |
-| WAKE_UP      | IO 1.10                  |
-| POWER_RT9080_EN      | IO 1.11                  |
-
-| 惯性传感器引脚          | nRF52840引脚      |
-| :------------------: | :------------------:|
-| SDA      | IO 1.4                  |
-| SCL      | IO 1.2                  |
-| INT      | IO 0.16                  |
+[t_echo_lite_config.h](./libraries/private_library/t_echo_lite_config.h)  
+[t_echo_lite_keyshield_config.h](./libraries/private_library/t_echo_lite_keyshield_config.h)
 
 ## 相关测试
 
