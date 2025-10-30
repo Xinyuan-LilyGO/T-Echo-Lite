@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-16 14:45:12
+ * @LastEditTime: 2025-10-30 16:33:36
  * @License: GPL 3.0
 -->
 
@@ -64,7 +64,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 
 ## 模块
 
-### T-Echo-Lite部分
+### T-Echo-Lite 部分
 ### 1. MCU
 
 * 芯片：nRF52840
@@ -131,7 +131,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 * 相关资料：
     >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
 
-### T-Echo-Lite-KeyShield部分
+### T-Echo-Lite-KeyShield 部分
 ### 1. 键盘背光
 
 * 驱动芯片：AW21009QNR
@@ -213,8 +213,9 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [Original_Test(lora 868.1mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868.1mhz)]_firmware/)| 出厂测试程序 |  |
-| [Original_Test(lora 915mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz)]_firmware/)| 出厂测试程序 |  |
+| [T-Echo-Lite_Original_Test(lora_868mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868mhz_125khz)]_firmware/)| 出厂测试程序 |  |
+| [T-Echo-Lite_Original_Test(lora_915mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz_125khz)]_firmware/)| 出厂测试程序 |  |
+| [T-Echo-Lite-KeyShield_original_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][original_test]_firmware/)| 出厂测试程序 |  |
 
 ### IDE和烧录
 

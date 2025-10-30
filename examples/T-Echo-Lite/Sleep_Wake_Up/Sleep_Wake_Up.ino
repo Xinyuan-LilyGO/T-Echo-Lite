@@ -2,7 +2,7 @@
  * @Description: Sleep wake-up test
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2025-06-05 15:04:55
+ * @LastEditTime: 2025-10-30 14:53:42
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -342,16 +342,17 @@ void setup()
     Serial.println("[SX1262] Initializing ... ");
     Custom_SPI_3.begin();
     Custom_SPI_3.setClockDivider(SPI_CLOCK_DIV2);
-    while (radio.begin() != RADIOLIB_ERR_NONE)
+    if (radio.begin() != RADIOLIB_ERR_NONE)
     {
         Serial.println("SX1262 initialization failed");
         delay(1000);
     }
-
-    Serial.println("SX1262 initialization successful");
+    else
+    {
+        Serial.println("SX1262 initialization successful");
+    }
 
     if (flash.begin(&ZD25WQ32C) == false)
-    // while (flash.begin(&ZD25WQ16B_2) == false)
     {
         Serial.println("Flash initialization failed");
         delay(1000);
@@ -371,13 +372,15 @@ void setup()
     Wire.setPins(ICM20948_SDA, ICM20948_SCL);
     Wire.begin();
 
-    while (myIMU.init() == false)
+    if (myIMU.init() == false)
     {
         Serial.println("ICM20948 initialization failed");
         delay(1000);
     }
-
-    Serial.println("ICM20948 initialization successful");
+    else
+    {
+        Serial.println("ICM20948 initialization successful");
+    }
 
     myIMU.autoOffsets();
 

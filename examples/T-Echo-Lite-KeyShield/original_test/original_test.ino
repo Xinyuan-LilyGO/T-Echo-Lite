@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-09-25 15:20:59
+ * @LastEditTime: 2025-10-30 16:08:50
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,7 +17,7 @@
 #include "c2_b16_s44100_3.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202509250907"
+#define SOFTWARE_LASTEDITTIME "202510301608"
 #define BOARD_VERSION "V1.0"
 
 #define MCLK_MULTIPLE 32
@@ -29,6 +29,7 @@ std::vector<std::string> Current_Text;
 bool Screen_Refresh_Flag = false;
 
 uint32_t Iis_Tx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
+uint32_t Iis_Rx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
 
 // 已经发送的数据大小
 size_t Iis_Send_Data_Size = 0;
@@ -36,7 +37,7 @@ bool Iis_Transmit_Flag = false;
 
 bool Iis_Data_Convert_Wait = false;
 
-volatile bool Interrupt_Flag = false;
+// volatile bool Interrupt_Flag = false;
 
 size_t Cycle_Time = 0;
 
@@ -71,10 +72,22 @@ void vibration_start(void)
     delay(30);
 }
 
+void microphone_read()
+{
+    printf("microphone_read start\n");
+    if (ES8311->start_transmit(nullptr, Iis_Rx_Buffer, MAX_IIS_DATA_TRANSMIT_SIZE) == false)
+    {
+        printf("microphone_read fail (ES8311->start_transmit fail)\n");
+    }
+
+    printf("music play finish%d\n");
+    ES8311->stop_transmit();
+}
+
 void music_play(const uint16_t *data, size_t size)
 {
     // 播放音乐测试
-    printf("music play start\n");
+    printf("music_play start\n");
 
     Iis_Send_Data_Size = 0;
     Iis_Data_Convert(data, Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
@@ -87,7 +100,7 @@ void music_play(const uint16_t *data, size_t size)
     else
     {
         Iis_Transmit_Flag = false;
-        printf("music play fail (ES8311->start_transmit fail)\n");
+        printf("music_play fail (ES8311->start_transmit fail)\n");
     }
 
     while (1)
@@ -96,7 +109,7 @@ void music_play(const uint16_t *data, size_t size)
         {
             if (Iis_Send_Data_Size >= size)
             {
-                printf("music play finish iis_send_data_size: %d\n", Iis_Send_Data_Size);
+                printf("music_play finish iis_send_data_size: %d\n", Iis_Send_Data_Size);
                 ES8311->stop_transmit();
 
                 Iis_Data_Convert_Wait = false;
@@ -243,8 +256,18 @@ void setup()
     digitalWrite(LED_3, HIGH);
 
     pinMode(TCA8418_INT, INPUT_PULLUP);
-    attachInterrupt(TCA8418_INT, []() -> void
-                    { Interrupt_Flag = true; }, FALLING);
+    // attachInterrupt(TCA8418_INT, []() -> void
+    //                 { Interrupt_Flag = true; }, FALLING);
+
+    // Measure battery
+    pinMode(BATTERY_ADC_DATA, INPUT);
+    pinMode(BATTERY_MEASUREMENT_CONTROL, OUTPUT);
+    digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH);
+
+    // Set the analog reference to 3.0V (default = 3.6V)
+    analogReference(AR_INTERNAL_3_0);
+    // Set the resolution to 12-bit (0..4095)
+    analogReadResolution(12); // Can be 8, 10, 12 or 14
 
     TCA8418->begin();
     TCA8418->set_keypad_scan_window(0, 0, TCA8418_KEYPAD_SCAN_WIDTH, TCA8418_KEYPAD_SCAN_HEIGHT);
@@ -303,8 +326,10 @@ void setup()
 
 void loop()
 {
-    if (Interrupt_Flag == true)
+    if (digitalRead(TCA8418_INT) == LOW)
     {
+        // if (Interrupt_Flag == true)
+        // {
         Cpp_Bus_Driver::Tca8418::Irq_Status is;
 
         if (TCA8418->parse_irq_status(TCA8418->get_irq_flag(), is) == false)
@@ -343,6 +368,32 @@ void loop()
                                         }
 
                                         Current_Text.push_back(Tca8418_Map[tp.info[i].num - 1].c_str());
+
+                                        if (Tca8418_Map[tp.info[i].num - 1] == "Home")
+                                        {
+                                            float voltage = (((float)analogRead(BATTERY_ADC_DATA) * (3000.0f / 4096.0f)) / 1000.0f) * 2.0f;
+                                            char voltage_str[32];
+                                            snprintf(voltage_str, sizeof(voltage_str), "Bat:%.3fv", voltage);
+
+                                            if (Current_Text.size() > 7)
+                                            {
+                                                Current_Text.erase(Current_Text.begin());
+                                            }
+                                            Current_Text.push_back(voltage_str);
+
+                                            microphone_read();
+
+                                            int16_t buffer_microphone = Iis_Rx_Buffer[0];
+                                            char microphone_str[32];
+                                            snprintf(microphone_str, sizeof(microphone_str), "Mic:%d", buffer_microphone);
+
+                                            if (Current_Text.size() > 7)
+                                            {
+                                                Current_Text.erase(Current_Text.begin());
+                                            }
+                                            Current_Text.push_back(microphone_str);
+                                        }
+
                                         Screen_Refresh_Flag = true;
 
                                         music_play(c2_b16_s44100_3, sizeof(c2_b16_s44100_3));
@@ -369,7 +420,8 @@ void loop()
             }
         }
 
-        Interrupt_Flag = false;
+        //     Interrupt_Flag = false;
+        // }
     }
 
     if (Screen_Refresh_Flag == true)

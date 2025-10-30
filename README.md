@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-16 14:55:19
+ * @LastEditTime: 2025-10-30 16:32:48
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -206,8 +206,9 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [Original_Test(lora 868.1mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868.1mhz)]_firmware/)| Product factory original testing |  |
-| [Original_Test(lora 915mhz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz)]_firmware/)| Product factory original testing |  |
+| [T-Echo-Lite_Original_Test(lora_868mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868mhz_125khz)]_firmware/)| Product factory original testing |  |
+| [T-Echo-Lite_Original_Test(lora_915mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz_125khz)]_firmware/)| Product factory original testing |  |
+| [T-Echo-Lite-KeyShield_original_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][original_test]_firmware/)| Product factory original testing |  |
 
 ### IDE and Flashing
 

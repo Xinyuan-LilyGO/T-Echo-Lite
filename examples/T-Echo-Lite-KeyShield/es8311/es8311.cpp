@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-09-24 15:21:43
+ * @LastEditTime: 2025-10-30 15:27:14
  * @License: GPL 3.0
  */
 
@@ -18,6 +18,7 @@
 #define MAX_IIS_DATA_TRANSMIT_SIZE 512
 
 uint32_t Iis_Tx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
+uint32_t Iis_Rx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
 
 // 已经发送的数据大小
 size_t Iis_Send_Data_Size = 0;
@@ -498,7 +499,7 @@ void loop()
         Iis_Send_Data_Size = 0;
         Iis_Data_Convert(c2_b16_s44100, Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
 
-        if (ES8311->start_transmit(Iis_Tx_Buffer, nullptr, MAX_IIS_DATA_TRANSMIT_SIZE) == true)
+        if (ES8311->start_transmit(Iis_Tx_Buffer, Iis_Rx_Buffer, MAX_IIS_DATA_TRANSMIT_SIZE) == true)
         {
             Iis_Send_Data_Size += MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t);
             Iis_Transmit_Flag = true;
@@ -551,6 +552,13 @@ void loop()
                 ES8311->set_next_write_data(Iis_Tx_Buffer);
                 Iis_Data_Convert_Wait = false;
             }
+        }
+
+        if (ES8311->get_read_event_flag() == true)
+        {
+            printf("microphone data: %d\n", static_cast<int16_t>(Iis_Rx_Buffer[0] >> 16));
+
+            ES8311->set_next_read_data(Iis_Rx_Buffer);
         }
     }
 }
