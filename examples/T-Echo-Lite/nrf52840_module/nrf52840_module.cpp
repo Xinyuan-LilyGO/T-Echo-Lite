@@ -2,7 +2,7 @@
  * @Description: nrf52840_module
  * @Author: LILYGO_L
  * @Date: 2024-12-28 09:38:30
- * @LastEditTime: 2025-06-05 15:10:01
+ * @LastEditTime: 2025-10-28 11:13:05
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -79,7 +79,7 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 915.0;
+        float value = 920.0;
         bool change_flag = false;
     } frequency;
     struct
@@ -420,7 +420,7 @@ void Serial_Print_SX1262_Info_Loop(void)
                 // send another one
                 Serial.println("[SX1262] Sending another packet ... ");
 
-                digitalWrite(LED_1, LOW); 
+                digitalWrite(LED_1, LOW);
                 SX1262_OP.device_1.led.send_flag = true;
                 CycleTime_4 = millis() + 50; // automatically turn off the lights at the designated time
 
@@ -428,6 +428,8 @@ void Serial_Print_SX1262_Info_Loop(void)
                 radio.transmit(SX1262_OP.send_package, 16);
                 Set_SX1262_RF_Transmitter_Switch(false);
                 radio.startReceive();
+
+                SX1262_OP.operation_flag = false;
             }
         }
         // }
@@ -440,7 +442,7 @@ void Serial_Print_SX1262_Info_Loop(void)
                 for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
                 {
                     digitalWrite(Pin_Test[i], LOW);
-                } 
+                }
             }
         }
         if (SX1262_OP.device_1.led.receive_flag == true)
@@ -451,14 +453,12 @@ void Serial_Print_SX1262_Info_Loop(void)
                 for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
                 {
                     digitalWrite(Pin_Test[i], LOW);
-                } 
+                }
             }
         }
 
         if (SX1262_OP.operation_flag == true)
         {
-            SX1262_OP.operation_flag = false;
-
             uint8_t receive_package[16] = {'\0'};
             if (radio.readData(receive_package, 16) == RADIOLIB_ERR_NONE)
             {
@@ -519,7 +519,7 @@ void Serial_Print_SX1262_Info_Loop(void)
                         for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
                         {
                             digitalWrite(Pin_Test[i], HIGH);
-                        } 
+                        }
                         SX1262_OP.device_1.led.receive_flag = true;
 
                         CycleTime_5 = millis() + 50; // automatically turn off the lights at the designated time
@@ -527,6 +527,8 @@ void Serial_Print_SX1262_Info_Loop(void)
                     }
                 }
             }
+
+            SX1262_OP.operation_flag = false;
         }
     }
 }
