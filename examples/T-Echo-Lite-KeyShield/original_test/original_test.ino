@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-10-30 16:08:50
+ * @LastEditTime: 2025-11-06 10:43:25
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,7 +17,7 @@
 #include "c2_b16_s44100_3.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202510301608"
+#define SOFTWARE_LASTEDITTIME "202511051807"
 #define BOARD_VERSION "V1.0"
 
 #define MCLK_MULTIPLE 32
@@ -40,6 +40,9 @@ bool Iis_Data_Convert_Wait = false;
 // volatile bool Interrupt_Flag = false;
 
 size_t Cycle_Time = 0;
+
+bool Fast_Refresh_Flag = true;
+size_t Fast_Refresh_Count = 0;
 
 SPIClass Custom_SPI_1(NRF_SPIM1, SCREEN_MISO, SCREEN_SCLK, SCREEN_MOSI);
 Adafruit_SSD1681 display(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_DC, SCREEN_RST,
@@ -394,11 +397,22 @@ void loop()
                                             Current_Text.push_back(microphone_str);
                                         }
 
-                                        Screen_Refresh_Flag = true;
-
                                         music_play(c2_b16_s44100_3, sizeof(c2_b16_s44100_3));
                                         vibration_start();
-                                        Cycle_Time = millis() + 3000;
+
+                                        Fast_Refresh_Count++;
+                                        if (Fast_Refresh_Count < 5)
+                                        {
+                                            Fast_Refresh_Flag = true;
+                                        }
+                                        else
+                                        {
+                                            Fast_Refresh_Flag = false;
+                                            Fast_Refresh_Count = 0;
+                                        }
+
+                                        Screen_Refresh_Flag = true;
+                                        Cycle_Time = millis() + 300;
                                     }
                                 }
                             }
@@ -455,8 +469,15 @@ void loop()
                 display.setCursor(0, 13);
                 display.print(show_text.c_str());
 
+                if (Fast_Refresh_Flag == true)
+                {
+                    display.display(display.update_mode::PARTIAL_REFRESH, true, false);
+                }
+                else
+                {
+                    display.display(display.update_mode::FAST_REFRESH, true, false);
+                }
                 // display.display(display.update_mode::FAST_REFRESH, true, false);
-                display.display(display.update_mode::FULL_REFRESH, true, false);
             }
 
             Screen_Refresh_Flag = false;

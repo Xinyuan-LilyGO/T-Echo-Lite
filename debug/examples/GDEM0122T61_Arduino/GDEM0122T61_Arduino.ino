@@ -11,6 +11,9 @@ void setup()
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
+    pinMode(SCREEN_BS1, OUTPUT);
+    digitalWrite(SCREEN_BS1, LOW);
+
 #ifdef ESP8266
     pinMode(D0, INPUT);  // BUSY
     pinMode(D1, OUTPUT); // RES
@@ -20,9 +23,9 @@ void setup()
 
 #ifdef Arduino_UNO
     pinMode(SCREEN_BUSY, INPUT_PULLUP); // BUSY
-    pinMode(SCREEN_RST, OUTPUT); // RES
-    pinMode(SCREEN_DC, OUTPUT);  // DC
-    pinMode(SCREEN_CS, OUTPUT);  // CS
+    pinMode(SCREEN_RST, OUTPUT);        // RES
+    pinMode(SCREEN_DC, OUTPUT);         // DC
+    pinMode(SCREEN_CS, OUTPUT);         // CS
 #endif
     // SPI
     SPI.setPins(SCREEN_MISO, SCREEN_SCLK, SCREEN_MOSI);
