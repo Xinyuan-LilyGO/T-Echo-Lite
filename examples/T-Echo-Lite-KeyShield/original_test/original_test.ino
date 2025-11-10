@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-11-10 10:23:06
+ * @LastEditTime: 2025-11-10 10:43:52
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,7 +17,7 @@
 #include "c2_b16_s44100_3.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202511051807"
+#define SOFTWARE_LASTEDITTIME "202511101044"
 #define BOARD_VERSION "V1.0"
 
 #define MCLK_MULTIPLE 32
@@ -71,8 +71,8 @@ void Iis_Data_Convert(const void *input_data, void *out_buffer, size_t input_dat
 
 void vibration_start(void)
 {
-    AW86224->run_ram_playback_waveform(2, 14, 255);
-    delay(30);
+    AW86224->run_ram_playback_waveform(1, 14, 255);
+    // delay(30);
 }
 
 void microphone_read()
