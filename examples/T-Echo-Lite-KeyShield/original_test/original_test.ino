@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-11-06 10:43:25
+ * @LastEditTime: 2025-11-10 10:23:06
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -469,15 +469,15 @@ void loop()
                 display.setCursor(0, 13);
                 display.print(show_text.c_str());
 
-                if (Fast_Refresh_Flag == true)
-                {
-                    display.display(display.update_mode::PARTIAL_REFRESH, true, false);
-                }
-                else
-                {
-                    display.display(display.update_mode::FAST_REFRESH, true, false);
-                }
-                // display.display(display.update_mode::FAST_REFRESH, true, false);
+                // if (Fast_Refresh_Flag == true)
+                // {
+                //     display.display(display.update_mode::PARTIAL_REFRESH, true, false);
+                // }
+                // else
+                // {
+                //     display.display(display.update_mode::FAST_REFRESH, true, false);
+                // }
+                display.display(display.update_mode::FAST_REFRESH, true, false);
             }
 
             Screen_Refresh_Flag = false;
