@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-11-14 11:08:16
+ * @LastEditTime: 2025-11-14 11:22:05
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -43,7 +43,7 @@ bool Iis_Data_Convert_Wait = false;
 
 size_t Cycle_Time = 0;
 
-bool Fast_Refresh_Flag = true;
+bool Partial_Refresh_Flag = true;
 size_t Fast_Refresh_Count = 0;
 
 SPIClass Custom_SPI_1(NRF_SPIM1, SCREEN_MISO, SCREEN_SCLK, SCREEN_MOSI);
@@ -285,7 +285,7 @@ void Screen_Refresh_Task(void *arg)
                     display.setCursor(0, 13);
                     display.print(show_text.c_str());
 
-                    if (Fast_Refresh_Flag == true)
+                    if (Partial_Refresh_Flag == true)
                     {
                         if (Screen_Partial_Refresh_Init_Lock == false)
                         {
@@ -298,7 +298,7 @@ void Screen_Refresh_Task(void *arg)
                     {
                         display.display(display.Update_Mode::FAST_REFRESH, true, false);
 
-                        Fast_Refresh_Flag = true;
+                        Partial_Refresh_Flag = true;
                         Screen_Partial_Refresh_Init_Lock = false;
                     }
                 }
@@ -487,7 +487,7 @@ void loop()
                                         Fast_Refresh_Count++;
                                         if (Fast_Refresh_Count > 30)
                                         {
-                                            Fast_Refresh_Flag = false;
+                                            Partial_Refresh_Flag = false;
                                             Fast_Refresh_Count = 0;
                                         }
 
