@@ -599,7 +599,7 @@ void GFX_Print_SX1262_Info_Loop(void)
             //     CycleTime = millis() + 1000;
             Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = false;
             GFX_Print_SX1262_Transmission_Refresh_Info();
-            display.display(display.update_mode::FAST_REFRESH, true);
+            display.display(display.Update_Mode::FAST_REFRESH, true);
             // }
         }
 
@@ -1032,7 +1032,7 @@ void GFX_Print_BLE_Uart_Info_Loop(void)
     if (BLE_Uart_OP.connection.trigger_flag == true)
     {
         GFX_Print_BLE_Uart_Connect_Info();
-        display.display(display.update_mode::FAST_REFRESH, true);
+        display.display(display.Update_Mode::FAST_REFRESH, true);
 
         BLE_Uart_OP.connection.trigger_flag = false;
     }
@@ -1040,7 +1040,7 @@ void GFX_Print_BLE_Uart_Info_Loop(void)
     if (BLE_Uart_OP.transmission_fast_refresh_flag == true)
     {
         GFX_Print_BLE_Uart_Transmission_Refresh_Info();
-        display.display(display.update_mode::FAST_REFRESH, true);
+        display.display(display.Update_Mode::FAST_REFRESH, true);
         BLE_Uart_OP.transmission_fast_refresh_flag = false;
     }
 
@@ -1201,7 +1201,7 @@ void GFX_Print_GPS_Info_Loop(void)
 
     if ((millis() > CycleTime) && (GPS_Info_Update_Flag == true))
     {
-        display.display(display.update_mode::FAST_REFRESH, true);
+        display.display(display.Update_Mode::FAST_REFRESH, true);
 
         GPS_Info_Update_Flag = false;
 
@@ -1247,7 +1247,7 @@ void GFX_Print_ICM20948_Info_Loop(void)
         display.printf("[Status]: Initialization failed");
     }
 
-    display.display(display.update_mode::FAST_REFRESH, true);
+    display.display(display.Update_Mode::FAST_REFRESH, true);
 }
 
 void GFX_Print_GPS_Info(void)
@@ -1311,7 +1311,7 @@ void GFX_Print_Battery_Info_Loop(void)
         display.printf("[Battery Voltage]: %.03f V", (((float)adc_value_temp * ((3000.0 / 4096.0))) / 1000.0) * 2.0);
     }
 
-    display.display(display.update_mode::FAST_REFRESH, true);
+    display.display(display.Update_Mode::FAST_REFRESH, true);
 }
 
 void GFX_Print_Finish(void)
@@ -1355,21 +1355,21 @@ void GFX_Print_TEST(String s)
     display.setCursor(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 40);
     display.setTextSize(4);
     display.printf("3");
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     // delay(200);
     display.fillRect(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 20, 30, 40, EPD_WHITE);
     display.setCursor(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 40);
     display.printf("2");
-    // display.display(display.update_mode::PARTIAL_REFRESH, true);
-    // display.display(display.update_mode::PARTIAL_REFRESH, true);
-    display.display(display.update_mode::FULL_REFRESH, true);
+    // display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    // display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     // delay(200);
     display.fillRect(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 20, 30, 30, EPD_WHITE);
     display.setCursor(SCREEN_WIDTH / 2 + 3, SCREEN_HEIGHT / 2 + 40);
     display.printf("1");
-    // display.display(display.update_mode::PARTIAL_REFRESH, true);
-    // display.display(display.update_mode::PARTIAL_REFRESH, true);
-    display.display(display.update_mode::FULL_REFRESH, true);
+    // display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    // display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     // delay(200);
 }
 
@@ -1403,17 +1403,17 @@ void Original_Test_1()
     GFX_Print_TEST("E-Ink screen test");
 
     display.fillScreen(EPD_BLACK);
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     delay(2000);
 
     display.fillScreen(EPD_WHITE);
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     delay(2000);
 
     GFX_Print_Finish();
-    display.display(display.update_mode::FAST_REFRESH, true);
+    display.display(display.Update_Mode::FAST_REFRESH, true);
 }
 
 void Original_Test_2()
@@ -1421,7 +1421,7 @@ void Original_Test_2()
     GFX_Print_TEST("LED test");
 
     GFX_Print_Start();
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
@@ -1449,7 +1449,7 @@ void Original_Test_2()
     delay(1000);
 
     GFX_Print_Finish();
-    display.display(display.update_mode::FAST_REFRESH, true);
+    display.display(display.Update_Mode::FAST_REFRESH, true);
 }
 
 void Original_Test_3()
@@ -1467,7 +1467,7 @@ void Original_Test_3()
         GFX_Print_SX1262_Init_Failed_Refresh_Info();
         SX1262_OP.initialization_flag = false;
     }
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     display.setFont(&Org_01);
 
     Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
@@ -1498,7 +1498,7 @@ void Original_Test_4()
 
     GFX_Print_BLE_Uart_Connect_Info();
     GFX_Print_BLE_Uart_Transmission_Refresh_Info();
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 }
 
 void Original_Test_5()
@@ -1534,7 +1534,7 @@ void Original_Test_5()
         display.printf("[Status]: initialization failed");
     }
 
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 }
 
 void Original_Test_7()
@@ -1553,7 +1553,7 @@ void Original_Test_7()
 
     GFX_Print_GPS_Info();
 
-    display.display(display.update_mode::FAST_REFRESH, true);
+    display.display(display.Update_Mode::FAST_REFRESH, true);
 
     GFX_Print_GPS_Info_Loop();
 }
@@ -2017,7 +2017,7 @@ void setup()
 
     display.fillScreen(EPD_WHITE);
     display.clearBuffer();
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     display.fillScreen(EPD_WHITE);
     display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
@@ -2043,7 +2043,7 @@ void setup()
     display.setCursor(25, 160);
     display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
 
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     delay(3000);
 
@@ -2059,7 +2059,7 @@ void setup()
     display.setTextColor(EPD_BLACK);
     display.setTextSize(1);
     display.print("Sleep_Wake_Up test");
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     Sleep_OP.cycletime_1 = millis() + AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME;
 }
@@ -2077,7 +2077,7 @@ void loop()
             display.setTextColor(EPD_BLACK);
             display.setTextSize(1);
             display.print("Light Sleep");
-            display.display(display.update_mode::FAST_REFRESH, true);
+            display.display(display.Update_Mode::FAST_REFRESH, true);
 
             display.fillScreen(EPD_WHITE);
             display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
@@ -2101,7 +2101,7 @@ void loop()
             display.print("Software: " + (String)SOFTWARE_NAME);
             display.setCursor(25, 160);
             display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
-            display.display(display.update_mode::FULL_REFRESH, true);
+            display.display(display.Update_Mode::FULL_REFRESH, true);
 
             Sleep_OP.current_mode = Sleep_OP.mode::LIGHT_SLEEP;
             System_Sleep(true);
@@ -2126,7 +2126,7 @@ void loop()
             display.setFont(&FreeSans9pt7b);
             display.setTextSize(1);
             display.print("Awakening");
-            display.display(display.update_mode::FULL_REFRESH, true);
+            display.display(display.Update_Mode::FULL_REFRESH, true);
 
             Sleep_OP.current_mode = Sleep_OP.mode::NOT_SLEEP;
             Button_Triggered_OP.Interrupt_Flag = false;
@@ -2148,7 +2148,7 @@ void loop()
                 Serial.println("Key triggered: SINGLE_CLICK");
 
                 display.print("1.SINGLE_CLICK");
-                display.display(display.update_mode::FAST_REFRESH, true);
+                display.display(display.Update_Mode::FAST_REFRESH, true);
 
                 Sleep_OP.cycletime_1 = millis() + AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME;
 
@@ -2158,7 +2158,7 @@ void loop()
                 Serial.println("Key triggered: DOUBLE_CLICK");
 
                 display.print("2.DOUBLE_CLICK");
-                display.display(display.update_mode::FAST_REFRESH, true);
+                display.display(display.Update_Mode::FAST_REFRESH, true);
 
                 Sleep_OP.cycletime_1 = millis() + AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME;
 
@@ -2170,7 +2170,7 @@ void loop()
                 display.print("3.LONG_PRESS");
                 display.setCursor(10, 100);
                 display.print("Deep Sleep");
-                display.display(display.update_mode::FAST_REFRESH, true);
+                display.display(display.Update_Mode::FAST_REFRESH, true);
 
                 Sleep_OP.current_mode = Sleep_OP.mode::DEEP_SLEEP;
 

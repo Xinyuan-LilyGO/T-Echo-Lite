@@ -403,7 +403,7 @@ void setup()
 
     display.print("Sleep_Wake_Up test");
 
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     // System_Sleep(true);
     // systemOff(nRF52840_BOOT, LOW);
@@ -431,7 +431,7 @@ void loop()
             display.setTextColor(EPD_BLACK);
             display.setTextSize(1);
             display.print("Light Sleep");
-            display.display(display.update_mode::FAST_REFRESH, true);
+            display.display(display.Update_Mode::FAST_REFRESH, true);
 
             display.fillScreen(EPD_WHITE);
             display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
@@ -450,7 +450,7 @@ void loop()
             display.setTextSize(1);
             display.setCursor(25, 145);
             display.print("Light sleep on");
-            display.display(display.update_mode::FULL_REFRESH, true);
+            display.display(display.Update_Mode::FULL_REFRESH, true);
 
             Sleep_OP.current_mode = Sleep_OP.mode::LIGHT_SLEEP;
             System_Sleep(true);
@@ -475,7 +475,7 @@ void loop()
             display.setFont(&FreeSans9pt7b);
             display.setTextSize(1);
             display.print("Awakening");
-            display.display(display.update_mode::FULL_REFRESH, true);
+            display.display(display.Update_Mode::FULL_REFRESH, true);
 
             Sleep_OP.current_mode = Sleep_OP.mode::NOT_SLEEP;
             Button_Triggered_OP.Interrupt_Flag = false;
@@ -497,7 +497,7 @@ void loop()
                 Serial.println("Key triggered: SINGLE_CLICK");
 
                 display.print("1.SINGLE_CLICK");
-                display.display(display.update_mode::FAST_REFRESH, true);
+                display.display(display.Update_Mode::FAST_REFRESH, true);
 
                 Sleep_OP.cycletime_1 = millis() + AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME;
 
@@ -507,7 +507,7 @@ void loop()
                 Serial.println("Key triggered: DOUBLE_CLICK");
 
                 display.print("2.DOUBLE_CLICK");
-                display.display(display.update_mode::FAST_REFRESH, true);
+                display.display(display.Update_Mode::FAST_REFRESH, true);
 
                 Sleep_OP.cycletime_1 = millis() + AUTOMATICALLY_ENTER_LIGHT_SLEEP_TIME;
 
@@ -519,7 +519,7 @@ void loop()
                 display.print("3.LONG_PRESS");
                 display.setCursor(10, 100);
                 display.print("Deep Sleep");
-                display.display(display.update_mode::FAST_REFRESH, true);
+                display.display(display.Update_Mode::FAST_REFRESH, true);
 
                 Sleep_OP.current_mode = Sleep_OP.mode::DEEP_SLEEP;
 

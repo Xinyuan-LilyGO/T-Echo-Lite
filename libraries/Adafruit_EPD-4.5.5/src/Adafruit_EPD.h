@@ -67,7 +67,7 @@ typedef enum
 class Adafruit_EPD : public Adafruit_GFX
 {
 public:
-    using update_mode = enum {
+    using Update_Mode = enum {
         FULL_REFRESH,    // 全局刷新
         PARTIAL_REFRESH, // 局部刷新
         FAST_REFRESH,    // 全局快刷
@@ -87,8 +87,7 @@ public:
     void clearDisplay();
     void setBlackBuffer(int8_t index, bool inverted);
     void setColorBuffer(int8_t index, bool inverted);
-    // void display(bool sleep = false);
-    void display(uint8_t mode = update_mode::FULL_REFRESH, bool sleep = false, bool busy_enable = true);
+    void display(Update_Mode mode = Update_Mode::FULL_REFRESH, bool sleep = false, bool busy_enable = true);
 
     thinkinkmode_t getMode(void) { return inkmode; }
 
@@ -128,18 +127,14 @@ protected:
     /**************************************************************************/
     // virtual void powerUp() = 0;
 
-    virtual void powerUp(uint8_t mode = update_mode::FULL_REFRESH) = 0;
+    virtual void powerUp(Update_Mode mode) = 0;
 
     /**************************************************************************/
     /*!
       @brief signal the display to update
     */
     /**************************************************************************/
-    virtual void update(bool busy_enable = true) = 0;
-
-    virtual void updatePartial(bool busy_enable = true) = 0;
-
-    virtual void updateFast(bool busy_enable = true) = 0;
+    virtual void update(Update_Mode mode, bool busy_enable) = 0;
 
     /**************************************************************************/
     /*!
@@ -147,6 +142,10 @@ protected:
     */
     /**************************************************************************/
     virtual void powerDown(void) = 0;
+
+    virtual void displayPartial(uint16_t x, uint16_t y,
+                                uint16_t w, uint16_t h, const uint8_t *datas, bool busy_enable) = 0;
+
     void hardwareReset(void);
 
     int32_t _speed;

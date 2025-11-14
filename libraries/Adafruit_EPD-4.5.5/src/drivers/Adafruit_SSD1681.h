@@ -4,6 +4,8 @@
 #include "Adafruit_EPD.h"
 #include <Arduino.h>
 
+#define EPD_ARRAY 4224
+
 #define SSD1681_DRIVER_CONTROL 0x01
 #define SSD1681_GATE_VOLTAGE 0x03
 #define SSD1681_SOURCE_VOLTAGE 0x04
@@ -46,12 +48,12 @@ public:
                      int16_t SRCS, int16_t BUSY = -1, SPIClass *spi = &SPI, int32_t speed = -1);
 
     void begin(bool reset = true);
-    void powerUp(uint8_t mode = update_mode::FULL_REFRESH);
-    void update(bool busy_enable = true);
-    void updatePartial(bool busy_enable = true);
-    void updateFast(bool busy_enable = true);
+    void powerUp(Update_Mode mode = Update_Mode::FULL_REFRESH);
+    void update(Update_Mode mode, bool busy_enable = true);
     void powerDown();
-    void displayPartial(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+    void setRAMValueBaseMap(Update_Mode mode, bool busy_enable = true);
+    void displayPartial(uint16_t x, uint16_t y,
+                        uint16_t w, uint16_t h, const uint8_t *datas, bool busy_enable = true);
 
 protected:
     uint8_t writeRAMCommand(uint8_t index);

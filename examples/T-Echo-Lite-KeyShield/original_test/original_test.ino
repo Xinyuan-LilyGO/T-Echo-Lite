@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-11-10 10:43:52
+ * @LastEditTime: 2025-11-14 11:08:16
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,7 +17,7 @@
 #include "c2_b16_s44100_3.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202511101044"
+#define SOFTWARE_LASTEDITTIME "202511141051"
 #define BOARD_VERSION "V1.0"
 
 #define MCLK_MULTIPLE 32
@@ -27,6 +27,8 @@
 std::vector<std::string> Current_Text;
 
 bool Screen_Refresh_Flag = false;
+
+bool Screen_Partial_Refresh_Init_Lock = false;
 
 uint32_t Iis_Tx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
 uint32_t Iis_Rx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
@@ -83,7 +85,29 @@ void microphone_read()
         printf("microphone_read fail (ES8311->start_transmit fail)\n");
     }
 
-    printf("music play finish%d\n");
+    size_t timeout_count = 0;
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        while (1)
+        {
+            if (ES8311->get_read_event_flag() == true)
+            {
+                ES8311->set_next_read_data(Iis_Rx_Buffer);
+                break;
+            }
+
+            timeout_count++;
+            if (timeout_count > 10)
+            {
+                printf("microphone_read timeout\n");
+                break;
+            }
+            delay(10);
+        }
+    }
+
+    printf("microphone_read finish\n");
     ES8311->stop_transmit();
 }
 
@@ -219,7 +243,70 @@ void Es8311_Init(void)
     ES8311->set_adc_pga_gain(Cpp_Bus_Driver::Es8311::Adc_Pga_Gain::GAIN_30DB);
 
     ES8311->set_adc_volume(191);
-    ES8311->set_dac_volume(220);
+    ES8311->set_dac_volume(200);
+}
+
+void Screen_Refresh_Task(void *arg)
+{
+    printf("Screen_Refresh_Task start\n");
+
+    while (1)
+    {
+        if (Screen_Refresh_Flag == true)
+        {
+            Screen_Refresh_Flag = false;
+
+            if (millis() > Cycle_Time)
+            {
+                if (Current_Text.size() == 0)
+                {
+                    display.fillScreen(EPD_WHITE);
+                    display.clearBuffer();
+                    display.setTextColor(EPD_BLACK);
+                    display.setTextSize(1);
+                    display.setFont(&FreeSans9pt7b);
+                    display.setCursor(15, 70);
+                    display.print("Please enter the text");
+
+                    display.display(display.Update_Mode::FAST_REFRESH, true);
+                }
+                else
+                {
+                    std::string show_text;
+                    for (uint8_t i = 0; i < Current_Text.size(); i++)
+                    {
+                        show_text += "[" + Current_Text[i] + "]\n";
+                    }
+                    display.fillScreen(EPD_WHITE);
+                    display.clearBuffer();
+                    display.setTextColor(EPD_BLACK);
+                    display.setTextSize(1);
+                    display.setFont(&FreeSans9pt7b);
+                    display.setCursor(0, 13);
+                    display.print(show_text.c_str());
+
+                    if (Fast_Refresh_Flag == true)
+                    {
+                        if (Screen_Partial_Refresh_Init_Lock == false)
+                        {
+                            display.setRAMValueBaseMap(display.Update_Mode::FAST_REFRESH);
+                            Screen_Partial_Refresh_Init_Lock = true;
+                        }
+                        display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+                    }
+                    else
+                    {
+                        display.display(display.Update_Mode::FAST_REFRESH, true, false);
+
+                        Fast_Refresh_Flag = true;
+                        Screen_Partial_Refresh_Init_Lock = false;
+                    }
+                }
+            }
+        }
+
+        delay(10);
+    }
 }
 
 void setup()
@@ -287,11 +374,6 @@ void setup()
 
     display.begin();
     display.setRotation(1);
-
-    display.fillScreen(EPD_WHITE);
-    display.clearBuffer();
-    display.display(display.update_mode::FULL_REFRESH, true);
-
     display.fillScreen(EPD_WHITE);
     display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
 
@@ -314,7 +396,7 @@ void setup()
     display.setCursor(25, 160);
     display.print("LastEditTime: " + (String)SOFTWARE_LASTEDITTIME);
 
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 
     music_play(c2_b16_s44100_2, sizeof(c2_b16_s44100_2));
 
@@ -323,6 +405,8 @@ void setup()
     vibration_start();
 
     Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL, 4096);
+
+    xTaskCreate(Screen_Refresh_Task, "Screen_Refresh_Task", 1 * 1024, NULL, 3, NULL);
 
     Screen_Refresh_Flag = true;
 }
@@ -401,18 +485,14 @@ void loop()
                                         vibration_start();
 
                                         Fast_Refresh_Count++;
-                                        if (Fast_Refresh_Count < 5)
-                                        {
-                                            Fast_Refresh_Flag = true;
-                                        }
-                                        else
+                                        if (Fast_Refresh_Count > 30)
                                         {
                                             Fast_Refresh_Flag = false;
                                             Fast_Refresh_Count = 0;
                                         }
 
                                         Screen_Refresh_Flag = true;
-                                        Cycle_Time = millis() + 300;
+                                        // Cycle_Time = millis() + 300;
                                     }
                                 }
                             }
@@ -436,52 +516,6 @@ void loop()
 
         //     Interrupt_Flag = false;
         // }
-    }
-
-    if (Screen_Refresh_Flag == true)
-    {
-        if (millis() > Cycle_Time)
-        {
-            if (Current_Text.size() == 0)
-            {
-                display.fillScreen(EPD_WHITE);
-                display.clearBuffer();
-                display.setTextColor(EPD_BLACK);
-                display.setTextSize(1);
-                display.setFont(&FreeSans9pt7b);
-                display.setCursor(15, 70);
-                display.print("Please enter the text");
-
-                display.display(display.update_mode::FULL_REFRESH, true);
-            }
-            else
-            {
-                std::string show_text;
-                for (uint8_t i = 0; i < Current_Text.size(); i++)
-                {
-                    show_text += "[" + Current_Text[i] + "]\n";
-                }
-                display.fillScreen(EPD_WHITE);
-                display.clearBuffer();
-                display.setTextColor(EPD_BLACK);
-                display.setTextSize(1);
-                display.setFont(&FreeSans9pt7b);
-                display.setCursor(0, 13);
-                display.print(show_text.c_str());
-
-                // if (Fast_Refresh_Flag == true)
-                // {
-                //     display.display(display.update_mode::PARTIAL_REFRESH, true, false);
-                // }
-                // else
-                // {
-                //     display.display(display.update_mode::FAST_REFRESH, true, false);
-                // }
-                display.display(display.update_mode::FAST_REFRESH, true, false);
-            }
-
-            Screen_Refresh_Flag = false;
-        }
     }
 
     delay(10);

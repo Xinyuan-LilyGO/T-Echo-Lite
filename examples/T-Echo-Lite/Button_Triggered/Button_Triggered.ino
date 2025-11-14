@@ -143,7 +143,7 @@ void setup()
 
     display.print("Please press the button");
 
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 }
 
 void loop()
@@ -183,6 +183,6 @@ void loop()
             break;
         }
 
-        display.display(display.update_mode::FAST_REFRESH, true);
+        display.display(display.Update_Mode::FAST_REFRESH, true);
     }
 }

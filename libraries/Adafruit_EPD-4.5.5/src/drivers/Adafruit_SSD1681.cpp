@@ -198,18 +198,27 @@ void Adafruit_SSD1681::begin(bool reset)
     powerDown();
 }
 
-/**************************************************************************/
-/*!
-    @brief signal the display to update
-*/
-/**************************************************************************/
-void Adafruit_SSD1681::update(bool busy_enable)
+void Adafruit_SSD1681::update(Update_Mode mode, bool busy_enable)
 {
-    uint8_t buf[1];
+    uint8_t buffer;
 
-    // display update sequence
-    buf[0] = 0xF7;
-    EPD_command(SSD1681_DISP_CTRL2, buf, 1);
+    switch (mode)
+    {
+    case Update_Mode::FULL_REFRESH:
+        buffer = 0xF7;
+        break;
+    case Update_Mode::PARTIAL_REFRESH:
+        buffer = 0xFF;
+        break;
+    case Update_Mode::FAST_REFRESH:
+        buffer = 0xC7;
+        break;
+
+    default:
+        break;
+    }
+
+    EPD_command(SSD1681_DISP_CTRL2, &buffer, 1);
 
     EPD_command(SSD1681_MASTER_ACTIVATE);
 
@@ -224,57 +233,47 @@ void Adafruit_SSD1681::update(bool busy_enable)
     }
 }
 
-/**************************************************************************/
-/*!
-    @brief signal the display to update
-*/
-/**************************************************************************/
-void Adafruit_SSD1681::updatePartial(bool busy_enable)
+void Adafruit_SSD1681::setRAMValueBaseMap(Update_Mode mode, bool busy_enable)
 {
-    uint8_t buf[1];
+    powerUp(mode);
 
-    // display update sequence
-    buf[0] = 0xFF;
-    EPD_command(SSD1681_DISP_CTRL2, buf, 1);
-
-    EPD_command(SSD1681_MASTER_ACTIVATE);
-
-    if (busy_enable == true)
+    writeRAMCommand(0);
+    dcHigh();
+    for (uint32_t i = 0; i < EPD_ARRAY; i++)
     {
-        busy_wait();
+        SPItransfer(0xFF);
+    }
+    csHigh();
 
-        if (_busy_pin <= -1)
-        {
-            delay(1000);
-        }
+    writeRAMCommand(1);
+    dcHigh();
+    for (uint32_t i = 0; i < EPD_ARRAY; i++)
+    {
+        SPItransfer(0xFF);
+    }
+    csHigh();
+
+    // 执行全屏刷新
+    update(mode, busy_enable);
+
+    if (mode == Update_Mode::FULL_REFRESH)
+    {
+        delay(1000);
     }
 }
 
-void Adafruit_SSD1681::updateFast(bool busy_enable)
+void Adafruit_SSD1681::displayPartial(uint16_t x, uint16_t y,
+                                      uint16_t w, uint16_t h, const uint8_t *datas, bool busy_enable)
 {
-    uint8_t buf[1];
+    uint32_t x_end, y_end;
 
-    // display update sequence
-    buf[0] = 0xC7;
-    EPD_command(SSD1681_DISP_CTRL2, buf, 1);
+    // 根据旋转调整坐标
+    uint16_t x1 = x;
+    uint16_t y1 = y;
+    uint16_t x2 = x + w;
+    uint16_t y2 = y + h;
 
-    EPD_command(SSD1681_MASTER_ACTIVATE);
-
-    if (busy_enable == true)
-    {
-        busy_wait();
-
-        if (_busy_pin <= -1)
-        {
-            delay(1000);
-        }
-    }
-}
-
-void Adafruit_SSD1681::displayPartial(uint16_t x1, uint16_t y1, uint16_t x2,
-                                      uint16_t y2)
-{
-    // check rotation, move window around if necessary
+    // 旋转处理
     switch (getRotation())
     {
     case 0:
@@ -284,6 +283,10 @@ void Adafruit_SSD1681::displayPartial(uint16_t x1, uint16_t y1, uint16_t x2,
         y2 = WIDTH - y2;
         break;
     case 1:
+        EPD_swap(x1, y1);
+        EPD_swap(x2, y2);
+        y1 = WIDTH - y1;
+        y2 = WIDTH - y2;
         break;
     case 2:
         EPD_swap(x1, y1);
@@ -292,115 +295,82 @@ void Adafruit_SSD1681::displayPartial(uint16_t x1, uint16_t y1, uint16_t x2,
         x2 = HEIGHT - x2;
         break;
     case 3:
-        y1 = WIDTH - y1;
-        y2 = WIDTH - y2;
+        EPD_swap(x1, y1);
+        EPD_swap(x2, y2);
         x1 = HEIGHT - x1;
         x2 = HEIGHT - x2;
+        break;
+
+    default:
+        break;
     }
     if (x1 > x2)
         EPD_swap(x1, x2);
     if (y1 > y2)
         EPD_swap(y1, y2);
 
-    /*
-    Serial.print("x: ");
-    Serial.print(x1);
-    Serial.print(" -> ");
-    Serial.println(x2);
-    Serial.print("y: ");
-    Serial.print(y1);
-    Serial.print(" -> ");
-    Serial.println(y2);
-    */
+    // 重新计算宽度和高度
+    w = x2 - x1;
+    h = y2 - y1;
 
-    // x1 and x2 must be on byte boundaries
-    x1 -= x1 % 8;           // round down;
-    x2 = (x2 + 7) & ~0b111; // round up
+    // 坐标计算
+    x1 = x1 / 8;
+    x_end = x1 + w / 8 - 1;
+    y1 = y1 - 1;
+    y_end = y1 + h - 1;
 
-    Serial.println("---------------partial=============");
-    // perform standard power up
-    powerUp();
+    // 硬件初始化
+    hardwareReset();
+    // busy_wait();
 
-    // display....
-    // setRAMWindow(0, 0, 16/8, 16);
-    setRAMWindow(x1 / 8, y1, x2 / 8, y2);
-    setRAMAddress(x1 / 8, y1);
+    // 设置命令序列
+    uint8_t buf[4];
+    buf[0] = 0x80;
+    EPD_command(SSD1681_WRITE_BORDER, buf, 1);
+    buf[0] = x1;
+    buf[1] = x_end;
+    EPD_command(SSD1681_SET_RAMXPOS, buf, 2);
+    buf[0] = y1 % 256;
+    buf[1] = y1 / 256;
+    buf[2] = y_end % 256;
+    buf[3] = y_end / 256;
+    EPD_command(SSD1681_SET_RAMYPOS, buf, 4);
+    buf[0] = x1;
+    EPD_command(SSD1681_SET_RAMXCOUNT, buf, 1);
+    buf[0] = y1 % 256;
+    buf[1] = y1 / 256;
+    EPD_command(SSD1681_SET_RAMYCOUNT, buf, 2);
 
-    // write image
+    // 写入数据
     writeRAMCommand(0);
-
-    Serial.print("Transfering: ");
-
     dcHigh();
-    for (uint16_t y = y1; y < y2; y++)
+
+    // 直接传输数据（旋转由坐标处理完成）
+    for (uint32_t i = 0; i < h * w / 8; i++)
     {
-        for (uint16_t x = x1; x < x2; x += 8)
-        {
-            uint16_t i = (x / 8) + y * 25;
-            SPItransfer(black_buffer[i]);
-            // SPItransfer(0xAA);
-        }
+        SPItransfer(pgm_read_byte(&datas[i]));
     }
     csHigh();
 
-#ifdef EPD_DEBUG
-    Serial.println("  UpdatePartial");
-#endif
-
-    updatePartial();
-
-#ifdef EPD_DEBUG
-    Serial.println("  partial Powering Down");
-#endif
-
-    powerDown();
+    // 执行刷新
+    update(Update_Mode::PARTIAL_REFRESH, busy_enable);
 }
 
-/**************************************************************************/
-/*!
-    @brief start up the display
-*/
-/**************************************************************************/
-// void Adafruit_SSD1681::powerUp()
-// {
-//     uint8_t buf[5];
-
-//     hardwareReset();
-//     delay(100);
-//     busy_wait();
-
-//     const uint8_t *init_code = ssd1681_default_init_code;
-
-//     if (_epd_init_code != NULL)
-//     {
-//         init_code = _epd_init_code;
-//     }
-//     EPD_commandList(init_code);
-
-//     // Set display size and driver output control
-//     buf[0] = (WIDTH - 1);
-//     buf[1] = (WIDTH - 1) >> 8;
-//     buf[2] = 0x00;
-//     EPD_command(SSD1681_DRIVER_CONTROL, buf, 3);
-
-//     setRAMWindow(0, 0, (HEIGHT / 8) - 1, WIDTH - 1);
-// }
-
-void Adafruit_SSD1681::powerUp(uint8_t mode)
+void Adafruit_SSD1681::powerUp(Update_Mode mode)
 {
-
     hardwareReset();
     // busy_wait();
     switch (mode)
     {
-    case update_mode::FULL_REFRESH:
+    case Update_Mode::FULL_REFRESH:
         EPD_commandList(ssd1681_default_init_code_full);
         break;
-    case update_mode::FAST_REFRESH:
+    case Update_Mode::FAST_REFRESH:
         EPD_commandList(ssd1681_default_init_code_fast);
         break;
 
     default:
+        EPD_commandList(ssd1681_default_init_code_full);
         break;
     }
 

@@ -178,19 +178,19 @@ void GFX_Print_TEST(String s)
     display.setCursor(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 40);
     display.setTextSize(4);
     display.printf("3");
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     delay(200);
     display.fillRect(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 20, 30, 40, EPD_WHITE);
     display.setCursor(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 40);
     display.printf("2");
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
     delay(200);
     display.fillRect(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 20, 30, 30, EPD_WHITE);
     display.setCursor(SCREEN_WIDTH / 2 + 3, SCREEN_HEIGHT / 2 + 40);
     display.printf("1");
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
     delay(200);
 }
 
@@ -313,7 +313,7 @@ void setup()
     }
     GFX_Print_BLE_Uart_Connect_Info();
     GFX_Print_BLE_Uart_Transmission_Refresh_Info();
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
 }
 
 void loop()
@@ -321,7 +321,7 @@ void loop()
     if (BLE_Uart_OP.connection.trigger_flag == true)
     {
         GFX_Print_BLE_Uart_Connect_Info();
-        display.display(display.update_mode::FAST_REFRESH, true);
+        display.display(display.Update_Mode::FAST_REFRESH, true);
 
         BLE_Uart_OP.connection.trigger_flag = false;
     }
@@ -329,7 +329,7 @@ void loop()
     if (BLE_Uart_OP.transmission_fast_refresh_flag == true)
     {
         GFX_Print_BLE_Uart_Transmission_Refresh_Info();
-        display.display(display.update_mode::FAST_REFRESH, true);
+        display.display(display.Update_Mode::FAST_REFRESH, true);
         BLE_Uart_OP.transmission_fast_refresh_flag = false;
     }
 

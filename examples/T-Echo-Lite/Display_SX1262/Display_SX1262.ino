@@ -227,19 +227,19 @@ void GFX_Print_TEST(String s)
     display.setCursor(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 40);
     display.setTextSize(4);
     display.printf("3");
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     // delay(200);
     display.fillRect(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 20, 30, 40, EPD_WHITE);
     display.setCursor(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 40);
     display.printf("2");
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
     // delay(200);
     display.fillRect(SCREEN_WIDTH / 2 - 5, SCREEN_HEIGHT / 2 + 20, 30, 30, EPD_WHITE);
     display.setCursor(SCREEN_WIDTH / 2 + 3, SCREEN_HEIGHT / 2 + 40);
     display.printf("1");
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
-    display.display(display.update_mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
+    display.display(display.Update_Mode::PARTIAL_REFRESH, true);
     // delay(200);
 }
 
@@ -363,7 +363,7 @@ void GFX_Print_SX1262_Info_Loop(void)
             //     CycleTime = millis() + 1000;
             Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = false;
             GFX_Print_SX1262_Transmission_Refresh_Info();
-            display.display(display.update_mode::FAST_REFRESH, true);
+            display.display(display.Update_Mode::FAST_REFRESH, true);
             // }
         }
 
@@ -587,7 +587,7 @@ void setup(void)
         GFX_Print_SX1262_Init_Failed_Refresh_Info();
         SX1262_OP.initialization_flag = false;
     }
-    display.display(display.update_mode::FULL_REFRESH, true);
+    display.display(display.Update_Mode::FULL_REFRESH, true);
     display.setFont(&Org_01);
 
     Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;

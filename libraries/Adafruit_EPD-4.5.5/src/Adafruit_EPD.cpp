@@ -410,139 +410,30 @@ void Adafruit_EPD::writeSRAMFramebufferToEPD(uint16_t SRAM_buffer_addr,
     _isInTransaction = false;
 }
 
-/**************************************************************************/
-/*!
-    @brief Transfer the data stored in the buffer(s) to the display
-*/
-/**************************************************************************/
-// void Adafruit_EPD::display(bool sleep)
-// {
-// #ifdef EPD_DEBUG
-//     Serial.println("  Powering Up");
-// #endif
-
-//     powerUp();
-
-// #ifdef EPD_DEBUG
-//     Serial.println("  Set RAM address");
-// #endif
-
-//     // Set X & Y ram counters
-//     setRAMAddress(0, 0);
-
-//     if (use_sram)
-//     {
-// #ifdef EPD_DEBUG
-//         Serial.println("  Write SRAM buff to EPD");
-// #endif
-//         writeSRAMFramebufferToEPD(buffer1_addr, buffer1_size, 0);
-//     }
-//     else
-//     {
-// #ifdef EPD_DEBUG
-//         Serial.println("  Write RAM buff to EPD");
-// #endif
-//         writeRAMFramebufferToEPD(buffer1, buffer1_size, 0);
-//     }
-
-//     if (buffer2_size != 0)
-//     {
-//         // oh there's another buffer eh?
-//         delay(2);
-
-//         // Set X & Y ram counters
-//         setRAMAddress(0, 0);
-
-//         if (use_sram)
-//         {
-//             writeSRAMFramebufferToEPD(buffer2_addr, buffer2_size, 1);
-//         }
-//         else
-//         {
-//             writeRAMFramebufferToEPD(buffer2, buffer2_size, 1);
-//         }
-//     }
-
-// #ifdef EPD_DEBUG
-//     Serial.println("  Update");
-// #endif
-
-//     update();
-//     partialsSinceLastFullUpdate = 0;
-
-//     if (sleep)
-//     {
-// #ifdef EPD_DEBUG
-//         Serial.println("  Powering Down");
-// #endif
-//         powerDown();
-//     }
-// }
-
-void Adafruit_EPD::display(uint8_t mode, bool sleep, bool busy_enable)
+void Adafruit_EPD::display(Update_Mode mode, bool sleep, bool busy_enable)
 {
-    switch (mode)
+    if (mode == Update_Mode::PARTIAL_REFRESH)
     {
-    case update_mode::FULL_REFRESH:
-        powerUp(update_mode::FULL_REFRESH);
-        break;
-    case update_mode::PARTIAL_REFRESH:
-        powerUp(update_mode::FULL_REFRESH);
-        break;
-    case update_mode::FAST_REFRESH:
-        powerUp(update_mode::FAST_REFRESH);
-        break;
-
-    default:
-        break;
-    }
-
-    // Set X & Y ram counters
-    setRAMAddress(0, 0);
-
-    if (use_sram)
-    {
-        writeSRAMFramebufferToEPD(buffer1_addr, buffer1_size, 0);
+        displayPartial(0, 0, 176, 192, buffer1, busy_enable);
     }
     else
     {
-        writeRAMFramebufferToEPD(buffer1, buffer1_size, 0);
-    }
-
-    if (buffer2_size != 0)
-    {
-        // oh there's another buffer eh?
-        delay(2);
+        powerUp(mode);
 
         // Set X & Y ram counters
         setRAMAddress(0, 0);
 
         if (use_sram)
         {
-            writeSRAMFramebufferToEPD(buffer2_addr, buffer2_size, 1);
+            writeSRAMFramebufferToEPD(buffer1_addr, buffer1_size, 0);
         }
         else
         {
-            writeRAMFramebufferToEPD(buffer2, buffer2_size, 1);
+            writeRAMFramebufferToEPD(buffer1, buffer1_size, 0);
         }
-    }
 
-    switch (mode)
-    {
-    case update_mode::FULL_REFRESH:
-        update(busy_enable);
-        break;
-    case update_mode::PARTIAL_REFRESH:
-        updatePartial(busy_enable);
-        break;
-    case update_mode::FAST_REFRESH:
-        updateFast(busy_enable);
-        break;
-
-    default:
-        break;
+        update(mode, busy_enable);
     }
-    partialsSinceLastFullUpdate = 0;
 
     if (sleep)
     {
