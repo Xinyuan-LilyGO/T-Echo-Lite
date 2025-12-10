@@ -2,7 +2,7 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-11-14 11:36:06
+ * @LastEditTime: 2025-12-10 09:14:28
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,12 +17,12 @@
 #include "c2_b16_s44100_3.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202511141051"
+#define SOFTWARE_LASTEDITTIME "202512091700"
 #define BOARD_VERSION "V1.0"
 
 #define MCLK_MULTIPLE 32
 #define SAMPLE_RATE 44100
-#define MAX_IIS_DATA_TRANSMIT_SIZE 512
+#define MAX_IIS_DATA_TRANSMIT_SIZE 1024
 
 std::vector<std::string> Current_Text;
 
@@ -30,14 +30,14 @@ bool Screen_Refresh_Flag = false;
 
 bool Screen_Partial_Refresh_Init_Lock = false;
 
-uint32_t Iis_Tx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
+uint32_t Iis_Tx_Buffer[2][MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
 uint32_t Iis_Rx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
+
+bool Current_Iis_Tx_Buffer_Count = 0;
+uint8_t Iis_Tx_Buffer_Full_Flag[2] = {false};
 
 // 已经发送的数据大小
 size_t Iis_Send_Data_Size = 0;
-bool Iis_Transmit_Flag = false;
-
-bool Iis_Data_Convert_Wait = false;
 
 // volatile bool Interrupt_Flag = false;
 
@@ -111,69 +111,90 @@ void microphone_read()
     ES8311->stop_transmit();
 }
 
-void music_play(const uint16_t *data, size_t size)
+bool music_play(const uint16_t *data, size_t size)
 {
     // 播放音乐测试
     printf("music_play start\n");
 
     Iis_Send_Data_Size = 0;
-    Iis_Data_Convert(data, Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
+    Iis_Data_Convert(data, Iis_Tx_Buffer[Current_Iis_Tx_Buffer_Count], 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
+    Iis_Tx_Buffer_Full_Flag[Current_Iis_Tx_Buffer_Count] = true;
 
-    if (ES8311->start_transmit(Iis_Tx_Buffer, nullptr, MAX_IIS_DATA_TRANSMIT_SIZE) == true)
+    if (ES8311->start_transmit(Iis_Tx_Buffer[Current_Iis_Tx_Buffer_Count], nullptr, MAX_IIS_DATA_TRANSMIT_SIZE) == true)
     {
         Iis_Send_Data_Size += MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t);
-        Iis_Transmit_Flag = true;
+
+        Iis_Tx_Buffer_Full_Flag[Current_Iis_Tx_Buffer_Count] = false;
+        Current_Iis_Tx_Buffer_Count = !Current_Iis_Tx_Buffer_Count;
     }
     else
     {
-        Iis_Transmit_Flag = false;
         printf("music_play fail (ES8311->start_transmit fail)\n");
+
+        return false;
     }
 
     while (1)
     {
-        if (Iis_Transmit_Flag == true)
+        if (Iis_Send_Data_Size >= size)
         {
-            if (Iis_Send_Data_Size >= size)
-            {
-                printf("music_play finish iis_send_data_size: %d\n", Iis_Send_Data_Size);
-                ES8311->stop_transmit();
+            printf("music_play finish iis_send_data_size: %d\n", Iis_Send_Data_Size);
+            ES8311->stop_transmit();
 
-                Iis_Data_Convert_Wait = false;
-                Iis_Transmit_Flag = false;
-                break;
-            }
-            else
+            break;
+        }
+        else
+        {
+            if (Iis_Tx_Buffer_Full_Flag[Current_Iis_Tx_Buffer_Count] == false)
             {
-                if (Iis_Data_Convert_Wait == false)
+                size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t), size - Iis_Send_Data_Size);
+
+                // printf("iis_send_data_size: %d\n", Iis_Send_Data_Size);
+                // printf("iis send data length: %d\n", buffer_length);
+
+                if (buffer_length != MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t))
                 {
-                    size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t), size - Iis_Send_Data_Size);
-
-                    // printf("iis_send_data_size: %d\n", Iis_Send_Data_Size);
-                    // printf("iis send data length: %d\n", buffer_length);
-
-                    if (buffer_length != MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t))
-                    {
-                        memset(Iis_Tx_Buffer, 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
-                    }
-                    Iis_Data_Convert(data, Iis_Tx_Buffer, Iis_Send_Data_Size, buffer_length);
-
-                    Iis_Send_Data_Size += buffer_length;
-
-                    Iis_Data_Convert_Wait = true;
+                    memset(Iis_Tx_Buffer[Current_Iis_Tx_Buffer_Count], 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
                 }
+                Iis_Data_Convert(data, Iis_Tx_Buffer[Current_Iis_Tx_Buffer_Count], Iis_Send_Data_Size, buffer_length);
+
+                Iis_Send_Data_Size += buffer_length;
+
+                Iis_Tx_Buffer_Full_Flag[Current_Iis_Tx_Buffer_Count] = true;
             }
-
-            if (ES8311->get_write_event_flag() == true)
+            else if (Iis_Tx_Buffer_Full_Flag[!Current_Iis_Tx_Buffer_Count] == false)
             {
-                if (Iis_Data_Convert_Wait == true)
+                size_t buffer_length = min(MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t), size - Iis_Send_Data_Size);
+
+                // printf("iis_send_data_size: %d\n", Iis_Send_Data_Size);
+                // printf("iis send data length: %d\n", buffer_length);
+
+                if (buffer_length != MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t))
                 {
-                    ES8311->set_next_write_data(Iis_Tx_Buffer);
-                    Iis_Data_Convert_Wait = false;
+                    memset(Iis_Tx_Buffer[!Current_Iis_Tx_Buffer_Count], 0, MAX_IIS_DATA_TRANSMIT_SIZE * sizeof(uint32_t));
                 }
+                Iis_Data_Convert(data, Iis_Tx_Buffer[!Current_Iis_Tx_Buffer_Count], Iis_Send_Data_Size, buffer_length);
+
+                Iis_Send_Data_Size += buffer_length;
+
+                Iis_Tx_Buffer_Full_Flag[!Current_Iis_Tx_Buffer_Count] = true;
+            }
+        }
+
+        if (ES8311->get_write_event_flag() == true)
+        {
+            if (Iis_Tx_Buffer_Full_Flag[Current_Iis_Tx_Buffer_Count] == true)
+            {
+                ES8311->set_next_write_data(Iis_Tx_Buffer[Current_Iis_Tx_Buffer_Count]);
+
+                Iis_Tx_Buffer_Full_Flag[Current_Iis_Tx_Buffer_Count] = false;
+
+                Current_Iis_Tx_Buffer_Count = !Current_Iis_Tx_Buffer_Count;
             }
         }
     }
+
+    return true;
 }
 
 void Es8311_Init(void)
@@ -243,7 +264,7 @@ void Es8311_Init(void)
     ES8311->set_adc_pga_gain(Cpp_Bus_Driver::Es8311::Adc_Pga_Gain::GAIN_30DB);
 
     ES8311->set_adc_volume(191);
-    ES8311->set_dac_volume(200);
+    ES8311->set_dac_volume(191);
 }
 
 void Screen_Refresh_Task(void *arg)
@@ -456,6 +477,8 @@ void loop()
 
                                         Current_Text.push_back(Tca8418_Map[tp.info[i].num - 1].c_str());
 
+                                        music_play(c2_b16_s44100_3, sizeof(c2_b16_s44100_3));
+
                                         if (Tca8418_Map[tp.info[i].num - 1] == "Home")
                                         {
                                             float voltage = (((float)analogRead(BATTERY_ADC_DATA) * (3000.0f / 4096.0f)) / 1000.0f) * 2.0f;
@@ -481,7 +504,6 @@ void loop()
                                             Current_Text.push_back(microphone_str);
                                         }
 
-                                        music_play(c2_b16_s44100_3, sizeof(c2_b16_s44100_3));
                                         vibration_start();
 
                                         Fast_Refresh_Count++;
