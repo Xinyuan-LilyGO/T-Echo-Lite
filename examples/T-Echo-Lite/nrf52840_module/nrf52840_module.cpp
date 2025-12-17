@@ -2,7 +2,7 @@
  * @Description: nrf52840_module
  * @Author: LILYGO_L
  * @Date: 2024-12-28 09:38:30
- * @LastEditTime: 2025-10-28 11:13:05
+ * @LastEditTime: 2025-12-17 13:48:39
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -12,7 +12,7 @@
 #include "RadioLib.h"
 
 #define SOFTWARE_NAME "nrf52840_module"
-#define SOFTWARE_LASTEDITTIME "202505280926"
+#define SOFTWARE_LASTEDITTIME "202512171348"
 #define BOARD_VERSION "V1.0"
 
 static const uint32_t Local_MAC[2] =
@@ -79,7 +79,7 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 920.0;
+        float value = 433.0;
         bool change_flag = false;
     } frequency;
     struct
