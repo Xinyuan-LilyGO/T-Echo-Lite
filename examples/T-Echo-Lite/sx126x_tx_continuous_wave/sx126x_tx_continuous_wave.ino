@@ -93,7 +93,7 @@ void setup()
 
     radio.setFrequency(868.0);
     radio.setBandwidth(125.0);
-    radio.setSpreadingFactor(9);
+    radio.setSpreadingFactor(12);
     radio.setCodingRate(6);
     radio.setSyncWord(0xAB);
     radio.setOutputPower(22);
