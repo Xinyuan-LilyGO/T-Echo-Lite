@@ -2,7 +2,7 @@
  * @Description: xl9535
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-09-24 15:20:36
+ * @LastEditTime: 2026-04-09 09:29:22
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -13,7 +13,7 @@
 
 auto TCA8418_IIC_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iic_2>(TCA8418_SDA, TCA8418_SCL, &Wire);
 
-auto TCA8418 = std::make_unique<Cpp_Bus_Driver::Tca8418>(TCA8418_IIC_Bus, TCA8418_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
+auto TCA8418 = std::make_unique<Cpp_Bus_Driver::Tca8418>(TCA8418_IIC_Bus, TCA8418_IIC_ADDRESS);
 
 volatile bool Interrupt_Flag = false;
 

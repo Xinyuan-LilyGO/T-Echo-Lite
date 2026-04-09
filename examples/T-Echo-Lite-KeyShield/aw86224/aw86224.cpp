@@ -13,7 +13,7 @@
 
 auto IIC_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iic_2>(AW86224_SDA, AW86224_SCL, &Wire);
 
-auto AW86224 = std::make_unique<Cpp_Bus_Driver::Aw862xx>(IIC_Bus, AW86224_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
+auto AW86224 = std::make_unique<Cpp_Bus_Driver::Aw862xx>(IIC_Bus, AW86224_IIC_ADDRESS);
 
 void Iic_Scan(void)
 {

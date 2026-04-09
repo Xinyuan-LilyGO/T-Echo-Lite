@@ -2,7 +2,7 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2025-12-10 09:14:28
+ * @LastEditTime: 2026-04-09 09:58:14
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -17,12 +17,25 @@
 #include "c2_b16_s44100_3.h"
 
 #define SOFTWARE_NAME "Original_Test"
-#define SOFTWARE_LASTEDITTIME "202512091700"
+#define SOFTWARE_LASTEDITTIME "202604090958"
 #define BOARD_VERSION "V1.0"
 
 #define MCLK_MULTIPLE 32
 #define SAMPLE_RATE 44100
 #define MAX_IIS_DATA_TRANSMIT_SIZE 1024
+
+#define AUTO_SLEEP_TIMEOUT 10000
+
+struct Sleep_Operator
+{
+    enum mode
+    {
+        NOT_SLEEP,
+        LIGHT_SLEEP,
+    };
+    size_t cycletime_1 = 0;
+    uint8_t current_mode = NOT_SLEEP;
+};
 
 std::vector<std::string> Current_Text;
 
@@ -46,6 +59,8 @@ size_t Cycle_Time = 0;
 bool Partial_Refresh_Flag = true;
 size_t Fast_Refresh_Count = 0;
 
+TaskHandle_t Screen_Refresh_Task_Handle = NULL;
+
 SPIClass Custom_SPI_1(NRF_SPIM1, SCREEN_MISO, SCREEN_SCLK, SCREEN_MOSI);
 Adafruit_SSD1681 display(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_DC, SCREEN_RST,
                          SCREEN_CS, SCREEN_SRAM_CS, SCREEN_BUSY, &Custom_SPI_1, 8000000);
@@ -57,11 +72,13 @@ auto AW86224_IIC_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iic_2>(AW86224_
 
 auto ES8311_Iis_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iis>(ES8311_ADC_DATA, ES8311_DAC_DATA, ES8311_WS_LRCK, ES8311_BCLK, ES8311_MCLK);
 
-auto TCA8418 = std::make_unique<Cpp_Bus_Driver::Tca8418>(TCA8418_IIC_Bus, TCA8418_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
-auto Aw21009qnr = std::make_unique<Cpp_Bus_Driver::Aw21009xxx>(Aw21009qnr_IIC_Bus, AW21009QNR_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
-auto AW86224 = std::make_unique<Cpp_Bus_Driver::Aw862xx>(AW86224_IIC_Bus, AW86224_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
+auto TCA8418 = std::make_unique<Cpp_Bus_Driver::Tca8418>(TCA8418_IIC_Bus, TCA8418_IIC_ADDRESS);
+auto Aw21009qnr = std::make_unique<Cpp_Bus_Driver::Aw21009xxx>(Aw21009qnr_IIC_Bus, AW21009QNR_IIC_ADDRESS);
+auto AW86224 = std::make_unique<Cpp_Bus_Driver::Aw862xx>(AW86224_IIC_Bus, AW86224_IIC_ADDRESS);
 
-auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(ES8311_IIC_Bus, ES8311_Iis_Bus, ES8311_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
+auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(ES8311_IIC_Bus, ES8311_Iis_Bus, ES8311_IIC_ADDRESS);
+
+Sleep_Operator Sleep_OP;
 
 void Iis_Data_Convert(const void *input_data, void *out_buffer, size_t input_data_start_index, size_t byte)
 {
@@ -201,18 +218,14 @@ void Es8311_Init(void)
 {
     ES8311->begin(nrf_i2s_ratio_t ::NRF_I2S_RATIO_32X, SAMPLE_RATE, nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT);
 
-    while (1)
+    if (ES8311->begin(50000) == true)
     {
-        if (ES8311->begin(50000) == true)
-        {
-            printf("es8311 initialization success\n");
-            break;
-        }
-        else
-        {
-            printf("es8311 initialization fail\n");
-            delay(100);
-        }
+        printf("es8311 initialization success\n");
+    }
+    else
+    {
+        printf("es8311 initialization fail\n");
+        delay(100);
     }
 
     ES8311->set_master_clock_source(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_MCLK);
@@ -330,6 +343,70 @@ void Screen_Refresh_Task(void *arg)
     }
 }
 
+void System_Sleep(bool mode)
+{
+    if (mode == true)
+    {
+        Serial.end();
+        display.end();
+        pinMode(SCREEN_BS1, INPUT);
+
+        Wire.end();
+
+        pinMode(IIC_1_SDA, INPUT);
+        pinMode(IIC_1_SCL, INPUT);
+
+        pinMode(BATTERY_MEASUREMENT_CONTROL, INPUT);
+
+        ES8311_Iis_Bus->end();
+
+        digitalWrite(RT9080_EN, LOW);
+        pinMode(RT9080_EN, INPUT_PULLDOWN);
+
+        vTaskSuspend(Screen_Refresh_Task_Handle);
+    }
+    else
+    {
+        pinMode(RT9080_EN, OUTPUT);
+        digitalWrite(RT9080_EN, HIGH);
+
+        // Measure battery
+        pinMode(BATTERY_ADC_DATA, INPUT);
+        pinMode(BATTERY_MEASUREMENT_CONTROL, OUTPUT);
+        digitalWrite(BATTERY_MEASUREMENT_CONTROL, HIGH);
+
+        // Set the analog reference to 3.0V (default = 3.6V)
+        analogReference(AR_INTERNAL_3_0);
+        // Set the resolution to 12-bit (0..4095)
+        analogReadResolution(12); // Can be 8, 10, 12 or 14
+
+        Serial.begin(115200);
+        pinMode(SCREEN_BS1, OUTPUT);
+        digitalWrite(SCREEN_BS1, LOW);
+        display.begin();
+        display.setRotation(1);
+
+        TCA8418->begin();
+        TCA8418->set_keypad_scan_window(0, 0, TCA8418_KEYPAD_SCAN_WIDTH, TCA8418_KEYPAD_SCAN_HEIGHT);
+        TCA8418->set_irq_pin_mode(Cpp_Bus_Driver::Tca8418::Irq_Mask::KEY_EVENTS);
+        TCA8418->clear_irq_flag(Cpp_Bus_Driver::Tca8418::Irq_Flag::KEY_EVENTS);
+
+        Aw21009qnr->begin();
+
+        AW86224->begin(500000);
+
+        AW86224->init_ram_mode(Cpp_Bus_Driver::aw862xx_haptic_ram_12k_0809_170, sizeof(Cpp_Bus_Driver::aw862xx_haptic_ram_12k_0809_170));
+
+        Es8311_Init();
+
+        vibration_start();
+
+        Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL, 4096);
+
+        vTaskResume(Screen_Refresh_Task_Handle);
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -359,12 +436,7 @@ void setup()
     pinMode(SCREEN_BS1, OUTPUT);
     digitalWrite(SCREEN_BS1, LOW);
 
-    pinMode(LED_1, OUTPUT);
-    pinMode(LED_2, OUTPUT);
-    pinMode(LED_3, OUTPUT);
-    digitalWrite(LED_1, HIGH);
-    digitalWrite(LED_2, HIGH);
-    digitalWrite(LED_3, HIGH);
+    pinMode(nRF52840_BOOT, INPUT_PULLUP);
 
     pinMode(TCA8418_INT, INPUT_PULLUP);
     // attachInterrupt(TCA8418_INT, []() -> void
@@ -427,13 +499,60 @@ void setup()
 
     Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL, 4096);
 
-    xTaskCreate(Screen_Refresh_Task, "Screen_Refresh_Task", 1 * 1024, NULL, 3, NULL);
+    xTaskCreate(Screen_Refresh_Task, "Screen_Refresh_Task", 1 * 1024, NULL, 3, &Screen_Refresh_Task_Handle);
 
     Screen_Refresh_Flag = true;
+
+    Sleep_OP.cycletime_1 = millis() + AUTO_SLEEP_TIMEOUT;
 }
 
 void loop()
 {
+    // 自动进入休眠检测
+    if (Sleep_OP.current_mode == Sleep_Operator::NOT_SLEEP && millis() > Sleep_OP.cycletime_1)
+    {
+        Serial.println("Light sleep on");
+
+        // 显示休眠提示
+        display.fillScreen(EPD_WHITE);
+        display.setCursor(15, 70);
+        display.setTextColor(EPD_BLACK);
+        display.setFont(&FreeSans9pt7b);
+        display.print("Light sleep on");
+        display.display(display.Update_Mode::FAST_REFRESH, true);
+
+        delay(3000);
+        System_Sleep(true);
+        Sleep_OP.current_mode = Sleep_Operator::LIGHT_SLEEP;
+    }
+
+    // 休眠状态下的处理
+    if (Sleep_OP.current_mode == Sleep_Operator::LIGHT_SLEEP)
+    {
+        if (digitalRead(nRF52840_BOOT) == LOW)
+        {
+            System_Sleep(false);
+
+            Serial.println("Awakening");
+
+            display.fillScreen(EPD_WHITE);
+            display.setCursor(15, 70);
+            display.print("Awakening");
+            display.display(display.Update_Mode::FAST_REFRESH, true);
+
+            Sleep_OP.current_mode = Sleep_Operator::NOT_SLEEP;
+            Sleep_OP.cycletime_1 = millis() + AUTO_SLEEP_TIMEOUT; // 重置计时
+        }
+        else
+        {
+            waitForEvent();
+            delay(1000);
+
+            // System_Sleep(true);
+            // systemOff(nRF52840_BOOT, LOW);
+        }
+    }
+
     if (digitalRead(TCA8418_INT) == LOW)
     {
         // if (Interrupt_Flag == true)
@@ -470,6 +589,8 @@ void loop()
 
                                     if (tp.info[i].press_flag == true)
                                     {
+                                        Sleep_OP.cycletime_1 = millis() + AUTO_SLEEP_TIMEOUT; // 只要有按键操作就刷新计时
+
                                         if (Current_Text.size() > 7)
                                         {
                                             Current_Text.erase(Current_Text.begin());

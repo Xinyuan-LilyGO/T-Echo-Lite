@@ -13,7 +13,7 @@
 
 auto Aw21009qnr_IIC_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iic_2>(AW21009QNR_SDA, AW21009QNR_SCL, &Wire);
 
-auto Aw21009qnr = std::make_unique<Cpp_Bus_Driver::Aw21009xxx>(Aw21009qnr_IIC_Bus, AW21009QNR_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
+auto Aw21009qnr = std::make_unique<Cpp_Bus_Driver::Aw21009xxx>(Aw21009qnr_IIC_Bus, AW21009QNR_IIC_ADDRESS);
 
 volatile bool Interrupt_Flag = false;
 

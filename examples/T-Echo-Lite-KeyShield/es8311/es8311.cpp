@@ -32,7 +32,7 @@ auto IIC_Bus_0 = std::make_shared<Cpp_Bus_Driver::Hardware_Iic_2>(ES8311_SDA, ES
 
 auto IIS_Bus = std::make_shared<Cpp_Bus_Driver::Hardware_Iis>(ES8311_ADC_DATA, ES8311_DAC_DATA, ES8311_WS_LRCK, ES8311_BCLK, ES8311_MCLK);
 
-auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(IIC_Bus_0, IIS_Bus, ES8311_IIC_ADDRESS, DEFAULT_CPP_BUS_DRIVER_VALUE);
+auto ES8311 = std::make_unique<Cpp_Bus_Driver::Es8311>(IIC_Bus_0, IIS_Bus, ES8311_IIC_ADDRESS);
 
 // void Iis_Data_Convert(const uint16_t *input_data, uint32_t *out_buffer, size_t input_data_start_index, size_t length)
 // {

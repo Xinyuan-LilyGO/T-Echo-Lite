@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2026-01-21 10:59:40
+ * @LastEditTime: 2026-04-08 16:39:55
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
