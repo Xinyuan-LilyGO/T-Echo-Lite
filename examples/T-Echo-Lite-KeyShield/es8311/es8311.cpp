@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-08-25 16:09:08
- * @LastEditTime: 2025-10-30 15:27:14
+ * @LastEditTime: 2026-04-14 10:11:54
  * @License: GPL 3.0
  */
 
@@ -13,8 +13,9 @@
 #include "cpp_bus_driver_library.h"
 #include "c2_b16_s44100.h"
 
-#define MCLK_MULTIPLE 32
-#define SAMPLE_RATE 44100
+#define AUDIO_MCLK_MULTIPLE 32
+#define AUDIO_SAMPLE_RATE 44100
+#define AUDIO_BITS_PER_SAMPLE 16
 #define MAX_IIS_DATA_TRANSMIT_SIZE 512
 
 uint32_t Iis_Tx_Buffer[MAX_IIS_DATA_TRANSMIT_SIZE] = {0};
@@ -124,32 +125,16 @@ void setup()
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
 
-    ES8311->begin(nrf_i2s_ratio_t ::NRF_I2S_RATIO_32X, SAMPLE_RATE, nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT);
-
-    while (1)
+    if (ES8311->begin() == true)
     {
-        if (ES8311->begin(50000) == true)
-        {
-            printf("es8311 initialization success\n");
-            break;
-        }
-        else
-        {
-            printf("es8311 initialization fail\n");
-            delay(100);
-        }
+        printf("es8311->begin success\n");
+    }
+    else
+    {
+        printf("es8311->begin fail\n");
     }
 
-    ES8311->set_master_clock_source(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_MCLK);
-    ES8311->set_clock(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_MCLK, true);
-    ES8311->set_clock(Cpp_Bus_Driver::Es8311::Clock_Source::ADC_DAC_BCLK, true);
-
-    ES8311->set_clock_coeff(MCLK_MULTIPLE, SAMPLE_RATE);
-
-    ES8311->set_serial_port_mode(Cpp_Bus_Driver::Es8311::Serial_Port_Mode::SLAVE);
-
-    ES8311->set_sdp_data_bit_length(Cpp_Bus_Driver::Es8311::Sdp::ADC, Cpp_Bus_Driver::Es8311::Bits_Per_Sample::DATA_16BIT);
-    ES8311->set_sdp_data_bit_length(Cpp_Bus_Driver::Es8311::Sdp::DAC, Cpp_Bus_Driver::Es8311::Bits_Per_Sample::DATA_16BIT);
+    ES8311->begin(AUDIO_MCLK_MULTIPLE, AUDIO_SAMPLE_RATE, AUDIO_BITS_PER_SAMPLE);
 
     // Cpp_Bus_Driver::Es8311::Power_Status ps =
     //     {
