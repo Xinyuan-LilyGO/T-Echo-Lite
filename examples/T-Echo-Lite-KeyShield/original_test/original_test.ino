@@ -2,7 +2,7 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-04-14 10:12:22
+ * @LastEditTime: 2026-04-23 15:58:51
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -486,7 +486,7 @@ void setup()
 
     vibration_start();
 
-    Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL, 4096);
+    Aw21009qnr->set_brightness(Cpp_Bus_Driver::Aw21009xxx::Led_Channel::ALL,4095);
 
     xTaskCreate(Screen_Refresh_Task, "Screen_Refresh_Task", 1 * 1024, NULL, 3, &Screen_Refresh_Task_Handle);
 
