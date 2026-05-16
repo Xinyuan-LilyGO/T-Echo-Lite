@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-30 16:33:36
+ * @LastEditTime: 2026-05-16 11:16:55
  * @License: GPL 3.0
 -->
 
@@ -41,6 +41,9 @@
 T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更小的功耗设计，最低深度睡眠功耗可达2μA-10μA（不同板子由于板载元器件差异功耗的表现可能不同，这里最低功耗采用LILYGO实验室测定的工程板），板载丰富的功能，惯性传感器、LORA模块、太阳能充电功能（5V）、外置GPS等功能，及其优秀的功耗表现使得T-Echo-Lite能够拥有更为出色的续航。
 
 T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬声器、麦克风、振动等外设。
+
+> [!IMPORTANT]
+> 重要说明：L76K模块和ICM20948模块属于外扩模块默认购买链接不提供这两个模块（其中ICM20948模块为焊接的方式连接，L76K模块为排针的方式连接），需要单独购买。
 
 ## 预览
 
@@ -112,6 +115,9 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 * 相关资料：
     >[L76KB-A58](./information/L76KB-A58.pdf)
 
+> [!IMPORTANT]
+> 重要说明：L76K模块属于外扩模块默认购买链接不提供这这个模块，需要单独购买。
+
 ### 5. 惯性传感器
 
 * 芯片：ICM20948
@@ -120,6 +126,9 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
     >[ICM20948_WE](https://github.com/wollewald/ICM20948_WE)
 * 相关资料：
     >[ICM20948](./information/ICM20948.pdf)
+    
+> [!IMPORTANT]
+> 重要说明：ICM20948模块属于外扩模块默认购买链接不提供这这个模块，需要单独购买。
 
 ### 6. Flash
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2025-10-30 16:32:48
+ * @LastEditTime: 2026-05-16 11:17:11
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -40,6 +40,9 @@
 T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume and lower power consumption design compared to T-Echo. Its minimum deep sleep power consumption can reach 2μA to 10μA (due to differences in onboard components on different boards, power consumption performance may vary; the minimum power consumption mentioned here is based on the engineering board tested by the LILYGO laboratory). The board is equipped with a rich set of features, including an inertial sensor, LORA module, solar charging function (5V), external GPS, and more. Its excellent power consumption performance allows T-Echo-Lite to achieve superior battery life.
 
 T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extending peripherals such as a keyboard, speaker, microphone, and vibration motor.
+
+> [!IMPORTANT]
+> Important note: The L76K module and the ICM20948 module are external expansion modules. The default purchase link does not include these two modules (the ICM20948 module is connected via soldering, while the L76K module is connected via pin headers). They need to be purchased separately.
 
 ## Preview
 
@@ -107,6 +110,9 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
 *   Related Documentation:
     > [L76KB-A58](./information/L76KB-A58.pdf)  
 
+> [!IMPORTANT]
+> Important note: The L76K module is an external expansion module. The default purchase link does not include this module, so it needs to be purchased separately.
+
 ### 5. Inertial Measurement Unit
 *   Chip: ICM20948
 *   Bus Communication Protocol: IIC
@@ -114,6 +120,9 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
     >[ICM20948_WE](https://github.com/wollewald/ICM20948_WE)
 *   Related Documentation:
     > [ICM20948](./information/ICM20948.pdf)  
+
+> [!IMPORTANT]
+> Important note: The ICM20948 module is an external expansion module. The default purchase link does not include this module, so it needs to be purchased separately.
 
 ### 6. Flash
 *   Chip: ZD25WQ32CEIGR
