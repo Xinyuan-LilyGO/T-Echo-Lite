@@ -103,13 +103,13 @@ int main(int argc, char *argv[]) {
 
   // Derive font table names from filename.  Period (filename
   // extension) is truncated and replaced with the font size & bits.
-  strcpy(fontName, ptr);
+  snprintf(fontName, strlen(ptr) + 20, "%s", ptr);
   ptr = strrchr(fontName, '.'); // Find last period (file ext)
   if (!ptr)
     ptr = &fontName[strlen(fontName)]; // If none, append
   // Insert font size and 7/8 bit.  fontName was alloc'd w/extra
   // space to allow this, we're not sprintfing into Forbidden Zone.
-  sprintf(ptr, "%dpt%db", size, (last > 127) ? 8 : 7);
+  snprintf(ptr, 20, "%dpt%db", size, (last > 127) ? 8 : 7);
   // Space and punctuation chars in name replaced w/ underscores.
   for (i = 0; (c = fontName[i]); i++) {
     if (isspace(c) || ispunct(c))
