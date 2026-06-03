@@ -39,9 +39,9 @@
 // #define SPEAKER_DATA EXT_2X5P_2_IO_1_6
 // #define SPEAKER_WS_LRCK EXT_2X5P_2_IO_0_25
 
-// AW21009QNR
-#define AW21009QNR_SDA IIC_1_SDA
-#define AW21009QNR_SCL IIC_1_SCL
+// AW21009
+#define AW21009_SDA IIC_1_SDA
+#define AW21009_SCL IIC_1_SCL
 
 ////////////////////////////////////////////////// gpio config //////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ const std::string Tca8418_Map[] =
 // AW86224
 #define AW86224_IIC_ADDRESS 0x58
 
-// AW21009QNR
-#define AW21009QNR_IIC_ADDRESS 0x20
+// AW21009
+#define AW21009_IIC_ADDRESS 0x20
 
 ////////////////////////////////////////////////// other define config //////////////////////////////////////////////////
