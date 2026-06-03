@@ -2,23 +2,20 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-03 12:11:16
+ * @LastEditTime: 2026-06-03 17:59:29
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
 #include <Arduino.h>
 #include <Wire.h>
 
-#include "Adafruit_EPD.h"
-#include "Display_Fonts.h"
 #include "c2_b16_s44100_2.h"
 #include "c2_b16_s44100_3.h"
 #include "cpp_bus_driver_library.h"
-#include "material_monochrome_176x192px.h"
+#include "lvgl_port.h"
 #include "t_echo_lite_keyshield_config.h"
 
 static constexpr char kSoftwareName[] = "Original_Test";
-static constexpr char kSoftwareLastEditTime[] = "202604090958";
 static constexpr char kBoardVersion[] = "V1.0";
 static constexpr uint8_t kAudioMclkMultiple = 32;
 static constexpr uint32_t kAudioSampleRate = 44100;
@@ -38,6 +35,8 @@ static constexpr cpp_bus_driver::Aw862xx::RamWaveformLibrary
 static constexpr float kAdcReferenceMv = 3000.0f;
 static constexpr float kAdcResolutionCount = 4096.0f;
 static constexpr float kBatteryDividerRatio = 2.0f;
+static constexpr uint32_t kScreenRefreshTaskPeriodMs = 10;
+static constexpr uint16_t kScreenRefreshTaskStackSize = 2048;
 
 struct SleepOperator {
   enum class Mode : uint8_t {
@@ -51,8 +50,6 @@ struct SleepOperator {
 std::vector<std::string> current_text;
 
 bool screen_refresh_flag = false;
-
-bool screen_partial_refresh_init_lock = false;
 
 uint32_t iis_tx_buffer[2][kMaxIisDataTransmitSize] = {0};
 uint32_t iis_rx_buffer[kMaxIisDataTransmitSize] = {0};
@@ -68,9 +65,65 @@ size_t fast_refresh_count = 0;
 
 TaskHandle_t screen_refresh_task_handle = nullptr;
 
-SPIClass custom_spi1(NRF_SPIM1, SCREEN_MISO, SCREEN_SCLK, SCREEN_MOSI);
-Adafruit_SSD1681 display(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_DC, SCREEN_RST,
-    SCREEN_CS, SCREEN_SRAM_CS, SCREEN_BUSY, &custom_spi1, 8000000);
+uint8_t DigitOrZero(char value) {
+  return value >= '0' && value <= '9' ? value - '0' : 0;
+}
+
+uint8_t ParseBuildMonth(const char* date) {
+  if (date[0] == 'J' && date[1] == 'a') {
+    return 1;
+  }
+  if (date[0] == 'F') {
+    return 2;
+  }
+  if (date[0] == 'M' && date[2] == 'r') {
+    return 3;
+  }
+  if (date[0] == 'A' && date[1] == 'p') {
+    return 4;
+  }
+  if (date[0] == 'M' && date[2] == 'y') {
+    return 5;
+  }
+  if (date[0] == 'J' && date[2] == 'n') {
+    return 6;
+  }
+  if (date[0] == 'J' && date[2] == 'l') {
+    return 7;
+  }
+  if (date[0] == 'A' && date[1] == 'u') {
+    return 8;
+  }
+  if (date[0] == 'S') {
+    return 9;
+  }
+  if (date[0] == 'O') {
+    return 10;
+  }
+  if (date[0] == 'N') {
+    return 11;
+  }
+  if (date[0] == 'D') {
+    return 12;
+  }
+  return 0;
+}
+
+String GetSoftwareBuildTime() {
+  static constexpr char kBuildDate[] = __DATE__;
+  static constexpr char kBuildTime[] = __TIME__;
+  char build_time[13] = {0};
+  const uint8_t month = ParseBuildMonth(kBuildDate);
+  const uint8_t day =
+      DigitOrZero(kBuildDate[4]) * 10 + DigitOrZero(kBuildDate[5]);
+
+  snprintf(build_time, sizeof(build_time), "%c%c%c%c%02u%02u%c%c%c%c",
+      kBuildDate[7], kBuildDate[8], kBuildDate[9], kBuildDate[10],
+      static_cast<unsigned int>(month), static_cast<unsigned int>(day),
+      kBuildTime[0], kBuildTime[1], kBuildTime[3], kBuildTime[4]);
+
+  return String(build_time);
+}
 
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetTca8418I2cBus() {
   static auto tca8418_i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c2>(
@@ -414,46 +467,12 @@ void ScreenRefreshTask(void* arg) {
   while (true) {
     if (screen_refresh_flag) {
       screen_refresh_flag = false;
-
-      if (current_text.size() == 0) {
-        display.fillScreen(EPD_WHITE);
-        display.clearBuffer();
-        display.setTextColor(EPD_BLACK);
-        display.setTextSize(1);
-        display.setFont(&FreeSans9pt7b);
-        display.setCursor(15, 70);
-        display.print("Please enter the text");
-
-        display.display(display.Update_Mode::FAST_REFRESH, true);
-      } else {
-        std::string show_text;
-        for (uint8_t i = 0; i < current_text.size(); i++) {
-          show_text += "[" + current_text[i] + "]\n";
-        }
-        display.fillScreen(EPD_WHITE);
-        display.clearBuffer();
-        display.setTextColor(EPD_BLACK);
-        display.setTextSize(1);
-        display.setFont(&FreeSans9pt7b);
-        display.setCursor(0, 13);
-        display.print(show_text.c_str());
-
-        if (partial_refresh_flag) {
-          if (!screen_partial_refresh_init_lock) {
-            display.setRAMValueBaseMap(display.Update_Mode::FAST_REFRESH);
-            screen_partial_refresh_init_lock = true;
-          }
-          display.display(display.Update_Mode::PARTIAL_REFRESH, true);
-        } else {
-          display.display(display.Update_Mode::FAST_REFRESH, true, false);
-
-          partial_refresh_flag = true;
-          screen_partial_refresh_init_lock = false;
-        }
-      }
+      lvgl_port::ShowTextList(current_text, partial_refresh_flag);
+      partial_refresh_flag = true;
     }
 
-    delay(10);
+    lvgl_port::Tick(kScreenRefreshTaskPeriodMs);
+    delay(kScreenRefreshTaskPeriodMs);
   }
 }
 
@@ -462,7 +481,7 @@ void SetSystemSleep(bool enable) {
     auto& es8311_i2s_bus = GetEs8311I2sBus();
 
     Serial.end();
-    display.end();
+    lvgl_port::EndDisplay();
     pinMode(SCREEN_BS1, INPUT);
 
     Wire.end();
@@ -487,8 +506,7 @@ void SetSystemSleep(bool enable) {
     Serial.begin(115200);
     pinMode(SCREEN_BS1, OUTPUT);
     digitalWrite(SCREEN_BS1, LOW);
-    display.begin();
-    display.setRotation(1);
+    lvgl_port::BeginDisplay();
 
     InitTca8418();
     InitAw21009(kAw21009MaxBrightness);
@@ -501,17 +519,9 @@ void SetSystemSleep(bool enable) {
 
 void setup() {
   Serial.begin(115200);
-  uint8_t serial_init_count = 0;
-  while (!Serial) {
-    delay(100);  // Wait for native USB.
-    serial_init_count++;
-    if (serial_init_count > 30) {
-      break;
-    }
-  }
-  Serial.println("Ciallo");
+  const String build_time = GetSoftwareBuildTime();
   Serial.println(String("[T-Echo-Lite-KeyShield_") + kBoardVersion + "][" +
-                 kSoftwareName + "]_firmware_" + kSoftwareLastEditTime);
+                 kSoftwareName + "]_firmware_" + build_time);
 
   // 3.3V Power ON
   pinMode(RT9080_EN, OUTPUT);
@@ -520,7 +530,7 @@ void setup() {
   digitalWrite(RT9080_EN, LOW);
   delay(100);
   digitalWrite(RT9080_EN, HIGH);
-  delay(1000);
+  delay(200);
 
   pinMode(SCREEN_BS1, OUTPUT);
   digitalWrite(SCREEN_BS1, LOW);
@@ -535,41 +545,16 @@ void setup() {
   InitAw86224();
   InitEs8311();
 
-  display.begin();
-  display.setRotation(1);
-  display.fillScreen(EPD_WHITE);
-  display.drawBitmap(0, 0, gImage_1, 192, 176, EPD_BLACK);
-
-  display.setTextColor(EPD_WHITE);
-  display.setTextSize(1);
-  display.setFont(&Org_01);
-  display.setCursor(25, 90);
-  display.print("MCU: nRF52840");
-  display.setCursor(25, 100);
-  display.print("Screen: GDEM0122T61");
-  display.setCursor(25, 110);
-  display.print("Keyboard: Tca8418");
-  display.setCursor(25, 120);
-  display.print("Dac: Es8311");
-  display.setCursor(25, 130);
-  display.print("Vibration: Aw86224");
-
-  display.setCursor(25, 150);
-  display.print("Software: " + String(kSoftwareName));
-  display.setCursor(25, 160);
-  display.print("LastEditTime: " + String(kSoftwareLastEditTime));
-
-  display.display(display.Update_Mode::FULL_REFRESH, true);
+  lvgl_port::Init();
+  lvgl_port::ShowBootScreen(build_time.c_str());
 
   PlayMusic(c2_b16_s44100_2, sizeof(c2_b16_s44100_2));
-
-  delay(3000);
 
   GetAw21009().SetBrightness(
       cpp_bus_driver::Aw21009::LedChannel::kAll, kAw21009MaxBrightness);
 
-  xTaskCreate(ScreenRefreshTask, "ScreenRefreshTask", 1024, nullptr, 3,
-      &screen_refresh_task_handle);
+  xTaskCreate(ScreenRefreshTask, "ScreenRefreshTask",
+      kScreenRefreshTaskStackSize, nullptr, 3, &screen_refresh_task_handle);
 
   screen_refresh_flag = true;
 
@@ -583,12 +568,7 @@ void loop() {
     Serial.println("Light sleep on");
 
     // 显示休眠提示。
-    display.fillScreen(EPD_WHITE);
-    display.setCursor(15, 70);
-    display.setTextColor(EPD_BLACK);
-    display.setFont(&FreeSans9pt7b);
-    display.print("Light sleep on");
-    display.display(display.Update_Mode::FAST_REFRESH, true);
+    lvgl_port::ShowCenteredText("Light sleep on");
 
     delay(3000);
     SetSystemSleep(true);
@@ -602,10 +582,7 @@ void loop() {
 
       Serial.println("Awakening");
 
-      display.fillScreen(EPD_WHITE);
-      display.setCursor(15, 70);
-      display.print("Awakening");
-      display.display(display.Update_Mode::FAST_REFRESH, true);
+      lvgl_port::ShowCenteredText("Awakening");
 
       sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
       // 重置自动休眠计时。
