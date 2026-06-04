@@ -2,27 +2,25 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-04 09:01:26
+ * @LastEditTime: 2026-06-04 16:23:36
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
 #include <Arduino.h>
 #include <Wire.h>
 
-#include "c2_b16_s44100_2.h"
-#include "c2_b16_s44100_3.h"
+#include <algorithm>
+
 #include "cpp_bus_driver_library.h"
+#include "lvgl.h"
 #include "lvgl_port.h"
 #include "t_echo_lite_keyshield_config.h"
 
-static constexpr char kSoftwareName[] = "Original_Test";
-static constexpr char kBoardVersion[] = "V1.0";
+static constexpr char kDisplaySoftwareName[] = "general_test";
+static constexpr char kBoardVersion[] = "v1.0";
 static constexpr uint8_t kAudioMclkMultiple = 32;
 static constexpr uint32_t kAudioSampleRate = 44100;
 static constexpr uint8_t kAudioBitsPerSample = 16;
-static constexpr size_t kMaxIisDataTransmitSize = 1024;
-static constexpr size_t kIisTxBufferBytes =
-    kMaxIisDataTransmitSize * sizeof(uint32_t);
 static constexpr size_t kMaxCurrentTextCount = 8;
 static constexpr uint32_t kAutoSleepTimeoutMs = 10000;
 static constexpr uint16_t kAw21009MaxBrightness = 4095;
@@ -35,8 +33,13 @@ static constexpr cpp_bus_driver::Aw862xx::RamWaveformLibrary
 static constexpr float kAdcReferenceMv = 3000.0f;
 static constexpr float kAdcResolutionCount = 4096.0f;
 static constexpr float kBatteryDividerRatio = 2.0f;
+static constexpr float kBatteryEmptyVoltage = 3.6f;
+static constexpr float kBatteryFullVoltage = 4.2f;
+static constexpr uint8_t kBatteryAdcSampleCount = 16;
 static constexpr uint32_t kScreenRefreshTaskPeriodMs = 10;
 static constexpr uint16_t kScreenRefreshTaskStackSize = 2048;
+static constexpr size_t kHomeVisibleLineCount = 10;
+static constexpr size_t kHomeScrollStep = kHomeVisibleLineCount / 2;
 
 struct SleepOperator {
   enum class Mode : uint8_t {
@@ -47,18 +50,17 @@ struct SleepOperator {
   Mode current_mode = Mode::kNotSleep;
 };
 
+enum class UiPage : uint8_t {
+  kHome,
+  kKeyboardTest,
+};
+
 std::vector<std::string> current_text;
 
 bool screen_refresh_flag = false;
-
-uint32_t iis_tx_buffer[2][kMaxIisDataTransmitSize] = {0};
-uint32_t iis_rx_buffer[kMaxIisDataTransmitSize] = {0};
-
-uint8_t current_iis_tx_buffer_index = 0;
-bool iis_tx_buffer_full[2] = {false};
-
-// 已发送的数据大小。
-size_t iis_send_data_size = 0;
+UiPage current_page = UiPage::kHome;
+bool page_selected = false;
+size_t home_scroll_index = 0;
 
 bool partial_refresh_flag = true;
 size_t fast_refresh_count = 0;
@@ -125,6 +127,107 @@ String GetSoftwareBuildTime() {
   return String(build_time);
 }
 
+const char* GetMcuModelName() {
+#if defined(NRF52840_XXAA)
+  return "nRF52840";
+#elif defined(NRF52833_XXAA)
+  return "nRF52833";
+#else
+  return "nRF52";
+#endif
+}
+
+uint32_t GetFlashSizeKb() {
+#if defined(NRF52840_XXAA)
+  return 1024;
+#else
+  return 0;
+#endif
+}
+
+uint32_t GetRamSizeKb() {
+#if defined(NRF52840_XXAA)
+  return 256;
+#else
+  return 0;
+#endif
+}
+
+std::string GetDeviceIdText() {
+  char text[32] = {};
+  snprintf(text, sizeof(text), "%08lX-%08lX",
+      static_cast<unsigned long>(NRF_FICR->DEVICEID[0]),
+      static_cast<unsigned long>(NRF_FICR->DEVICEID[1]));
+  return text;
+}
+
+std::vector<std::string> CreateHomeScreenLines() {
+  const String build_time = GetSoftwareBuildTime();
+  const std::string device_id = GetDeviceIdText();
+  std::vector<std::string> lines;
+  char line[64] = {};
+  snprintf(line, sizeof(line), "T-Echo-Lite KeyShield  %s", kBoardVersion);
+  lines.push_back(line);
+  lines.push_back("");
+  lines.push_back("[Chip]");
+  snprintf(line, sizeof(line), "model: %s", GetMcuModelName());
+  lines.push_back(line);
+  snprintf(line, sizeof(line), "clock: %luMHz",
+      static_cast<unsigned long>(SystemCoreClock / 1000000));
+  lines.push_back(line);
+  snprintf(line, sizeof(line), "id: %s", device_id.c_str());
+  lines.push_back(line);
+  lines.push_back("");
+  lines.push_back("[Memory]");
+  snprintf(line, sizeof(line), "flash / ram: %lu / %luKB",
+      static_cast<unsigned long>(GetFlashSizeKb()),
+      static_cast<unsigned long>(GetRamSizeKb()));
+  lines.push_back(line);
+  lines.push_back("");
+  lines.push_back("[Software]");
+  snprintf(line, sizeof(line), "name: %s", kDisplaySoftwareName);
+  lines.push_back(line);
+  snprintf(line, sizeof(line), "build: %s", build_time.c_str());
+  lines.push_back(line);
+  lines.push_back("");
+  lines.push_back("[Screen]");
+  lines.push_back("type: SSD1681 EPD");
+  snprintf(
+      line, sizeof(line), "size: %d x %dpx", SCREEN_HEIGHT, SCREEN_WIDTH);
+  lines.push_back(line);
+  lines.push_back("");
+  lines.push_back("[LVGL]");
+  snprintf(line, sizeof(line), "version: v%d.%d.%d", LVGL_VERSION_MAJOR,
+      LVGL_VERSION_MINOR, LVGL_VERSION_PATCH);
+  lines.push_back(line);
+  return lines;
+}
+
+const char* GetUiPageName(UiPage page) {
+  switch (page) {
+    case UiPage::kHome:
+      return "Home";
+    case UiPage::kKeyboardTest:
+      return "Keyboard";
+    default:
+      return "Unknown";
+  }
+}
+
+UiPage GetNextUiPage(UiPage page) {
+  return page == UiPage::kHome ? UiPage::kKeyboardTest : UiPage::kHome;
+}
+
+UiPage GetPreviousUiPage(UiPage page) {
+  return page == UiPage::kHome ? UiPage::kKeyboardTest : UiPage::kHome;
+}
+
+size_t GetHomeMaxScrollIndex() {
+  const size_t line_count = CreateHomeScreenLines().size();
+  return line_count > kHomeVisibleLineCount ? line_count - kHomeVisibleLineCount
+                                            : 0;
+}
+
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetTca8418I2cBus() {
   static auto tca8418_i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c2>(
       TCA8418_SDA, TCA8418_SCL, &Wire);
@@ -181,17 +284,9 @@ cpp_bus_driver::Es8311& GetEs8311() {
 }
 
 SleepOperator sleep_op;
+volatile bool boot_wake_requested = false;
 
-void CopyIisData(const void* input_data, void* out_buffer,
-    size_t input_data_start_index, size_t byte) {
-  const uint8_t* input_ptr =
-      static_cast<const uint8_t*>(input_data) + input_data_start_index;
-  uint8_t* out_ptr = static_cast<uint8_t*>(out_buffer);
-
-  memcpy(out_ptr, input_ptr, byte);
-}
-
-uint8_t GetNextIisTxBufferIndex(uint8_t index) { return index == 0 ? 1 : 0; }
+void BootWakeInterruptCallback() { boot_wake_requested = true; }
 
 void StartVibration() {
   auto& aw86224 = GetAw86224();
@@ -199,127 +294,6 @@ void StartVibration() {
           kVibrationSequence, kVibrationLoopCount, kVibrationGain, true)) {
     printf("StartVibration failed\n");
   }
-}
-
-void ReadMicrophone() {
-  auto& es8311 = GetEs8311();
-
-  printf("ReadMicrophone start\n");
-  if (!es8311.StartTransmitI2s(
-          nullptr, iis_rx_buffer, kMaxIisDataTransmitSize)) {
-    printf("ReadMicrophone failed (es8311.StartTransmitI2s failed)\n");
-  }
-
-  size_t timeout_count = 0;
-
-  for (size_t i = 0; i < 2; i++) {
-    while (true) {
-      if (es8311.GetReadI2sEventFlag()) {
-        es8311.SetNextReadI2s(iis_rx_buffer);
-        break;
-      }
-
-      timeout_count++;
-      if (timeout_count > 10) {
-        printf("ReadMicrophone timeout\n");
-        break;
-      }
-      delay(10);
-    }
-  }
-
-  printf("ReadMicrophone finished\n");
-  es8311.StopTransmitI2s();
-}
-
-bool PlayMusic(const uint16_t* data, size_t size) {
-  // 这边测试音乐太吵暂时静音一下
-  return true;
-  auto& es8311 = GetEs8311();
-
-  // 播放音乐测试。
-  printf("PlayMusic start\n");
-
-  current_iis_tx_buffer_index = 0;
-  iis_tx_buffer_full[0] = false;
-  iis_tx_buffer_full[1] = false;
-  iis_send_data_size = 0;
-  CopyIisData(
-      data, iis_tx_buffer[current_iis_tx_buffer_index], 0, kIisTxBufferBytes);
-  iis_tx_buffer_full[current_iis_tx_buffer_index] = true;
-
-  if (es8311.StartTransmitI2s(iis_tx_buffer[current_iis_tx_buffer_index],
-          nullptr, kMaxIisDataTransmitSize)) {
-    iis_send_data_size += kIisTxBufferBytes;
-
-    iis_tx_buffer_full[current_iis_tx_buffer_index] = false;
-    current_iis_tx_buffer_index =
-        GetNextIisTxBufferIndex(current_iis_tx_buffer_index);
-  } else {
-    printf("PlayMusic failed (es8311.StartTransmitI2s failed)\n");
-
-    return false;
-  }
-
-  while (true) {
-    if (iis_send_data_size >= size) {
-      printf("PlayMusic finished, sent bytes: %u\n",
-          static_cast<unsigned int>(iis_send_data_size));
-      es8311.StopTransmitI2s();
-
-      break;
-    } else {
-      const uint8_t next_buffer_index =
-          GetNextIisTxBufferIndex(current_iis_tx_buffer_index);
-      if (!iis_tx_buffer_full[current_iis_tx_buffer_index]) {
-        size_t buffer_length =
-            min(kIisTxBufferBytes, size - iis_send_data_size);
-
-        // printf("iis_send_data_size: %d\n", iis_send_data_size);
-        // printf("iis send data length: %d\n", buffer_length);
-
-        if (buffer_length != kIisTxBufferBytes) {
-          memset(
-              iis_tx_buffer[current_iis_tx_buffer_index], 0, kIisTxBufferBytes);
-        }
-        CopyIisData(data, iis_tx_buffer[current_iis_tx_buffer_index],
-            iis_send_data_size, buffer_length);
-
-        iis_send_data_size += buffer_length;
-
-        iis_tx_buffer_full[current_iis_tx_buffer_index] = true;
-      } else if (!iis_tx_buffer_full[next_buffer_index]) {
-        size_t buffer_length =
-            min(kIisTxBufferBytes, size - iis_send_data_size);
-
-        // printf("iis_send_data_size: %d\n", iis_send_data_size);
-        // printf("iis send data length: %d\n", buffer_length);
-
-        if (buffer_length != kIisTxBufferBytes) {
-          memset(iis_tx_buffer[next_buffer_index], 0, kIisTxBufferBytes);
-        }
-        CopyIisData(data, iis_tx_buffer[next_buffer_index], iis_send_data_size,
-            buffer_length);
-
-        iis_send_data_size += buffer_length;
-
-        iis_tx_buffer_full[next_buffer_index] = true;
-      }
-    }
-
-    if (es8311.GetWriteI2sEventFlag()) {
-      if (iis_tx_buffer_full[current_iis_tx_buffer_index]) {
-        es8311.SetNextWriteI2s(iis_tx_buffer[current_iis_tx_buffer_index]);
-
-        iis_tx_buffer_full[current_iis_tx_buffer_index] = false;
-
-        current_iis_tx_buffer_index =
-            GetNextIisTxBufferIndex(current_iis_tx_buffer_index);
-      }
-    }
-  }
-
-  return true;
 }
 
 bool InitEs8311() {
@@ -454,10 +428,61 @@ void ConfigureBatteryMeasurement() {
 }
 
 float ReadBatteryVoltage() {
-  return ((static_cast<float>(analogRead(BATTERY_ADC_DATA)) *
-              (kAdcReferenceMv / kAdcResolutionCount)) /
-             1000.0f) *
+  uint32_t adc_sum = 0;
+  for (uint8_t i = 0; i < kBatteryAdcSampleCount; i++) {
+    adc_sum += analogRead(BATTERY_ADC_DATA);
+  }
+
+  const float adc_average =
+      static_cast<float>(adc_sum) / kBatteryAdcSampleCount;
+  return ((adc_average * (kAdcReferenceMv / kAdcResolutionCount)) / 1000.0f) *
          kBatteryDividerRatio;
+}
+
+uint8_t ReadBatteryPercentage() {
+  const float voltage = ReadBatteryVoltage();
+  if (voltage <= kBatteryEmptyVoltage) {
+    return 0;
+  }
+  if (voltage >= kBatteryFullVoltage) {
+    return 100;
+  }
+
+  return static_cast<uint8_t>(((voltage - kBatteryEmptyVoltage) * 100.0f) /
+                              (kBatteryFullVoltage - kBatteryEmptyVoltage));
+}
+
+void UpdateStatusBar() {
+  static bool initialized = false;
+  static uint8_t filtered_percentage = 0;
+
+  const uint8_t current_percentage = ReadBatteryPercentage();
+  if (!initialized) {
+    filtered_percentage = current_percentage;
+    initialized = true;
+  } else {
+    const int16_t delta =
+        static_cast<int16_t>(current_percentage) - filtered_percentage;
+    if (delta >= 2 || delta <= -2) {
+      filtered_percentage =
+          static_cast<uint8_t>((static_cast<uint16_t>(filtered_percentage) * 3 +
+                                   current_percentage) /
+                               4);
+    }
+  }
+
+  lvgl_port::SetBatteryPercentage(filtered_percentage);
+}
+
+void RefreshCurrentPage(bool partial_refresh, bool busy_enable) {
+  if (current_page == UiPage::kHome) {
+    const std::vector<std::string> home_lines = CreateHomeScreenLines();
+    lvgl_port::ShowHomeScreen(home_lines, home_scroll_index,
+        GetUiPageName(current_page), page_selected, busy_enable);
+  } else {
+    lvgl_port::ShowTextList(current_text, GetUiPageName(current_page),
+        page_selected, partial_refresh, busy_enable);
+  }
 }
 
 void ScreenRefreshTask(void* arg) {
@@ -467,7 +492,8 @@ void ScreenRefreshTask(void* arg) {
   while (true) {
     if (screen_refresh_flag) {
       screen_refresh_flag = false;
-      lvgl_port::ShowTextList(current_text, partial_refresh_flag);
+      UpdateStatusBar();
+      RefreshCurrentPage(partial_refresh_flag, false);
       partial_refresh_flag = true;
     }
 
@@ -521,14 +547,14 @@ void setup() {
   Serial.begin(115200);
   const String build_time = GetSoftwareBuildTime();
   Serial.println(String("[T-Echo-Lite-KeyShield_") + kBoardVersion + "][" +
-                 kSoftwareName + "]_firmware_" + build_time);
+                 kDisplaySoftwareName + "]_firmware_" + build_time);
 
   // 3.3V Power ON
   pinMode(RT9080_EN, OUTPUT);
   digitalWrite(RT9080_EN, HIGH);
   delay(100);
   digitalWrite(RT9080_EN, LOW);
-  delay(100);
+  delay(1500);
   digitalWrite(RT9080_EN, HIGH);
   delay(200);
 
@@ -536,6 +562,7 @@ void setup() {
   digitalWrite(SCREEN_BS1, LOW);
 
   pinMode(nRF52840_BOOT, INPUT_PULLUP);
+  attachInterrupt(nRF52840_BOOT, BootWakeInterruptCallback, FALLING);
 
   pinMode(TCA8418_INT, INPUT_PULLUP);
   ConfigureBatteryMeasurement();
@@ -546,9 +573,9 @@ void setup() {
   InitEs8311();
 
   lvgl_port::Init();
+  lvgl_port::SetSleepMode(false);
+  UpdateStatusBar();
   lvgl_port::ShowBootScreen();
-
-  PlayMusic(c2_b16_s44100_2, sizeof(c2_b16_s44100_2));
 
   GetAw21009().SetBrightness(
       cpp_bus_driver::Aw21009::LedChannel::kAll, kAw21009MaxBrightness);
@@ -568,30 +595,35 @@ void loop() {
     Serial.println("Light sleep on");
 
     // 显示休眠提示。
-    lvgl_port::ShowCenteredText("Light sleep on");
+    lvgl_port::SetSleepMode(true);
+    UpdateStatusBar();
+    screen_refresh_flag = false;
+    RefreshCurrentPage(false, true);
 
-    delay(3000);
+    boot_wake_requested = false;
     SetSystemSleep(true);
     sleep_op.current_mode = SleepOperator::Mode::kLightSleep;
   }
 
-  // 休眠状态下的处理。
+  // 休眠状态下通过BOOT按键中断唤醒，短按也可以触发。
   if (sleep_op.current_mode == SleepOperator::Mode::kLightSleep) {
-    if (digitalRead(nRF52840_BOOT) == LOW) {
+    if (boot_wake_requested || digitalRead(nRF52840_BOOT) == LOW) {
+      boot_wake_requested = false;
       SetSystemSleep(false);
 
       Serial.println("Awakening");
 
-      lvgl_port::ShowCenteredText("Awakening");
+      lvgl_port::SetSleepMode(false);
+      UpdateStatusBar();
+      screen_refresh_flag = false;
+      RefreshCurrentPage(false, true);
 
       sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
       // 重置自动休眠计时。
       ResetAutoSleepTimer();
     } else {
       waitForEvent();
-      delay(1000);
-
-      // systemOff(nRF52840_BOOT, LOW);
+      return;
     }
   }
 
@@ -650,32 +682,69 @@ void loop() {
                         Tca8418_Map[key_index].c_str());
 
                     if (tp.info[i].press_flag) {
-                      // 有按键操作就刷新自动休眠计时。
+                      // 重置自动休眠计时。
                       ResetAutoSleepTimer();
 
-                      AddCurrentText(Tca8418_Map[key_index]);
-
-                      PlayMusic(c2_b16_s44100_3, sizeof(c2_b16_s44100_3));
-
-                      if (Tca8418_Map[key_index] == "Home") {
-                        float voltage = ReadBatteryVoltage();
-                        char voltage_str[32];
-                        snprintf(voltage_str, sizeof(voltage_str), "Bat:%.3fv",
-                            voltage);
-
-                        AddCurrentText(voltage_str);
-
-                        ReadMicrophone();
-
-                        int16_t buffer_microphone =
-                            static_cast<int16_t>(iis_rx_buffer[0]);
-                        char microphone_str[32];
-                        snprintf(microphone_str, sizeof(microphone_str),
-                            "Mic:%d", buffer_microphone);
-
-                        AddCurrentText(microphone_str);
+                      const std::string& key_text = Tca8418_Map[key_index];
+                      if (key_text == "Home") {
+                        current_page = UiPage::kHome;
+                        page_selected = false;
+                        home_scroll_index = 0;
+                        partial_refresh_flag = false;
+                        screen_refresh_flag = true;
+                        StartVibration();
+                        break;
                       }
 
+                      if (!page_selected) {
+                        if (key_text == "Down") {
+                          current_page = GetNextUiPage(current_page);
+                        } else if (key_text == "Up") {
+                          current_page = GetPreviousUiPage(current_page);
+                        } else if (key_text == "Center") {
+                          page_selected = true;
+                        } else {
+                          break;
+                        }
+                        partial_refresh_flag = false;
+                        screen_refresh_flag = true;
+                        StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kHome) {
+                        if (key_text == "Down") {
+                          const size_t max_scroll_index =
+                              GetHomeMaxScrollIndex();
+                          home_scroll_index =
+                              std::min(home_scroll_index + kHomeScrollStep,
+                                  max_scroll_index);
+                        } else if (key_text == "Up") {
+                          home_scroll_index =
+                              home_scroll_index > kHomeScrollStep
+                                  ? home_scroll_index - kHomeScrollStep
+                                  : 0;
+                        } else if (key_text == "Esc") {
+                          page_selected = false;
+                        } else {
+                          break;
+                        }
+                        partial_refresh_flag = false;
+                        screen_refresh_flag = true;
+                        StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kKeyboardTest &&
+                          key_text == "Esc") {
+                        page_selected = false;
+                        partial_refresh_flag = false;
+                        screen_refresh_flag = true;
+                        StartVibration();
+                        break;
+                      }
+
+                      AddCurrentText(key_text);
                       StartVibration();
 
                       fast_refresh_count++;

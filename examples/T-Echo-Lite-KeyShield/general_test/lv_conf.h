@@ -24,8 +24,11 @@
 #define LV_FONT_MONTSERRAT_14 0
 #define LV_FONT_MONTSERRAT_28 0
 #define LV_FONT_CUSTOM_DECLARE \
-  LV_FONT_DECLARE(google_sans_flex_14) LV_FONT_DECLARE(google_sans_flex_28)
-#define LV_FONT_DEFAULT &google_sans_flex_14
+  LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_13) \
+  LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_14) \
+  LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_28) \
+  LV_FONT_DECLARE(lvgl_font_material_symbols_rounded_20)
+#define LV_FONT_DEFAULT &lvgl_font_google_sans_flex_regular_14
 #define LV_USE_LABEL 1
 
 #endif  // LV_CONF_H
