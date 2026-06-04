@@ -7,32 +7,24 @@
  */
 #include <Adafruit_TinyUSB.h>
 #include <Arduino.h>
-#include <SPI.h>
 #include <Wire.h>
 
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
 
-#include "Adafruit_SPIFlash.h"
+#include "audio_view.h"
 #include "cpp_bus_driver_library.h"
+#include "home_view.h"
+#include "keyboard_view.h"
 #include "lvgl.h"
 #include "lvgl_port.h"
 #include "t_echo_lite_keyshield_config.h"
 
-static constexpr char kDisplaySoftwareName[] = "general_test";
-static constexpr char kBoardVersion[] = "v1.0";
 static constexpr uint8_t kAudioMclkMultiple = 32;
 static constexpr uint32_t kAudioSampleRate = 44100;
 static constexpr uint8_t kAudioBitsPerSample = 16;
-static constexpr size_t kAudioBufferSampleCount = 1024;
-static constexpr size_t kAudioBufferBytes =
-    kAudioBufferSampleCount * sizeof(uint32_t);
-static constexpr uint32_t kAudioRecordSeconds = 3;
-static constexpr uint32_t kAudioRecordDataAddress = 4096;
-static constexpr uint32_t kAudioRecordBytes =
-    kAudioSampleRate * kAudioRecordSeconds * sizeof(uint32_t);
-static constexpr uint32_t kFlashSectorSize = 4096;
-static constexpr uint32_t kAudioFlashMagic = 0x41554430;
-static constexpr size_t kMaxCurrentTextCount = 8;
 static constexpr uint32_t kAutoSleepTimeoutMs = 20000;
 static constexpr uint16_t kAw21009MaxBrightness = 4095;
 static constexpr uint8_t kVibrationSequence = 1;
@@ -67,189 +59,13 @@ enum class UiPage : uint8_t {
   kAudioTest,
 };
 
-enum class AudioTarget : uint8_t {
-  kMic,
-  kSpeaker,
-};
-
-struct AudioRecordHeader {
-  uint32_t magic = 0;
-  uint32_t data_length = 0;
-};
-
-std::vector<std::string> current_text;
-
 bool screen_refresh_flag = false;
 UiPage current_page = UiPage::kHome;
-AudioTarget audio_target = AudioTarget::kMic;
-std::string audio_status_text = "Select Mic or Speaker";
 bool page_selected = false;
 size_t home_scroll_index = 0;
-uint32_t audio_recorded_length = 0;
-bool audio_record_available = false;
-uint32_t audio_buffer[2][kAudioBufferSampleCount] = {0};
-bool flash_ready = false;
-bool partial_refresh_flag = true;
-size_t fast_refresh_count = 0;
 
 TaskHandle_t screen_refresh_task_handle = nullptr;
 
-SPIClass custom_spi_flash(
-    NRF_SPIM3, ZD25WQ32C_MISO, ZD25WQ32C_SCLK, ZD25WQ32C_MOSI);
-Adafruit_FlashTransport_SPI flash_transport(ZD25WQ32C_CS, custom_spi_flash);
-Adafruit_SPIFlash flash(&flash_transport);
-SPIFlash_Device_t zd25wq32c = {
-    total_size : (1UL << 22),
-    start_up_time_us : 12000,
-    manufacturer_id : 0xBA,
-    memory_type : 0x60,
-    capacity : 0x16,
-    max_clock_speed_mhz : 104,
-    quad_enable_bit_mask : 0x02,
-    has_sector_protection : false,
-    supports_fast_read : true,
-    supports_qspi : true,
-    supports_qspi_writes : true,
-    write_status_register_split : false,
-    single_status_byte : false,
-    is_fram : false,
-};
-
-uint8_t DigitOrZero(char value) {
-  return value >= '0' && value <= '9' ? value - '0' : 0;
-}
-
-uint8_t ParseBuildMonth(const char* date) {
-  if (date[0] == 'J' && date[1] == 'a') {
-    return 1;
-  }
-  if (date[0] == 'F') {
-    return 2;
-  }
-  if (date[0] == 'M' && date[2] == 'r') {
-    return 3;
-  }
-  if (date[0] == 'A' && date[1] == 'p') {
-    return 4;
-  }
-  if (date[0] == 'M' && date[2] == 'y') {
-    return 5;
-  }
-  if (date[0] == 'J' && date[2] == 'n') {
-    return 6;
-  }
-  if (date[0] == 'J' && date[2] == 'l') {
-    return 7;
-  }
-  if (date[0] == 'A' && date[1] == 'u') {
-    return 8;
-  }
-  if (date[0] == 'S') {
-    return 9;
-  }
-  if (date[0] == 'O') {
-    return 10;
-  }
-  if (date[0] == 'N') {
-    return 11;
-  }
-  if (date[0] == 'D') {
-    return 12;
-  }
-  return 0;
-}
-
-String GetSoftwareBuildTime() {
-  static constexpr char kBuildDate[] = __DATE__;
-  static constexpr char kBuildTime[] = __TIME__;
-  char build_time[13] = {0};
-  const uint8_t month = ParseBuildMonth(kBuildDate);
-  const uint8_t day =
-      DigitOrZero(kBuildDate[4]) * 10 + DigitOrZero(kBuildDate[5]);
-
-  snprintf(build_time, sizeof(build_time), "%c%c%c%c%02u%02u%c%c%c%c",
-      kBuildDate[7], kBuildDate[8], kBuildDate[9], kBuildDate[10],
-      static_cast<unsigned int>(month), static_cast<unsigned int>(day),
-      kBuildTime[0], kBuildTime[1], kBuildTime[3], kBuildTime[4]);
-
-  return String(build_time);
-}
-
-const char* GetMcuModelName() {
-#if defined(NRF52840_XXAA)
-  return "nRF52840";
-#elif defined(NRF52833_XXAA)
-  return "nRF52833";
-#else
-  return "nRF52";
-#endif
-}
-
-uint32_t GetFlashSizeKb() {
-#if defined(NRF52840_XXAA)
-  return 1024;
-#else
-  return 0;
-#endif
-}
-
-uint32_t GetRamSizeKb() {
-#if defined(NRF52840_XXAA)
-  return 256;
-#else
-  return 0;
-#endif
-}
-
-std::string GetDeviceIdText() {
-  char text[32] = {};
-  snprintf(text, sizeof(text), "%08lX-%08lX",
-      static_cast<unsigned long>(NRF_FICR->DEVICEID[0]),
-      static_cast<unsigned long>(NRF_FICR->DEVICEID[1]));
-  return text;
-}
-
-std::vector<std::string> CreateHomeScreenLines() {
-  const String build_time = GetSoftwareBuildTime();
-  const std::string device_id = GetDeviceIdText();
-  std::vector<std::string> lines;
-  char line[64] = {};
-  snprintf(line, sizeof(line), "T-Echo-Lite KeyShield  %s", kBoardVersion);
-  lines.push_back(line);
-  lines.push_back("");
-  lines.push_back("[Chip]");
-  snprintf(line, sizeof(line), "model: %s", GetMcuModelName());
-  lines.push_back(line);
-  snprintf(line, sizeof(line), "clock: %luMHz",
-      static_cast<unsigned long>(SystemCoreClock / 1000000));
-  lines.push_back(line);
-  snprintf(line, sizeof(line), "id: %s", device_id.c_str());
-  lines.push_back(line);
-  lines.push_back("");
-  lines.push_back("[Memory]");
-  snprintf(line, sizeof(line), "flash / ram: %lu / %luKB",
-      static_cast<unsigned long>(GetFlashSizeKb()),
-      static_cast<unsigned long>(GetRamSizeKb()));
-  lines.push_back(line);
-  lines.push_back("");
-  lines.push_back("[Software]");
-  snprintf(line, sizeof(line), "name: %s", kDisplaySoftwareName);
-  lines.push_back(line);
-  snprintf(line, sizeof(line), "build: %s", build_time.c_str());
-  lines.push_back(line);
-  lines.push_back("");
-  lines.push_back("[Screen]");
-  lines.push_back("type: SSD1681 EPD");
-  snprintf(
-      line, sizeof(line), "size: %d x %dpx", SCREEN_HEIGHT, SCREEN_WIDTH);
-  lines.push_back(line);
-  lines.push_back("");
-  lines.push_back("[LVGL]");
-  snprintf(line, sizeof(line), "version: v%d.%d.%d", LVGL_VERSION_MAJOR,
-      LVGL_VERSION_MINOR, LVGL_VERSION_PATCH);
-  lines.push_back(line);
-  return lines;
-}
 
 const char* GetUiPageName(UiPage page) {
   switch (page) {
@@ -288,12 +104,6 @@ UiPage GetPreviousUiPage(UiPage page) {
     default:
       return UiPage::kHome;
   }
-}
-
-size_t GetHomeMaxScrollIndex() {
-  const size_t line_count = CreateHomeScreenLines().size();
-  return line_count > kHomeVisibleLineCount ? line_count - kHomeVisibleLineCount
-                                            : 0;
 }
 
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetTca8418I2cBus() {
@@ -375,240 +185,6 @@ void StartCompletionVibration() {
           kVibrationSequence, kVibrationLoopCount, kVibrationGain, true)) {
     printf("StartCompletionVibration second vibration failed\n");
   }
-}
-
-void ShowAudioStatus(const char* status) {
-  audio_status_text = status == nullptr ? "" : status;
-  lvgl_port::ShowAudioScreen(page_selected,
-      audio_target == AudioTarget::kMic, audio_status_text.c_str(),
-      GetUiPageName(current_page), false);
-}
-
-bool InitFlash() {
-  custom_spi_flash.setClockDivider(SPI_CLOCK_DIV2);
-  if (!flash.begin(&zd25wq32c)) {
-    printf("flash init failed\n");
-    flash_ready = false;
-    return false;
-  }
-  flash_ready = true;
-
-  AudioRecordHeader header;
-  if (flash.readBuffer(0, reinterpret_cast<uint8_t*>(&header),
-          sizeof(header)) == sizeof(header) &&
-      header.magic == kAudioFlashMagic &&
-      header.data_length > 0 && header.data_length <= kAudioRecordBytes) {
-    audio_recorded_length = header.data_length;
-    audio_record_available = true;
-  }
-  return true;
-}
-
-void StopAudio() {
-  GetEs8311().StopTransmitI2s();
-}
-
-bool EraseAudioFlashArea() {
-  const uint32_t erase_end = kAudioRecordDataAddress + kAudioRecordBytes;
-  for (uint32_t address = 0; address < erase_end;
-       address += kFlashSectorSize) {
-    if (!flash.eraseSector(address / kFlashSectorSize)) {
-      printf("flash erase sector failed: 0x%08lX\n",
-          static_cast<unsigned long>(address));
-      return false;
-    }
-    flash.waitUntilReady();
-  }
-  return true;
-}
-
-bool WaitForAudioReadEvent(uint32_t timeout_ms) {
-  auto& es8311 = GetEs8311();
-  const uint32_t deadline = millis() + timeout_ms;
-  while (millis() < deadline) {
-    if (es8311.GetReadI2sEventFlag()) {
-      return true;
-    }
-    delay(1);
-  }
-  return false;
-}
-
-bool WaitForAudioWriteEvent(uint32_t timeout_ms) {
-  auto& es8311 = GetEs8311();
-  const uint32_t deadline = millis() + timeout_ms;
-  while (millis() < deadline) {
-    if (es8311.GetWriteI2sEventFlag()) {
-      return true;
-    }
-    delay(1);
-  }
-  return false;
-}
-
-bool RecordAudioToFlash() {
-  auto& es8311 = GetEs8311();
-
-  if (!flash_ready) {
-    ShowAudioStatus("Flash not ready");
-    return false;
-  }
-
-  ShowAudioStatus("Recording 3s...");
-  StopAudio();
-  if (!EraseAudioFlashArea()) {
-    ShowAudioStatus("Flash erase failed");
-    return false;
-  }
-
-  uint8_t filling_buffer = 0;
-  uint8_t free_buffer = 1;
-  uint32_t written_bytes = 0;
-  const uint32_t record_deadline = millis() + kAudioRecordSeconds * 1000;
-
-  if (!es8311.StartTransmitI2s(
-          nullptr, audio_buffer[filling_buffer], kAudioBufferSampleCount)) {
-    ShowAudioStatus("Record start failed");
-    return false;
-  }
-
-  while (millis() < record_deadline && written_bytes < kAudioRecordBytes) {
-    if (!WaitForAudioReadEvent(200)) {
-      continue;
-    }
-
-    const uint8_t ready_buffer = filling_buffer;
-    filling_buffer = free_buffer;
-    free_buffer = ready_buffer;
-    es8311.SetNextReadI2s(audio_buffer[filling_buffer]);
-
-    const uint32_t write_bytes =
-        std::min<uint32_t>(kAudioBufferBytes, kAudioRecordBytes - written_bytes);
-    if (flash.writeBuffer(kAudioRecordDataAddress + written_bytes,
-            reinterpret_cast<uint8_t*>(audio_buffer[ready_buffer]),
-            write_bytes) != write_bytes) {
-      StopAudio();
-      ShowAudioStatus("Flash write failed");
-      return false;
-    }
-    flash.waitUntilReady();
-    written_bytes += write_bytes;
-  }
-
-  StopAudio();
-
-  AudioRecordHeader header;
-  header.magic = kAudioFlashMagic;
-  header.data_length = written_bytes;
-  if (flash.writeBuffer(0, reinterpret_cast<uint8_t*>(&header),
-          sizeof(header)) != sizeof(header)) {
-    ShowAudioStatus("Header write failed");
-    return false;
-  }
-  flash.waitUntilReady();
-
-  audio_recorded_length = written_bytes;
-  audio_record_available = written_bytes > 0;
-  ShowAudioStatus(audio_record_available ? "Record complete" : "No audio");
-  if (audio_record_available) {
-    StartCompletionVibration();
-  }
-  return audio_record_available;
-}
-
-bool LoadAudioChunk(uint32_t offset, uint8_t buffer_index, uint32_t* length) {
-  if (length == nullptr || offset >= audio_recorded_length) {
-    return false;
-  }
-
-  *length = std::min<uint32_t>(
-      kAudioBufferBytes, audio_recorded_length - offset);
-  memset(audio_buffer[buffer_index], 0, kAudioBufferBytes);
-  return flash.readBuffer(kAudioRecordDataAddress + offset,
-             reinterpret_cast<uint8_t*>(audio_buffer[buffer_index]),
-             *length) == *length;
-}
-
-bool PlayAudioFromFlash() {
-  auto& es8311 = GetEs8311();
-
-  if (!flash_ready) {
-    ShowAudioStatus("Flash not ready");
-    return false;
-  }
-
-  if (!audio_record_available || audio_recorded_length == 0) {
-    ShowAudioStatus("No audio");
-    return false;
-  }
-
-  ShowAudioStatus("Playing...");
-  StopAudio();
-
-  uint32_t loaded_bytes = 0;
-  uint32_t played_bytes = 0;
-  uint32_t buffer_length[2] = {0};
-  bool buffer_ready[2] = {false};
-  if (!LoadAudioChunk(0, 0, &buffer_length[0])) {
-    ShowAudioStatus("Audio read failed");
-    return false;
-  }
-  loaded_bytes += buffer_length[0];
-  buffer_ready[0] = true;
-
-  if (!es8311.StartTransmitI2s(audio_buffer[0], nullptr,
-          kAudioBufferSampleCount)) {
-    ShowAudioStatus("Play start failed");
-    return false;
-  }
-
-  buffer_ready[0] = false;
-  uint8_t current_buffer = 1;
-  uint32_t active_buffer_length = buffer_length[0];
-
-  while (played_bytes < audio_recorded_length) {
-    if (!buffer_ready[current_buffer] && loaded_bytes < audio_recorded_length) {
-      if (!LoadAudioChunk(
-              loaded_bytes, current_buffer, &buffer_length[current_buffer])) {
-        StopAudio();
-        ShowAudioStatus("Audio read failed");
-        return false;
-      }
-      loaded_bytes += buffer_length[current_buffer];
-      buffer_ready[current_buffer] = true;
-    }
-
-    const uint8_t next_buffer = current_buffer == 0 ? 1 : 0;
-    if (!buffer_ready[next_buffer] && loaded_bytes < audio_recorded_length) {
-      if (!LoadAudioChunk(
-              loaded_bytes, next_buffer, &buffer_length[next_buffer])) {
-        StopAudio();
-        ShowAudioStatus("Audio read failed");
-        return false;
-      }
-      loaded_bytes += buffer_length[next_buffer];
-      buffer_ready[next_buffer] = true;
-    }
-
-    if (!WaitForAudioWriteEvent(500)) {
-      continue;
-    }
-
-    played_bytes += active_buffer_length;
-    if (buffer_ready[current_buffer]) {
-      es8311.SetNextWriteI2s(audio_buffer[current_buffer]);
-      active_buffer_length = buffer_length[current_buffer];
-      buffer_ready[current_buffer] = false;
-      current_buffer = current_buffer == 0 ? 1 : 0;
-    } else if (loaded_bytes >= audio_recorded_length) {
-      break;
-    }
-  }
-
-  StopAudio();
-  ShowAudioStatus("Play complete");
-  StartCompletionVibration();
-  return true;
 }
 
 bool InitEs8311() {
@@ -722,16 +298,9 @@ bool InitAw86224() {
   return aw86224.InitRamMode(kAw86224RamWaveformLibrary);
 }
 
-void AddCurrentText(const std::string& text) {
-  if (current_text.size() >= kMaxCurrentTextCount) {
-    current_text.erase(current_text.begin());
-  }
-  current_text.push_back(text);
-}
-
 void SelectUiPage(UiPage page) {
   if (current_page == UiPage::kAudioTest && page != UiPage::kAudioTest) {
-    StopAudio();
+    audio_view::Stop(GetEs8311());
   }
   current_page = page;
 }
@@ -796,18 +365,16 @@ void UpdateStatusBar() {
   lvgl_port::SetBatteryPercentage(filtered_percentage);
 }
 
-void RefreshCurrentPage(bool partial_refresh, bool busy_enable) {
+void RefreshCurrentPage(bool busy_enable) {
   if (current_page == UiPage::kHome) {
-    const std::vector<std::string> home_lines = CreateHomeScreenLines();
+    const std::vector<std::string> home_lines = home_view::CreateLines();
     lvgl_port::ShowHomeScreen(home_lines, home_scroll_index,
         GetUiPageName(current_page), page_selected, busy_enable);
   } else if (current_page == UiPage::kAudioTest) {
-    lvgl_port::ShowAudioScreen(page_selected,
-        audio_target == AudioTarget::kMic, audio_status_text.c_str(),
-        GetUiPageName(current_page), busy_enable);
+    audio_view::Show(page_selected, GetUiPageName(current_page), busy_enable);
   } else {
-    lvgl_port::ShowTextList(current_text, GetUiPageName(current_page),
-        page_selected, partial_refresh, busy_enable);
+    lvgl_port::ShowTextList(keyboard_view::GetTextList(),
+        GetUiPageName(current_page), page_selected, true, busy_enable);
   }
 }
 
@@ -819,8 +386,7 @@ void ScreenRefreshTask(void* arg) {
     if (screen_refresh_flag) {
       screen_refresh_flag = false;
       UpdateStatusBar();
-      RefreshCurrentPage(partial_refresh_flag, false);
-      partial_refresh_flag = true;
+      RefreshCurrentPage(false);
     }
 
     lvgl_port::Tick(kScreenRefreshTaskPeriodMs);
@@ -843,13 +409,9 @@ void SetSystemSleep(bool enable) {
 
     pinMode(BATTERY_MEASUREMENT_CONTROL, INPUT);
 
-    StopAudio();
+    audio_view::Stop(GetEs8311());
     es8311_i2s_bus->Deinit();
-    if (flash_ready) {
-      flash_transport.runCommand(0xB9);
-      flash.end();
-      flash_ready = false;
-    }
+    audio_view::EndFlash();
 
     digitalWrite(RT9080_EN, LOW);
     pinMode(RT9080_EN, INPUT_PULLDOWN);
@@ -870,7 +432,7 @@ void SetSystemSleep(bool enable) {
     InitAw21009(kAw21009MaxBrightness);
     InitAw86224();
     InitEs8311();
-    InitFlash();
+    audio_view::InitFlash();
 
     vTaskResume(screen_refresh_task_handle);
   }
@@ -878,9 +440,10 @@ void SetSystemSleep(bool enable) {
 
 void setup() {
   Serial.begin(115200);
-  const String build_time = GetSoftwareBuildTime();
-  Serial.println(String("[T-Echo-Lite-KeyShield_") + kBoardVersion + "][" +
-                 kDisplaySoftwareName + "]_firmware_" + build_time);
+  const String build_time = home_view::GetBuildTime();
+  Serial.println(String("[T-Echo-Lite-KeyShield_") +
+                 home_view::GetBoardVersion() + "][" +
+                 home_view::GetSoftwareName() + "]_firmware_" + build_time);
 
   // 3.3V Power ON
   pinMode(RT9080_EN, OUTPUT);
@@ -904,7 +467,7 @@ void setup() {
   InitAw21009(0);
   InitAw86224();
   InitEs8311();
-  InitFlash();
+  audio_view::InitFlash();
 
   lvgl_port::Init();
   lvgl_port::SetSleepMode(false);
@@ -932,7 +495,7 @@ void loop() {
     lvgl_port::SetSleepMode(true);
     UpdateStatusBar();
     screen_refresh_flag = false;
-    RefreshCurrentPage(false, true);
+    RefreshCurrentPage(true);
 
     boot_wake_requested = false;
     SetSystemSleep(true);
@@ -950,7 +513,7 @@ void loop() {
       lvgl_port::SetSleepMode(false);
       UpdateStatusBar();
       screen_refresh_flag = false;
-      RefreshCurrentPage(false, true);
+      RefreshCurrentPage(true);
 
       sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
       // 重置自动休眠计时。
@@ -1024,7 +587,6 @@ void loop() {
                         SelectUiPage(UiPage::kHome);
                         page_selected = false;
                         home_scroll_index = 0;
-                        partial_refresh_flag = false;
                         screen_refresh_flag = true;
                         StartVibration();
                         break;
@@ -1040,7 +602,6 @@ void loop() {
                         } else {
                           break;
                         }
-                        partial_refresh_flag = false;
                         screen_refresh_flag = true;
                         StartVibration();
                         break;
@@ -1049,7 +610,7 @@ void loop() {
                       if (current_page == UiPage::kHome) {
                         if (key_text == "Down") {
                           const size_t max_scroll_index =
-                              GetHomeMaxScrollIndex();
+                              home_view::GetMaxScrollIndex();
                           home_scroll_index =
                               std::min(home_scroll_index + kHomeScrollStep,
                                   max_scroll_index);
@@ -1063,58 +624,37 @@ void loop() {
                         } else {
                           break;
                         }
-                        partial_refresh_flag = false;
                         screen_refresh_flag = true;
                         StartVibration();
                         break;
                       }
 
                       if (current_page == UiPage::kAudioTest) {
-                        bool use_key_vibration = true;
-                        if (key_text == "Down" || key_text == "Up") {
-                          audio_target = audio_target == AudioTarget::kMic
-                                             ? AudioTarget::kSpeaker
-                                             : AudioTarget::kMic;
-                          audio_status_text = "Select Mic or Speaker";
-                        } else if (key_text == "Center") {
-                          use_key_vibration = false;
-                          if (audio_target == AudioTarget::kMic) {
-                            RecordAudioToFlash();
-                          } else {
-                            PlayAudioFromFlash();
+                        const audio_view::KeyResult audio_key_result =
+                            audio_view::HandleKey(
+                                key_text, GetEs8311(), StartCompletionVibration);
+                        if (audio_key_result.handled) {
+                          if (key_text == "Esc") {
+                            page_selected = false;
                           }
-                        } else if (key_text == "Esc") {
-                          StopAudio();
-                          page_selected = false;
-                          audio_status_text = "Select Mic or Speaker";
-                        } else {
+                          screen_refresh_flag = true;
+                          if (audio_key_result.use_key_vibration) {
+                            StartVibration();
+                          }
                           break;
                         }
-                        partial_refresh_flag = false;
-                        screen_refresh_flag = true;
-                        if (use_key_vibration) {
-                          StartVibration();
-                        }
-                        break;
                       }
 
                       if (current_page == UiPage::kKeyboardTest &&
                           key_text == "Esc") {
                         page_selected = false;
-                        partial_refresh_flag = false;
                         screen_refresh_flag = true;
                         StartVibration();
                         break;
                       }
 
-                      AddCurrentText(key_text);
+                      keyboard_view::AddText(key_text);
                       StartVibration();
-
-                      fast_refresh_count++;
-                      if (fast_refresh_count > 30) {
-                        partial_refresh_flag = false;
-                        fast_refresh_count = 0;
-                      }
 
                       screen_refresh_flag = true;
                     }

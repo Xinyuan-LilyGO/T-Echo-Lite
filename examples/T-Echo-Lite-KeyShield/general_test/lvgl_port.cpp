@@ -29,6 +29,7 @@ constexpr int32_t kHomeVisibleLineCount = 10;
 constexpr int32_t kHomeLineHeight = 13;
 constexpr int32_t kHomeContentTop = kStatusBarHeight + 2;
 constexpr int32_t kKeyboardContentTop = kStatusBarHeight + 4;
+constexpr uint16_t kMaxPartialRefreshCount = 10;
 constexpr uint16_t kDrawBufferRows = 8;
 constexpr size_t kDrawBufferSize =
     kDisplayWidth * kDrawBufferRows * sizeof(lv_color16_t);
@@ -47,6 +48,7 @@ Adafruit_SSD1681 epd_display(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_DC,
 lv_display_t* lvgl_display = nullptr;
 alignas(LV_DRAW_BUF_ALIGN) uint8_t lvgl_draw_buffer[kDrawBufferSize] = {0};
 bool partial_refresh_base_map_ready = false;
+uint16_t partial_refresh_count = 0;
 uint8_t battery_percentage = 0;
 bool sleep_mode = false;
 
@@ -199,13 +201,14 @@ void RenderNow() {
 
 void RefreshFull() {
   partial_refresh_base_map_ready = false;
+  partial_refresh_count = 0;
   epd_display.display(Adafruit_EPD::Update_Mode::FULL_REFRESH, true);
 }
 
-void RefreshFast(bool busy_enable = true) {
+void RefreshFastCleanup() {
   partial_refresh_base_map_ready = false;
-  epd_display.display(
-      Adafruit_EPD::Update_Mode::FAST_REFRESH, true, busy_enable);
+  partial_refresh_count = 0;
+  epd_display.display(Adafruit_EPD::Update_Mode::FAST_REFRESH, true);
 }
 
 void RefreshPartial() {
@@ -214,6 +217,16 @@ void RefreshPartial() {
     partial_refresh_base_map_ready = true;
   }
   epd_display.display(Adafruit_EPD::Update_Mode::PARTIAL_REFRESH, true);
+  partial_refresh_count++;
+}
+
+void RefreshDisplay() {
+  if (partial_refresh_count >= kMaxPartialRefreshCount) {
+    RefreshFastCleanup();
+    return;
+  }
+
+  RefreshPartial();
 }
 
 void RenderCenteredText(const char* text, const char* page_name = nullptr,
@@ -388,7 +401,10 @@ void EndDisplay() { epd_display.end(); }
 
 void Tick(uint32_t elapsed_ms) { lv_tick_inc(elapsed_ms); }
 
-void ResetPartialRefresh() { partial_refresh_base_map_ready = false; }
+void ResetPartialRefresh() {
+  partial_refresh_base_map_ready = false;
+  partial_refresh_count = 0;
+}
 
 void SetBatteryPercentage(uint8_t percentage) {
   battery_percentage = percentage > 100 ? 100 : percentage;
@@ -413,36 +429,36 @@ void ShowBootScreen() {
 
 void ShowHomeScreen(const std::vector<std::string>& lines, size_t scroll_index,
     const char* page_name, bool page_selected, bool busy_enable) {
+  (void)busy_enable;
   RenderHomeScreen(lines, scroll_index, page_name, page_selected);
-  RefreshFast(busy_enable);
+  RefreshDisplay();
 }
 
 void ShowCenteredText(const char* text) {
   RenderCenteredText(text);
-  RefreshFast();
+  RefreshDisplay();
 }
 
 void ShowTextList(const std::vector<std::string>& text_list,
     const char* page_name, bool page_selected, bool partial_refresh,
     bool busy_enable) {
+  (void)partial_refresh;
+  (void)busy_enable;
   if (text_list.empty()) {
     RenderCenteredText("Please enter the text", page_name, page_selected);
-    RefreshFast(busy_enable);
+    RefreshDisplay();
     return;
   }
 
   RenderTextList(text_list, page_name, page_selected);
-  if (partial_refresh) {
-    RefreshPartial();
-  } else {
-    RefreshFast(busy_enable);
-  }
+  RefreshDisplay();
 }
 
 void ShowAudioScreen(bool page_selected, bool mic_selected, const char* message,
     const char* page_name, bool busy_enable) {
+  (void)busy_enable;
   RenderAudioScreen(page_selected, mic_selected, message, page_name);
-  RefreshFast(busy_enable);
+  RefreshDisplay();
 }
 
 }  // namespace lvgl_port
