@@ -16,6 +16,7 @@ LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_13)
 LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_14)
 LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_28)
 LV_FONT_DECLARE(lvgl_font_material_symbols_rounded_20)
+LV_FONT_DECLARE(lvgl_font_material_symbols_rounded_32)
 
 namespace lvgl_port {
 namespace {
@@ -36,6 +37,8 @@ constexpr const char* kBatteryAndroidIcons[] = {
     "\xEF\x8C\x8D", "\xEF\x8C\x8C", "\xEF\x8C\x8B", "\xEF\x8C\x8A",
     "\xEF\x8C\x89", "\xEF\x8C\x88", "\xEF\x8C\x87"};
 constexpr const char* kBedtimeIcon = "\xEF\x85\x99";
+constexpr const char* kMicIcon = "\xEE\x8C\x9D";
+constexpr const char* kSpeakerIcon = "\xEE\x8C\xAD";
 
 SPIClass custom_spi1(NRF_SPIM1, SCREEN_MISO, SCREEN_SCLK, SCREEN_MOSI);
 Adafruit_SSD1681 epd_display(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_DC,
@@ -137,7 +140,7 @@ void RenderFooter(const char* page_name, bool page_selected) {
   lv_obj_t* page_frame = lv_obj_create(screen);
   lv_obj_remove_style_all(page_frame);
   lv_obj_set_size(page_frame, 76, 17);
-  lv_obj_set_style_radius(page_frame, 4, LV_PART_MAIN);
+  lv_obj_set_style_radius(page_frame, LV_RADIUS_CIRCLE, LV_PART_MAIN);
   lv_obj_set_style_border_width(page_frame, 1, LV_PART_MAIN);
   lv_obj_set_style_border_color(page_frame, lv_color_black(), LV_PART_MAIN);
   lv_obj_set_style_bg_color(page_frame, lv_color_black(), LV_PART_MAIN);
@@ -291,6 +294,76 @@ void RenderHomeScreen(const std::vector<std::string>& lines,
   RenderNow();
 }
 
+void RenderAudioIconBox(
+    int32_t x, const char* icon, const char* label, bool selected) {
+  constexpr int32_t kBoxSize = 56;
+  constexpr int32_t kIconY = 36;
+
+  lv_obj_t* select_frame = lv_obj_create(lv_screen_active());
+  lv_obj_remove_style_all(select_frame);
+  lv_obj_set_size(select_frame, kBoxSize + 8, kBoxSize + 8);
+  lv_obj_set_style_radius(select_frame, 12, LV_PART_MAIN);
+  lv_obj_set_style_border_width(select_frame, selected ? 2 : 0, LV_PART_MAIN);
+  lv_obj_set_style_border_color(select_frame, lv_color_black(), LV_PART_MAIN);
+  lv_obj_set_style_bg_opa(select_frame, LV_OPA_TRANSP, LV_PART_MAIN);
+  lv_obj_align(select_frame, LV_ALIGN_TOP_LEFT, x - 4, kIconY - 4);
+
+  lv_obj_t* box = lv_obj_create(lv_screen_active());
+  lv_obj_remove_style_all(box);
+  lv_obj_set_size(box, kBoxSize, kBoxSize);
+  lv_obj_set_style_radius(box, 10, LV_PART_MAIN);
+  lv_obj_set_style_border_width(box, 1, LV_PART_MAIN);
+  lv_obj_set_style_border_color(box, lv_color_black(), LV_PART_MAIN);
+  lv_obj_set_style_bg_color(box, selected ? lv_color_black() : lv_color_white(),
+      LV_PART_MAIN);
+  lv_obj_set_style_bg_opa(box, LV_OPA_COVER, LV_PART_MAIN);
+  lv_obj_align(box, LV_ALIGN_TOP_LEFT, x, kIconY);
+
+  lv_obj_t* icon_label = lv_label_create(lv_screen_active());
+  lv_label_set_text(icon_label, icon);
+  lv_obj_set_size(icon_label, kBoxSize, kBoxSize);
+  lv_obj_set_style_text_color(icon_label,
+      selected ? lv_color_white() : lv_color_black(), LV_PART_MAIN);
+  lv_obj_set_style_text_font(
+      icon_label, &lvgl_font_material_symbols_rounded_32, LV_PART_MAIN);
+  lv_obj_set_style_text_align(icon_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+  lv_obj_set_style_pad_top(icon_label, 14, LV_PART_MAIN);
+  lv_obj_align_to(icon_label, box, LV_ALIGN_CENTER, 0, 0);
+
+  lv_obj_t* text_label = lv_label_create(lv_screen_active());
+  lv_label_set_text(text_label, label);
+  lv_obj_set_style_text_color(text_label, lv_color_black(), LV_PART_MAIN);
+  lv_obj_set_style_text_font(
+      text_label, &lvgl_font_google_sans_flex_regular_13, LV_PART_MAIN);
+  lv_obj_set_width(text_label, kBoxSize + 8);
+  lv_obj_set_style_text_align(text_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+  lv_obj_align_to(text_label, box, LV_ALIGN_OUT_BOTTOM_MID, 0, 4);
+}
+
+void RenderAudioScreen(bool page_selected, bool mic_selected,
+    const char* message, const char* page_name) {
+  PrepareScreen();
+  RenderStatusBar();
+  RenderFooter(page_name, page_selected);
+
+  const bool show_icon_selection = page_selected;
+  RenderAudioIconBox(30, kMicIcon, "Mic", show_icon_selection && mic_selected);
+  RenderAudioIconBox(
+      106, kSpeakerIcon, "Speaker", show_icon_selection && !mic_selected);
+
+  lv_obj_t* message_label = lv_label_create(lv_screen_active());
+  lv_label_set_long_mode(message_label, LV_LABEL_LONG_WRAP);
+  lv_label_set_text(message_label, message == nullptr ? "" : message);
+  lv_obj_set_width(message_label, kDisplayWidth - 16);
+  lv_obj_set_style_text_color(message_label, lv_color_black(), LV_PART_MAIN);
+  lv_obj_set_style_text_font(
+      message_label, &lvgl_font_google_sans_flex_regular_13, LV_PART_MAIN);
+  lv_obj_set_style_text_align(message_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+  lv_obj_align(message_label, LV_ALIGN_TOP_MID, 0, 130);
+
+  RenderNow();
+}
+
 }  // namespace
 
 void Init() {
@@ -364,6 +437,12 @@ void ShowTextList(const std::vector<std::string>& text_list,
   } else {
     RefreshFast(busy_enable);
   }
+}
+
+void ShowAudioScreen(bool page_selected, bool mic_selected, const char* message,
+    const char* page_name, bool busy_enable) {
+  RenderAudioScreen(page_selected, mic_selected, message, page_name);
+  RefreshFast(busy_enable);
 }
 
 }  // namespace lvgl_port

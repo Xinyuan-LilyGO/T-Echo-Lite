@@ -2,15 +2,17 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-04 16:23:36
+ * @LastEditTime: 2026-06-04 17:25:31
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
 #include <Arduino.h>
+#include <SPI.h>
 #include <Wire.h>
 
 #include <algorithm>
 
+#include "Adafruit_SPIFlash.h"
 #include "cpp_bus_driver_library.h"
 #include "lvgl.h"
 #include "lvgl_port.h"
@@ -21,8 +23,17 @@ static constexpr char kBoardVersion[] = "v1.0";
 static constexpr uint8_t kAudioMclkMultiple = 32;
 static constexpr uint32_t kAudioSampleRate = 44100;
 static constexpr uint8_t kAudioBitsPerSample = 16;
+static constexpr size_t kAudioBufferSampleCount = 1024;
+static constexpr size_t kAudioBufferBytes =
+    kAudioBufferSampleCount * sizeof(uint32_t);
+static constexpr uint32_t kAudioRecordSeconds = 3;
+static constexpr uint32_t kAudioRecordDataAddress = 4096;
+static constexpr uint32_t kAudioRecordBytes =
+    kAudioSampleRate * kAudioRecordSeconds * sizeof(uint32_t);
+static constexpr uint32_t kFlashSectorSize = 4096;
+static constexpr uint32_t kAudioFlashMagic = 0x41554430;
 static constexpr size_t kMaxCurrentTextCount = 8;
-static constexpr uint32_t kAutoSleepTimeoutMs = 10000;
+static constexpr uint32_t kAutoSleepTimeoutMs = 20000;
 static constexpr uint16_t kAw21009MaxBrightness = 4095;
 static constexpr uint8_t kVibrationSequence = 1;
 static constexpr uint8_t kVibrationLoopCount = 1;
@@ -53,19 +64,56 @@ struct SleepOperator {
 enum class UiPage : uint8_t {
   kHome,
   kKeyboardTest,
+  kAudioTest,
+};
+
+enum class AudioTarget : uint8_t {
+  kMic,
+  kSpeaker,
+};
+
+struct AudioRecordHeader {
+  uint32_t magic = 0;
+  uint32_t data_length = 0;
 };
 
 std::vector<std::string> current_text;
 
 bool screen_refresh_flag = false;
 UiPage current_page = UiPage::kHome;
+AudioTarget audio_target = AudioTarget::kMic;
+std::string audio_status_text = "Select Mic or Speaker";
 bool page_selected = false;
 size_t home_scroll_index = 0;
-
+uint32_t audio_recorded_length = 0;
+bool audio_record_available = false;
+uint32_t audio_buffer[2][kAudioBufferSampleCount] = {0};
+bool flash_ready = false;
 bool partial_refresh_flag = true;
 size_t fast_refresh_count = 0;
 
 TaskHandle_t screen_refresh_task_handle = nullptr;
+
+SPIClass custom_spi_flash(
+    NRF_SPIM3, ZD25WQ32C_MISO, ZD25WQ32C_SCLK, ZD25WQ32C_MOSI);
+Adafruit_FlashTransport_SPI flash_transport(ZD25WQ32C_CS, custom_spi_flash);
+Adafruit_SPIFlash flash(&flash_transport);
+SPIFlash_Device_t zd25wq32c = {
+    total_size : (1UL << 22),
+    start_up_time_us : 12000,
+    manufacturer_id : 0xBA,
+    memory_type : 0x60,
+    capacity : 0x16,
+    max_clock_speed_mhz : 104,
+    quad_enable_bit_mask : 0x02,
+    has_sector_protection : false,
+    supports_fast_read : true,
+    supports_qspi : true,
+    supports_qspi_writes : true,
+    write_status_register_split : false,
+    single_status_byte : false,
+    is_fram : false,
+};
 
 uint8_t DigitOrZero(char value) {
   return value >= '0' && value <= '9' ? value - '0' : 0;
@@ -209,17 +257,37 @@ const char* GetUiPageName(UiPage page) {
       return "Home";
     case UiPage::kKeyboardTest:
       return "Keyboard";
+    case UiPage::kAudioTest:
+      return "Audio";
     default:
       return "Unknown";
   }
 }
 
 UiPage GetNextUiPage(UiPage page) {
-  return page == UiPage::kHome ? UiPage::kKeyboardTest : UiPage::kHome;
+  switch (page) {
+    case UiPage::kHome:
+      return UiPage::kKeyboardTest;
+    case UiPage::kKeyboardTest:
+      return UiPage::kAudioTest;
+    case UiPage::kAudioTest:
+      return UiPage::kHome;
+    default:
+      return UiPage::kHome;
+  }
 }
 
 UiPage GetPreviousUiPage(UiPage page) {
-  return page == UiPage::kHome ? UiPage::kKeyboardTest : UiPage::kHome;
+  switch (page) {
+    case UiPage::kHome:
+      return UiPage::kAudioTest;
+    case UiPage::kKeyboardTest:
+      return UiPage::kHome;
+    case UiPage::kAudioTest:
+      return UiPage::kKeyboardTest;
+    default:
+      return UiPage::kHome;
+  }
 }
 
 size_t GetHomeMaxScrollIndex() {
@@ -294,6 +362,253 @@ void StartVibration() {
           kVibrationSequence, kVibrationLoopCount, kVibrationGain, true)) {
     printf("StartVibration failed\n");
   }
+}
+
+void StartCompletionVibration() {
+  auto& aw86224 = GetAw86224();
+  if (!aw86224.PlayRamWaveform(
+          kVibrationSequence, kVibrationLoopCount, kVibrationGain, false)) {
+    printf("StartCompletionVibration first vibration failed\n");
+  }
+  delay(100);
+  if (!aw86224.PlayRamWaveform(
+          kVibrationSequence, kVibrationLoopCount, kVibrationGain, true)) {
+    printf("StartCompletionVibration second vibration failed\n");
+  }
+}
+
+void ShowAudioStatus(const char* status) {
+  audio_status_text = status == nullptr ? "" : status;
+  lvgl_port::ShowAudioScreen(page_selected,
+      audio_target == AudioTarget::kMic, audio_status_text.c_str(),
+      GetUiPageName(current_page), false);
+}
+
+bool InitFlash() {
+  custom_spi_flash.setClockDivider(SPI_CLOCK_DIV2);
+  if (!flash.begin(&zd25wq32c)) {
+    printf("flash init failed\n");
+    flash_ready = false;
+    return false;
+  }
+  flash_ready = true;
+
+  AudioRecordHeader header;
+  if (flash.readBuffer(0, reinterpret_cast<uint8_t*>(&header),
+          sizeof(header)) == sizeof(header) &&
+      header.magic == kAudioFlashMagic &&
+      header.data_length > 0 && header.data_length <= kAudioRecordBytes) {
+    audio_recorded_length = header.data_length;
+    audio_record_available = true;
+  }
+  return true;
+}
+
+void StopAudio() {
+  GetEs8311().StopTransmitI2s();
+}
+
+bool EraseAudioFlashArea() {
+  const uint32_t erase_end = kAudioRecordDataAddress + kAudioRecordBytes;
+  for (uint32_t address = 0; address < erase_end;
+       address += kFlashSectorSize) {
+    if (!flash.eraseSector(address / kFlashSectorSize)) {
+      printf("flash erase sector failed: 0x%08lX\n",
+          static_cast<unsigned long>(address));
+      return false;
+    }
+    flash.waitUntilReady();
+  }
+  return true;
+}
+
+bool WaitForAudioReadEvent(uint32_t timeout_ms) {
+  auto& es8311 = GetEs8311();
+  const uint32_t deadline = millis() + timeout_ms;
+  while (millis() < deadline) {
+    if (es8311.GetReadI2sEventFlag()) {
+      return true;
+    }
+    delay(1);
+  }
+  return false;
+}
+
+bool WaitForAudioWriteEvent(uint32_t timeout_ms) {
+  auto& es8311 = GetEs8311();
+  const uint32_t deadline = millis() + timeout_ms;
+  while (millis() < deadline) {
+    if (es8311.GetWriteI2sEventFlag()) {
+      return true;
+    }
+    delay(1);
+  }
+  return false;
+}
+
+bool RecordAudioToFlash() {
+  auto& es8311 = GetEs8311();
+
+  if (!flash_ready) {
+    ShowAudioStatus("Flash not ready");
+    return false;
+  }
+
+  ShowAudioStatus("Recording 3s...");
+  StopAudio();
+  if (!EraseAudioFlashArea()) {
+    ShowAudioStatus("Flash erase failed");
+    return false;
+  }
+
+  uint8_t filling_buffer = 0;
+  uint8_t free_buffer = 1;
+  uint32_t written_bytes = 0;
+  const uint32_t record_deadline = millis() + kAudioRecordSeconds * 1000;
+
+  if (!es8311.StartTransmitI2s(
+          nullptr, audio_buffer[filling_buffer], kAudioBufferSampleCount)) {
+    ShowAudioStatus("Record start failed");
+    return false;
+  }
+
+  while (millis() < record_deadline && written_bytes < kAudioRecordBytes) {
+    if (!WaitForAudioReadEvent(200)) {
+      continue;
+    }
+
+    const uint8_t ready_buffer = filling_buffer;
+    filling_buffer = free_buffer;
+    free_buffer = ready_buffer;
+    es8311.SetNextReadI2s(audio_buffer[filling_buffer]);
+
+    const uint32_t write_bytes =
+        std::min<uint32_t>(kAudioBufferBytes, kAudioRecordBytes - written_bytes);
+    if (flash.writeBuffer(kAudioRecordDataAddress + written_bytes,
+            reinterpret_cast<uint8_t*>(audio_buffer[ready_buffer]),
+            write_bytes) != write_bytes) {
+      StopAudio();
+      ShowAudioStatus("Flash write failed");
+      return false;
+    }
+    flash.waitUntilReady();
+    written_bytes += write_bytes;
+  }
+
+  StopAudio();
+
+  AudioRecordHeader header;
+  header.magic = kAudioFlashMagic;
+  header.data_length = written_bytes;
+  if (flash.writeBuffer(0, reinterpret_cast<uint8_t*>(&header),
+          sizeof(header)) != sizeof(header)) {
+    ShowAudioStatus("Header write failed");
+    return false;
+  }
+  flash.waitUntilReady();
+
+  audio_recorded_length = written_bytes;
+  audio_record_available = written_bytes > 0;
+  ShowAudioStatus(audio_record_available ? "Record complete" : "No audio");
+  if (audio_record_available) {
+    StartCompletionVibration();
+  }
+  return audio_record_available;
+}
+
+bool LoadAudioChunk(uint32_t offset, uint8_t buffer_index, uint32_t* length) {
+  if (length == nullptr || offset >= audio_recorded_length) {
+    return false;
+  }
+
+  *length = std::min<uint32_t>(
+      kAudioBufferBytes, audio_recorded_length - offset);
+  memset(audio_buffer[buffer_index], 0, kAudioBufferBytes);
+  return flash.readBuffer(kAudioRecordDataAddress + offset,
+             reinterpret_cast<uint8_t*>(audio_buffer[buffer_index]),
+             *length) == *length;
+}
+
+bool PlayAudioFromFlash() {
+  auto& es8311 = GetEs8311();
+
+  if (!flash_ready) {
+    ShowAudioStatus("Flash not ready");
+    return false;
+  }
+
+  if (!audio_record_available || audio_recorded_length == 0) {
+    ShowAudioStatus("No audio");
+    return false;
+  }
+
+  ShowAudioStatus("Playing...");
+  StopAudio();
+
+  uint32_t loaded_bytes = 0;
+  uint32_t played_bytes = 0;
+  uint32_t buffer_length[2] = {0};
+  bool buffer_ready[2] = {false};
+  if (!LoadAudioChunk(0, 0, &buffer_length[0])) {
+    ShowAudioStatus("Audio read failed");
+    return false;
+  }
+  loaded_bytes += buffer_length[0];
+  buffer_ready[0] = true;
+
+  if (!es8311.StartTransmitI2s(audio_buffer[0], nullptr,
+          kAudioBufferSampleCount)) {
+    ShowAudioStatus("Play start failed");
+    return false;
+  }
+
+  buffer_ready[0] = false;
+  uint8_t current_buffer = 1;
+  uint32_t active_buffer_length = buffer_length[0];
+
+  while (played_bytes < audio_recorded_length) {
+    if (!buffer_ready[current_buffer] && loaded_bytes < audio_recorded_length) {
+      if (!LoadAudioChunk(
+              loaded_bytes, current_buffer, &buffer_length[current_buffer])) {
+        StopAudio();
+        ShowAudioStatus("Audio read failed");
+        return false;
+      }
+      loaded_bytes += buffer_length[current_buffer];
+      buffer_ready[current_buffer] = true;
+    }
+
+    const uint8_t next_buffer = current_buffer == 0 ? 1 : 0;
+    if (!buffer_ready[next_buffer] && loaded_bytes < audio_recorded_length) {
+      if (!LoadAudioChunk(
+              loaded_bytes, next_buffer, &buffer_length[next_buffer])) {
+        StopAudio();
+        ShowAudioStatus("Audio read failed");
+        return false;
+      }
+      loaded_bytes += buffer_length[next_buffer];
+      buffer_ready[next_buffer] = true;
+    }
+
+    if (!WaitForAudioWriteEvent(500)) {
+      continue;
+    }
+
+    played_bytes += active_buffer_length;
+    if (buffer_ready[current_buffer]) {
+      es8311.SetNextWriteI2s(audio_buffer[current_buffer]);
+      active_buffer_length = buffer_length[current_buffer];
+      buffer_ready[current_buffer] = false;
+      current_buffer = current_buffer == 0 ? 1 : 0;
+    } else if (loaded_bytes >= audio_recorded_length) {
+      break;
+    }
+  }
+
+  StopAudio();
+  ShowAudioStatus("Play complete");
+  StartCompletionVibration();
+  return true;
 }
 
 bool InitEs8311() {
@@ -414,6 +729,13 @@ void AddCurrentText(const std::string& text) {
   current_text.push_back(text);
 }
 
+void SelectUiPage(UiPage page) {
+  if (current_page == UiPage::kAudioTest && page != UiPage::kAudioTest) {
+    StopAudio();
+  }
+  current_page = page;
+}
+
 void ResetAutoSleepTimer() {
   sleep_op.wake_deadline_ms = millis() + kAutoSleepTimeoutMs;
 }
@@ -479,6 +801,10 @@ void RefreshCurrentPage(bool partial_refresh, bool busy_enable) {
     const std::vector<std::string> home_lines = CreateHomeScreenLines();
     lvgl_port::ShowHomeScreen(home_lines, home_scroll_index,
         GetUiPageName(current_page), page_selected, busy_enable);
+  } else if (current_page == UiPage::kAudioTest) {
+    lvgl_port::ShowAudioScreen(page_selected,
+        audio_target == AudioTarget::kMic, audio_status_text.c_str(),
+        GetUiPageName(current_page), busy_enable);
   } else {
     lvgl_port::ShowTextList(current_text, GetUiPageName(current_page),
         page_selected, partial_refresh, busy_enable);
@@ -517,7 +843,13 @@ void SetSystemSleep(bool enable) {
 
     pinMode(BATTERY_MEASUREMENT_CONTROL, INPUT);
 
+    StopAudio();
     es8311_i2s_bus->Deinit();
+    if (flash_ready) {
+      flash_transport.runCommand(0xB9);
+      flash.end();
+      flash_ready = false;
+    }
 
     digitalWrite(RT9080_EN, LOW);
     pinMode(RT9080_EN, INPUT_PULLDOWN);
@@ -538,6 +870,7 @@ void SetSystemSleep(bool enable) {
     InitAw21009(kAw21009MaxBrightness);
     InitAw86224();
     InitEs8311();
+    InitFlash();
 
     vTaskResume(screen_refresh_task_handle);
   }
@@ -571,6 +904,7 @@ void setup() {
   InitAw21009(0);
   InitAw86224();
   InitEs8311();
+  InitFlash();
 
   lvgl_port::Init();
   lvgl_port::SetSleepMode(false);
@@ -687,7 +1021,7 @@ void loop() {
 
                       const std::string& key_text = Tca8418_Map[key_index];
                       if (key_text == "Home") {
-                        current_page = UiPage::kHome;
+                        SelectUiPage(UiPage::kHome);
                         page_selected = false;
                         home_scroll_index = 0;
                         partial_refresh_flag = false;
@@ -698,9 +1032,9 @@ void loop() {
 
                       if (!page_selected) {
                         if (key_text == "Down") {
-                          current_page = GetNextUiPage(current_page);
+                          SelectUiPage(GetNextUiPage(current_page));
                         } else if (key_text == "Up") {
-                          current_page = GetPreviousUiPage(current_page);
+                          SelectUiPage(GetPreviousUiPage(current_page));
                         } else if (key_text == "Center") {
                           page_selected = true;
                         } else {
@@ -732,6 +1066,35 @@ void loop() {
                         partial_refresh_flag = false;
                         screen_refresh_flag = true;
                         StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kAudioTest) {
+                        bool use_key_vibration = true;
+                        if (key_text == "Down" || key_text == "Up") {
+                          audio_target = audio_target == AudioTarget::kMic
+                                             ? AudioTarget::kSpeaker
+                                             : AudioTarget::kMic;
+                          audio_status_text = "Select Mic or Speaker";
+                        } else if (key_text == "Center") {
+                          use_key_vibration = false;
+                          if (audio_target == AudioTarget::kMic) {
+                            RecordAudioToFlash();
+                          } else {
+                            PlayAudioFromFlash();
+                          }
+                        } else if (key_text == "Esc") {
+                          StopAudio();
+                          page_selected = false;
+                          audio_status_text = "Select Mic or Speaker";
+                        } else {
+                          break;
+                        }
+                        partial_refresh_flag = false;
+                        screen_refresh_flag = true;
+                        if (use_key_vibration) {
+                          StartVibration();
+                        }
                         break;
                       }
 

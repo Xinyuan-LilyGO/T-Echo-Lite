@@ -27,6 +27,8 @@ void ShowCenteredText(const char* text);
 void ShowTextList(const std::vector<std::string>& text_list,
     const char* page_name, bool page_selected, bool partial_refresh,
     bool busy_enable = false);
+void ShowAudioScreen(bool page_selected, bool mic_selected, const char* message,
+    const char* page_name, bool busy_enable = false);
 
 }  // namespace lvgl_port
 

@@ -27,7 +27,8 @@
   LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_13) \
   LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_14) \
   LV_FONT_DECLARE(lvgl_font_google_sans_flex_regular_28) \
-  LV_FONT_DECLARE(lvgl_font_material_symbols_rounded_20)
+  LV_FONT_DECLARE(lvgl_font_material_symbols_rounded_20) \
+  LV_FONT_DECLARE(lvgl_font_material_symbols_rounded_32)
 #define LV_FONT_DEFAULT &lvgl_font_google_sans_flex_regular_14
 #define LV_USE_LABEL 1
 
