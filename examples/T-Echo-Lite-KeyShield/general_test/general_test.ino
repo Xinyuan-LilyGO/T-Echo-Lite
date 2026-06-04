@@ -2,7 +2,7 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-03 17:59:29
+ * @LastEditTime: 2026-06-04 09:01:26
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
@@ -546,7 +546,7 @@ void setup() {
   InitEs8311();
 
   lvgl_port::Init();
-  lvgl_port::ShowBootScreen(build_time.c_str());
+  lvgl_port::ShowBootScreen();
 
   PlayMusic(c2_b16_s44100_2, sizeof(c2_b16_s44100_2));
 

@@ -17,7 +17,7 @@ void BeginDisplay();
 void EndDisplay();
 void Tick(uint32_t elapsed_ms);
 void ResetPartialRefresh();
-void ShowBootScreen(const char* build_time);
+void ShowBootScreen();
 void ShowCenteredText(const char* text);
 void ShowTextList(const std::vector<std::string>& text_list,
     bool partial_refresh);

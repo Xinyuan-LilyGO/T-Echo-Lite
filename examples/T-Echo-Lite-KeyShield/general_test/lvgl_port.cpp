@@ -153,7 +153,7 @@ void Tick(uint32_t elapsed_ms) { lv_tick_inc(elapsed_ms); }
 
 void ResetPartialRefresh() { partial_refresh_base_map_ready = false; }
 
-void ShowBootScreen(const char* build_time) {
+void ShowBootScreen() {
   PrepareScreen();
 
   lv_obj_t* logo = lv_label_create(lv_screen_active());
@@ -162,15 +162,6 @@ void ShowBootScreen(const char* build_time) {
   lv_obj_set_style_text_font(logo, &google_sans_flex_28, LV_PART_MAIN);
   lv_obj_set_style_text_align(logo, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
   lv_obj_align(logo, LV_ALIGN_CENTER, 0, -18);
-
-  lv_obj_t* build_time_label = lv_label_create(lv_screen_active());
-  lv_label_set_text(build_time_label, build_time);
-  lv_obj_set_style_text_color(build_time_label, lv_color_black(), LV_PART_MAIN);
-  lv_obj_set_style_text_font(
-      build_time_label, &google_sans_flex_14, LV_PART_MAIN);
-  lv_obj_set_style_text_align(
-      build_time_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-  lv_obj_align_to(build_time_label, logo, LV_ALIGN_OUT_BOTTOM_MID, 0, 4);
 
   RenderNow();
   RefreshFull();
