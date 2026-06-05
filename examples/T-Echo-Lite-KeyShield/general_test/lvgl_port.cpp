@@ -223,7 +223,7 @@ void RefreshPartial() {
 void RefreshDisplay() {
   if (partial_refresh_count >= kMaxPartialRefreshCount) {
     RefreshFastCleanup();
-    return;
+    // return;
   }
 
   RefreshPartial();
