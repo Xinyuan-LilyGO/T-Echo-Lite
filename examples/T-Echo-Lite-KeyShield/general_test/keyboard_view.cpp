@@ -1,6 +1,9 @@
-/**
- * @file keyboard_view.cpp
- * @brief general_test keyboard page state.
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-05 09:38:56
+ * @License: GPL 3.0
  */
 #include "keyboard_view.h"
 

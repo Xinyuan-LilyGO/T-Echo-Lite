@@ -2,7 +2,7 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-04 17:25:31
+ * @LastEditTime: 2026-06-05 09:45:24
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "audio_view.h"
+#include "battery_view.h"
 #include "cpp_bus_driver_library.h"
 #include "home_view.h"
 #include "keyboard_view.h"
@@ -57,16 +58,24 @@ enum class UiPage : uint8_t {
   kHome,
   kKeyboardTest,
   kAudioTest,
+  kBatteryInfo,
 };
 
 bool screen_refresh_flag = false;
 UiPage current_page = UiPage::kHome;
 bool page_selected = false;
 size_t home_scroll_index = 0;
+size_t battery_scroll_index = 0;
+uint8_t filtered_battery_percentage = 0;
+battery_view::BatteryInfo battery_info_snapshot;
 
 TaskHandle_t screen_refresh_task_handle = nullptr;
 
-
+/**
+ * @brief 获取 UI 页面名称。
+ * @param page UI 页面枚举。
+ * @return 页面名称字符串。
+ */
 const char* GetUiPageName(UiPage page) {
   switch (page) {
     case UiPage::kHome:
@@ -75,11 +84,18 @@ const char* GetUiPageName(UiPage page) {
       return "Keyboard";
     case UiPage::kAudioTest:
       return "Audio";
+    case UiPage::kBatteryInfo:
+      return "Battery";
     default:
       return "Unknown";
   }
 }
 
+/**
+ * @brief 获取下一个 UI 页面。
+ * @param page 当前 UI 页面。
+ * @return 下一个 UI 页面。
+ */
 UiPage GetNextUiPage(UiPage page) {
   switch (page) {
     case UiPage::kHome:
@@ -87,49 +103,78 @@ UiPage GetNextUiPage(UiPage page) {
     case UiPage::kKeyboardTest:
       return UiPage::kAudioTest;
     case UiPage::kAudioTest:
+      return UiPage::kBatteryInfo;
+    case UiPage::kBatteryInfo:
       return UiPage::kHome;
     default:
       return UiPage::kHome;
   }
 }
 
+/**
+ * @brief 获取上一个 UI 页面。
+ * @param page 当前 UI 页面。
+ * @return 上一个 UI 页面。
+ */
 UiPage GetPreviousUiPage(UiPage page) {
   switch (page) {
     case UiPage::kHome:
-      return UiPage::kAudioTest;
+      return UiPage::kBatteryInfo;
     case UiPage::kKeyboardTest:
       return UiPage::kHome;
     case UiPage::kAudioTest:
       return UiPage::kKeyboardTest;
+    case UiPage::kBatteryInfo:
+      return UiPage::kAudioTest;
     default:
       return UiPage::kHome;
   }
 }
 
+/**
+ * @brief 获取 TCA8418 使用的 I2C 总线实例。
+ * @return I2C 总线共享指针引用。
+ */
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetTca8418I2cBus() {
   static auto tca8418_i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c2>(
       TCA8418_SDA, TCA8418_SCL, &Wire);
   return tca8418_i2c_bus;
 }
 
+/**
+ * @brief 获取 AW21009 使用的 I2C 总线实例。
+ * @return I2C 总线共享指针引用。
+ */
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetAw21009I2cBus() {
   static auto aw21009_i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c2>(
       AW21009_SDA, AW21009_SCL, &Wire);
   return aw21009_i2c_bus;
 }
 
+/**
+ * @brief 获取 ES8311 使用的 I2C 总线实例。
+ * @return I2C 总线共享指针引用。
+ */
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetEs8311I2cBus() {
   static auto es8311_i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c2>(
       ES8311_SDA, ES8311_SCL, &Wire);
   return es8311_i2c_bus;
 }
 
+/**
+ * @brief 获取 AW86224 使用的 I2C 总线实例。
+ * @return I2C 总线共享指针引用。
+ */
 std::shared_ptr<cpp_bus_driver::HardwareI2c2>& GetAw86224I2cBus() {
   static auto aw86224_i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c2>(
       AW86224_SDA, AW86224_SCL, &Wire);
   return aw86224_i2c_bus;
 }
 
+/**
+ * @brief 获取 ES8311 使用的 I2S 总线实例。
+ * @return I2S 总线共享指针引用。
+ */
 std::shared_ptr<cpp_bus_driver::HardwareI2s>& GetEs8311I2sBus() {
   static auto es8311_i2s_bus =
       std::make_shared<cpp_bus_driver::HardwareI2s>(ES8311_ADC_DATA,
@@ -137,24 +182,40 @@ std::shared_ptr<cpp_bus_driver::HardwareI2s>& GetEs8311I2sBus() {
   return es8311_i2s_bus;
 }
 
+/**
+ * @brief 获取 TCA8418 驱动实例。
+ * @return TCA8418 驱动对象引用。
+ */
 cpp_bus_driver::Tca8418& GetTca8418() {
   static auto tca8418 = std::make_unique<cpp_bus_driver::Tca8418>(
       GetTca8418I2cBus(), TCA8418_IIC_ADDRESS);
   return *tca8418;
 }
 
+/**
+ * @brief 获取 AW21009 驱动实例。
+ * @return AW21009 驱动对象引用。
+ */
 cpp_bus_driver::Aw21009& GetAw21009() {
   static auto aw21009 = std::make_unique<cpp_bus_driver::Aw21009>(
       GetAw21009I2cBus(), AW21009_IIC_ADDRESS);
   return *aw21009;
 }
 
+/**
+ * @brief 获取 AW86224 驱动实例。
+ * @return AW862xx 驱动对象引用。
+ */
 cpp_bus_driver::Aw862xx& GetAw86224() {
   static auto aw86224 = std::make_unique<cpp_bus_driver::Aw862xx>(
       GetAw86224I2cBus(), AW86224_IIC_ADDRESS);
   return *aw86224;
 }
 
+/**
+ * @brief 获取 ES8311 驱动实例。
+ * @return ES8311 驱动对象引用。
+ */
 cpp_bus_driver::Es8311& GetEs8311() {
   static auto es8311 = std::make_unique<cpp_bus_driver::Es8311>(
       GetEs8311I2cBus(), GetEs8311I2sBus(), ES8311_IIC_ADDRESS);
@@ -164,8 +225,14 @@ cpp_bus_driver::Es8311& GetEs8311() {
 SleepOperator sleep_op;
 volatile bool boot_wake_requested = false;
 
+/**
+ * @brief BOOT 按键唤醒中断回调。
+ */
 void BootWakeInterruptCallback() { boot_wake_requested = true; }
 
+/**
+ * @brief 播放普通按键提示振动。
+ */
 void StartVibration() {
   auto& aw86224 = GetAw86224();
   if (!aw86224.PlayRamWaveform(
@@ -174,6 +241,9 @@ void StartVibration() {
   }
 }
 
+/**
+ * @brief 播放任务完成提示振动。
+ */
 void StartCompletionVibration() {
   auto& aw86224 = GetAw86224();
   if (!aw86224.PlayRamWaveform(
@@ -187,6 +257,10 @@ void StartCompletionVibration() {
   }
 }
 
+/**
+ * @brief 初始化并配置 ES8311 音频芯片。
+ * @return 初始化成功返回 true，否则返回 false。
+ */
 bool InitEs8311() {
   auto& es8311 = GetEs8311();
 
@@ -233,6 +307,10 @@ bool InitEs8311() {
   return result;
 }
 
+/**
+ * @brief 初始化并配置 TCA8418 键盘芯片。
+ * @return 初始化成功返回 true，否则返回 false。
+ */
 bool InitTca8418() {
   auto& tca8418 = GetTca8418();
 
@@ -257,6 +335,11 @@ bool InitTca8418() {
   return result;
 }
 
+/**
+ * @brief 初始化并配置 AW21009 LED 芯片。
+ * @param brightness 初始亮度。
+ * @return 初始化成功返回 true，否则返回 false。
+ */
 bool InitAw21009(uint16_t brightness) {
   auto& aw21009 = GetAw21009();
   const uint16_t safe_brightness =
@@ -273,6 +356,10 @@ bool InitAw21009(uint16_t brightness) {
   return result;
 }
 
+/**
+ * @brief 初始化并配置 AW86224 触觉芯片。
+ * @return 初始化成功返回 true，否则返回 false。
+ */
 bool InitAw86224() {
   auto& aw86224 = GetAw86224();
 
@@ -298,17 +385,30 @@ bool InitAw86224() {
   return aw86224.InitRamMode(kAw86224RamWaveformLibrary);
 }
 
+/**
+ * @brief 切换当前 UI 页面。
+ * @param page 目标 UI 页面。
+ */
 void SelectUiPage(UiPage page) {
   if (current_page == UiPage::kAudioTest && page != UiPage::kAudioTest) {
     audio_view::Stop(GetEs8311());
   }
+  if (current_page != page && page == UiPage::kBatteryInfo) {
+    battery_scroll_index = 0;
+  }
   current_page = page;
 }
 
+/**
+ * @brief 重置自动休眠计时器。
+ */
 void ResetAutoSleepTimer() {
   sleep_op.wake_deadline_ms = millis() + kAutoSleepTimeoutMs;
 }
 
+/**
+ * @brief 配置电池电压检测 ADC。
+ */
 void ConfigureBatteryMeasurement() {
   pinMode(BATTERY_ADC_DATA, INPUT);
   pinMode(BATTERY_MEASUREMENT_CONTROL, OUTPUT);
@@ -318,20 +418,12 @@ void ConfigureBatteryMeasurement() {
   analogReadResolution(12);
 }
 
-float ReadBatteryVoltage() {
-  uint32_t adc_sum = 0;
-  for (uint8_t i = 0; i < kBatteryAdcSampleCount; i++) {
-    adc_sum += analogRead(BATTERY_ADC_DATA);
-  }
-
-  const float adc_average =
-      static_cast<float>(adc_sum) / kBatteryAdcSampleCount;
-  return ((adc_average * (kAdcReferenceMv / kAdcResolutionCount)) / 1000.0f) *
-         kBatteryDividerRatio;
-}
-
-uint8_t ReadBatteryPercentage() {
-  const float voltage = ReadBatteryVoltage();
+/**
+ * @brief 根据电池电压计算百分比。
+ * @param voltage 电池电压，单位为 V。
+ * @return 电池百分比，范围 0~100。
+ */
+uint8_t CalculateBatteryPercentage(float voltage) {
   if (voltage <= kBatteryEmptyVoltage) {
     return 0;
   }
@@ -343,28 +435,91 @@ uint8_t ReadBatteryPercentage() {
                               (kBatteryFullVoltage - kBatteryEmptyVoltage));
 }
 
+/**
+ * @brief 读取当前电池信息快照。
+ * @return 电池信息快照。
+ */
+battery_view::BatteryInfo ReadBatteryInfo() {
+  uint32_t adc_sum = 0;
+  for (uint8_t i = 0; i < kBatteryAdcSampleCount; i++) {
+    adc_sum += analogRead(BATTERY_ADC_DATA);
+  }
+
+  const float adc_average =
+      static_cast<float>(adc_sum) / kBatteryAdcSampleCount;
+  const float adc_voltage_mv =
+      adc_average * (kAdcReferenceMv / kAdcResolutionCount);
+  const float battery_voltage =
+      (adc_voltage_mv / 1000.0f) * kBatteryDividerRatio;
+
+  battery_view::BatteryInfo info;
+  info.has_data = true;
+  info.adc_raw = static_cast<uint16_t>(adc_average + 0.5f);
+  info.adc_voltage_mv = adc_voltage_mv;
+  info.battery_voltage = battery_voltage;
+  info.percentage = CalculateBatteryPercentage(battery_voltage);
+  info.filtered_percentage = filtered_battery_percentage;
+  info.sample_count = kBatteryAdcSampleCount;
+  info.reference_mv = kAdcReferenceMv;
+  info.adc_resolution = kAdcResolutionCount;
+  info.divider_ratio = kBatteryDividerRatio;
+  info.empty_voltage = kBatteryEmptyVoltage;
+  info.full_voltage = kBatteryFullVoltage;
+  return info;
+}
+
+/**
+ * @brief 读取当前电池电压。
+ * @return 电池电压，单位为 V。
+ */
+float ReadBatteryVoltage() {
+  return ReadBatteryInfo().battery_voltage;
+}
+
+/**
+ * @brief 读取当前电池百分比。
+ * @return 电池百分比，范围 0~100。
+ */
+uint8_t ReadBatteryPercentage() {
+  return ReadBatteryInfo().percentage;
+}
+
+/**
+ * @brief 刷新电池信息页面缓存快照。
+ */
+void RefreshBatteryInfoSnapshot() {
+  battery_info_snapshot = ReadBatteryInfo();
+  battery_info_snapshot.filtered_percentage = filtered_battery_percentage;
+}
+
+/**
+ * @brief 更新状态栏电池显示信息。
+ */
 void UpdateStatusBar() {
   static bool initialized = false;
-  static uint8_t filtered_percentage = 0;
 
   const uint8_t current_percentage = ReadBatteryPercentage();
   if (!initialized) {
-    filtered_percentage = current_percentage;
+    filtered_battery_percentage = current_percentage;
     initialized = true;
   } else {
     const int16_t delta =
-        static_cast<int16_t>(current_percentage) - filtered_percentage;
+        static_cast<int16_t>(current_percentage) - filtered_battery_percentage;
     if (delta >= 2 || delta <= -2) {
-      filtered_percentage =
-          static_cast<uint8_t>((static_cast<uint16_t>(filtered_percentage) * 3 +
-                                   current_percentage) /
-                               4);
+      filtered_battery_percentage = static_cast<uint8_t>(
+          (static_cast<uint16_t>(filtered_battery_percentage) * 3 +
+              current_percentage) /
+          4);
     }
   }
 
-  lvgl_port::SetBatteryPercentage(filtered_percentage);
+  lvgl_port::SetBatteryPercentage(filtered_battery_percentage);
 }
 
+/**
+ * @brief 刷新当前 UI 页面。
+ * @param busy_enable 是否显示忙碌状态。
+ */
 void RefreshCurrentPage(bool busy_enable) {
   if (current_page == UiPage::kHome) {
     const std::vector<std::string> home_lines = home_view::CreateLines();
@@ -372,12 +527,21 @@ void RefreshCurrentPage(bool busy_enable) {
         GetUiPageName(current_page), page_selected, busy_enable);
   } else if (current_page == UiPage::kAudioTest) {
     audio_view::Show(page_selected, GetUiPageName(current_page), busy_enable);
+  } else if (current_page == UiPage::kBatteryInfo) {
+    const std::vector<std::string> battery_lines =
+        battery_view::CreateLines(battery_info_snapshot);
+    lvgl_port::ShowHomeScreen(battery_lines, battery_scroll_index,
+        GetUiPageName(current_page), page_selected, busy_enable);
   } else {
     lvgl_port::ShowTextList(keyboard_view::GetTextList(),
         GetUiPageName(current_page), page_selected, true, busy_enable);
   }
 }
 
+/**
+ * @brief 屏幕刷新任务入口。
+ * @param arg 任务参数。
+ */
 void ScreenRefreshTask(void* arg) {
   (void)arg;
   printf("ScreenRefreshTask start\n");
@@ -394,6 +558,10 @@ void ScreenRefreshTask(void* arg) {
   }
 }
 
+/**
+ * @brief 设置系统休眠或唤醒状态。
+ * @param enable true 进入休眠，false 退出休眠。
+ */
 void SetSystemSleep(bool enable) {
   if (enable) {
     auto& es8311_i2s_bus = GetEs8311I2sBus();
@@ -587,6 +755,7 @@ void loop() {
                         SelectUiPage(UiPage::kHome);
                         page_selected = false;
                         home_scroll_index = 0;
+                        battery_scroll_index = 0;
                         screen_refresh_flag = true;
                         StartVibration();
                         break;
@@ -598,6 +767,11 @@ void loop() {
                         } else if (key_text == "Up") {
                           SelectUiPage(GetPreviousUiPage(current_page));
                         } else if (key_text == "Center") {
+                          if (current_page == UiPage::kBatteryInfo) {
+                            UpdateStatusBar();
+                            RefreshBatteryInfoSnapshot();
+                            battery_scroll_index = 0;
+                          }
                           page_selected = true;
                         } else {
                           break;
@@ -621,6 +795,33 @@ void loop() {
                                   : 0;
                         } else if (key_text == "Esc") {
                           page_selected = false;
+                        } else {
+                          break;
+                        }
+                        screen_refresh_flag = true;
+                        StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kBatteryInfo) {
+                        if (key_text == "Down") {
+                          const size_t max_scroll_index =
+                              battery_view::GetMaxScrollIndex(
+                                  battery_info_snapshot);
+                          battery_scroll_index =
+                              std::min(battery_scroll_index + kHomeScrollStep,
+                                  max_scroll_index);
+                        } else if (key_text == "Up") {
+                          battery_scroll_index =
+                              battery_scroll_index > kHomeScrollStep
+                                  ? battery_scroll_index - kHomeScrollStep
+                                  : 0;
+                        } else if (key_text == "Esc") {
+                          page_selected = false;
+                        } else if (key_text == "Center") {
+                          UpdateStatusBar();
+                          RefreshBatteryInfoSnapshot();
+                          battery_scroll_index = 0;
                         } else {
                           break;
                         }

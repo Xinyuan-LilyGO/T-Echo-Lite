@@ -1,6 +1,9 @@
-/**
- * @file home_view.cpp
- * @brief general_test home page data provider.
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-04 17:25:31
+ * @License: GPL 3.0
  */
 #include "home_view.h"
 
@@ -18,10 +21,20 @@ constexpr char kDisplaySoftwareName[] = "general_test";
 constexpr char kBoardVersion[] = "v1.0";
 constexpr size_t kHomeVisibleLineCount = 10;
 
+/**
+ * @brief 将数字字符转换为数值，非数字返回 0。
+ * @param value 输入字符。
+ * @return 转换后的数字。
+ */
 uint8_t DigitOrZero(char value) {
   return value >= '0' && value <= '9' ? value - '0' : 0;
 }
 
+/**
+ * @brief 解析编译日期中的英文月份。
+ * @param date __DATE__ 日期字符串。
+ * @return 月份数字，解析失败返回 0。
+ */
 uint8_t ParseBuildMonth(const char* date) {
   if (date[0] == 'J' && date[1] == 'a') {
     return 1;
@@ -62,6 +75,10 @@ uint8_t ParseBuildMonth(const char* date) {
   return 0;
 }
 
+/**
+ * @brief 获取紧凑格式的软件编译时间。
+ * @return 形如 yyyyMMddHHmm 的编译时间。
+ */
 String GetSoftwareBuildTime() {
   static constexpr char kBuildDate[] = __DATE__;
   static constexpr char kBuildTime[] = __TIME__;
@@ -78,6 +95,10 @@ String GetSoftwareBuildTime() {
   return String(build_time);
 }
 
+/**
+ * @brief 获取当前 MCU 型号名称。
+ * @return MCU 型号字符串。
+ */
 const char* GetMcuModelName() {
 #if defined(NRF52840_XXAA)
   return "nRF52840";
@@ -88,6 +109,10 @@ const char* GetMcuModelName() {
 #endif
 }
 
+/**
+ * @brief 获取当前 MCU Flash 容量。
+ * @return Flash 容量，单位为 KB。
+ */
 uint32_t GetFlashSizeKb() {
 #if defined(NRF52840_XXAA)
   return 1024;
@@ -96,6 +121,10 @@ uint32_t GetFlashSizeKb() {
 #endif
 }
 
+/**
+ * @brief 获取当前 MCU RAM 容量。
+ * @return RAM 容量，单位为 KB。
+ */
 uint32_t GetRamSizeKb() {
 #if defined(NRF52840_XXAA)
   return 256;
@@ -104,6 +133,10 @@ uint32_t GetRamSizeKb() {
 #endif
 }
 
+/**
+ * @brief 获取 nRF FICR 中的设备 ID。
+ * @return 格式化后的设备 ID 字符串。
+ */
 std::string GetDeviceIdText() {
   char text[32] = {};
   snprintf(text, sizeof(text), "%08lX-%08lX",

@@ -1,6 +1,9 @@
-/**
- * @file lv_conf.h
- * @brief general_test LVGL minimal configuration.
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-04 17:25:31
+ * @License: GPL 3.0
  */
 #ifndef LV_CONF_H
 #define LV_CONF_H

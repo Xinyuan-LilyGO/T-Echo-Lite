@@ -1,6 +1,9 @@
-/**
- * @file audio_view.cpp
- * @brief general_test audio page state and actions.
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-05 09:38:32
+ * @License: GPL 3.0
  */
 #include "audio_view.h"
 
@@ -68,12 +71,20 @@ SPIFlash_Device_t zd25wq32c = {
     is_fram : false,
 };
 
+/**
+ * @brief 更新音频页面状态提示。
+ * @param status 状态提示文本。
+ */
 void ShowStatus(const char* status) {
   audio_status_text = status == nullptr ? "" : status;
   lvgl_port::ShowAudioScreen(true, audio_target == AudioTarget::kMic,
       audio_status_text.c_str(), "Audio", false);
 }
 
+/**
+ * @brief 擦除音频录制数据使用的 Flash 区域。
+ * @return 擦除成功返回 true，否则返回 false。
+ */
 bool EraseAudioFlashArea() {
   const uint32_t erase_end = kAudioRecordDataAddress + kAudioRecordBytes;
   for (uint32_t address = 0; address < erase_end;
@@ -88,6 +99,12 @@ bool EraseAudioFlashArea() {
   return true;
 }
 
+/**
+ * @brief 等待 ES8311 I2S 录音读缓冲事件。
+ * @param es8311 ES8311 驱动对象。
+ * @param timeout_ms 超时时间，单位为毫秒。
+ * @return 等待到事件返回 true，超时返回 false。
+ */
 bool WaitForAudioReadEvent(
     cpp_bus_driver::Es8311& es8311, uint32_t timeout_ms) {
   const uint32_t deadline = millis() + timeout_ms;
@@ -100,6 +117,12 @@ bool WaitForAudioReadEvent(
   return false;
 }
 
+/**
+ * @brief 等待 ES8311 I2S 播放写缓冲事件。
+ * @param es8311 ES8311 驱动对象。
+ * @param timeout_ms 超时时间，单位为毫秒。
+ * @return 等待到事件返回 true，超时返回 false。
+ */
 bool WaitForAudioWriteEvent(
     cpp_bus_driver::Es8311& es8311, uint32_t timeout_ms) {
   const uint32_t deadline = millis() + timeout_ms;
@@ -112,6 +135,13 @@ bool WaitForAudioWriteEvent(
   return false;
 }
 
+/**
+ * @brief 从 Flash 加载一段音频数据到播放缓冲区。
+ * @param offset 音频数据偏移地址。
+ * @param buffer_index 目标音频缓冲区索引。
+ * @param length 输出实际读取长度。
+ * @return 读取成功返回 true，否则返回 false。
+ */
 bool LoadAudioChunk(uint32_t offset, uint8_t buffer_index, uint32_t* length) {
   if (length == nullptr || offset >= audio_recorded_length) {
     return false;
@@ -125,6 +155,12 @@ bool LoadAudioChunk(uint32_t offset, uint8_t buffer_index, uint32_t* length) {
              *length) == *length;
 }
 
+/**
+ * @brief 录制音频并保存到 Flash。
+ * @param es8311 ES8311 驱动对象。
+ * @param completion_vibration 完成提示振动回调。
+ * @return 录制成功返回 true，否则返回 false。
+ */
 bool RecordAudioToFlash(
     cpp_bus_driver::Es8311& es8311, void (*completion_vibration)()) {
   if (!flash_ready) {
@@ -194,6 +230,12 @@ bool RecordAudioToFlash(
   return audio_record_available;
 }
 
+/**
+ * @brief 从 Flash 读取录音并通过扬声器播放。
+ * @param es8311 ES8311 驱动对象。
+ * @param completion_vibration 完成提示振动回调。
+ * @return 播放成功返回 true，否则返回 false。
+ */
 bool PlayAudioFromFlash(
     cpp_bus_driver::Es8311& es8311, void (*completion_vibration)()) {
   if (!flash_ready) {
