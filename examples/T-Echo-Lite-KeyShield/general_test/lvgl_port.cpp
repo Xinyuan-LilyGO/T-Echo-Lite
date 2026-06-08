@@ -1,6 +1,9 @@
-/**
- * @file lvgl_port.cpp
- * @brief general_test 的 LVGL 显示适配层。
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-05 09:38:40
+ * @License: GPL 3.0
  */
 #include "lvgl_port.h"
 

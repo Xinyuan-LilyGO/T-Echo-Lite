@@ -1,6 +1,9 @@
-/**
- * @file bluetooth_view.cpp
- * @brief Bluetooth 信息页面实现。
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-08 18:02:27
+ * @License: GPL 3.0
  */
 #include "bluetooth_view.h"
 

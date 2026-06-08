@@ -1,6 +1,9 @@
-/**
- * @file ble_uart_log.cpp
- * @brief BLE UART 和日志输出实现。
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-05 09:38:40
+ * @License: GPL 3.0
  */
 #include "ble_uart_log.h"
 

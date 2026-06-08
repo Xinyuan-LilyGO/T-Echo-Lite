@@ -1,3 +1,10 @@
+/*
+ * @Description: None
+ * @Author: LILYGO_L
+ * @Date: 2025-06-13 14:20:16
+ * @LastEditTime: 2026-06-08 18:02:42
+ * @License: GPL 3.0
+ */
 #include "gps_view.h"
 
 #include <Arduino.h>
