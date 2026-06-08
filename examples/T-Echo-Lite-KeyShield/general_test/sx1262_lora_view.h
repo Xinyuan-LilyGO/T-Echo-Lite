@@ -118,3 +118,8 @@ bool IsSx1262LoraAutoSendEnabled();
  * @return 当前 SX1262 LoRa 测试状态。
  */
 Sx1262LoraInfo GetSx1262LoraInfo();
+
+/**
+ * @brief 关闭 SX1262 使用的 SPI 外设以节省功耗。
+ */
+void EndSx1262LoraSpi();

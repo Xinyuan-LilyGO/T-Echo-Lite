@@ -323,6 +323,7 @@ void ShutdownSx1262Lora() {
 
   sx1262_radio.clearDio1Action();
   sx1262_radio.sleep();
+  sx1262_spi.end();
   sx1262_packet_received = false;
   sx1262_info.initialized = false;
   sx1262_info.auto_send_enabled = false;
@@ -417,4 +418,8 @@ bool IsSx1262LoraAutoSendEnabled() {
 
 Sx1262LoraInfo GetSx1262LoraInfo() {
   return sx1262_info;
+}
+
+void EndSx1262LoraSpi() {
+  sx1262_spi.end();
 }

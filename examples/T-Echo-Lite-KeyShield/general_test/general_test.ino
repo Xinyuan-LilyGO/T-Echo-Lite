@@ -2,7 +2,7 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-08 13:34:21
+ * @LastEditTime: 2026-06-08 16:55:08
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
@@ -1088,35 +1088,64 @@ void ScreenRefreshTask(void* arg) {
  */
 void SetSystemSleep(bool enable) {
   if (enable) {
-    auto& es8311_i2s_bus = GetEs8311I2sBus();
-
     system_sleeping = true;
     if (screen_refresh_task_handle != nullptr) {
       vTaskSuspend(screen_refresh_task_handle);
     }
 
-    ShutdownBleUart();
-    lvgl_port::SetBleConnected(false);
-    ShutdownSx1262Lora();
-
     Serial.end();
-    lvgl_port::EndDisplay();
-    pinMode(SCREEN_BS1, INPUT);
 
+    // 停止 BLE
+    ShutdownBleUart();
+
+    // 复位所有 GPIO 为默认状态（最低功耗）
+    nrf_gpio_cfg_default(SCREEN_MISO);
+    nrf_gpio_cfg_default(SCREEN_SCLK);
+    nrf_gpio_cfg_default(SCREEN_MOSI);
+    nrf_gpio_cfg_default(SCREEN_DC);
+    nrf_gpio_cfg_default(SCREEN_RST);
+    nrf_gpio_cfg_default(SCREEN_CS);
+    nrf_gpio_cfg_default(SCREEN_SRAM_CS);
+    nrf_gpio_cfg_default(SCREEN_BUSY);
+    nrf_gpio_cfg_default(SCREEN_BS1);
+    lvgl_port::EndDisplay();
+
+    nrf_gpio_cfg_default(IIC_1_SDA);
+    nrf_gpio_cfg_default(IIC_1_SCL);
+    nrf_gpio_cfg_default(TCA8418_INT);
     Wire.end();
 
-    pinMode(IIC_1_SDA, INPUT);
-    pinMode(IIC_1_SCL, INPUT);
+    nrf_gpio_cfg_default(BATTERY_MEASUREMENT_CONTROL);
+    nrf_gpio_cfg_default(BATTERY_ADC_DATA);
 
-    pinMode(BATTERY_MEASUREMENT_CONTROL, INPUT);
+    nrf_gpio_cfg_default(SX1262_MISO);
+    nrf_gpio_cfg_default(SX1262_MOSI);
+    nrf_gpio_cfg_default(SX1262_SCLK);
+    nrf_gpio_cfg_default(SX1262_CS);
+    nrf_gpio_cfg_default(SX1262_DIO1);
+    nrf_gpio_cfg_default(SX1262_RST);
+    nrf_gpio_cfg_default(SX1262_BUSY);
+    nrf_gpio_cfg_default(SX1262_RF_VC1);
+    nrf_gpio_cfg_default(SX1262_RF_VC2);
+    EndSx1262LoraSpi();
 
-    audio_view::Stop(GetEs8311());
-    es8311_i2s_bus->Deinit();
+    nrf_gpio_cfg_default(LED_1);
+    nrf_gpio_cfg_default(LED_2);
+
+    GetEs8311I2sBus()->Deinit();
+    nrf_gpio_cfg_default(ES8311_ADC_DATA);
+    nrf_gpio_cfg_default(ES8311_DAC_DATA);
+    nrf_gpio_cfg_default(ES8311_WS_LRCK);
+    nrf_gpio_cfg_default(ES8311_BCLK);
+    nrf_gpio_cfg_default(ES8311_MCLK);
+
     audio_view::EndFlash();
 
+    // 切断 3.3V 外设供电
     digitalWrite(RT9080_EN, LOW);
-    pinMode(RT9080_EN, INPUT_PULLDOWN);
+    nrf_gpio_cfg_default(RT9080_EN);
   } else {
+    // 恢复 3.3V 供电
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
@@ -1128,10 +1157,13 @@ void SetSystemSleep(bool enable) {
     lvgl_port::BeginDisplay();
 
     InitTca8418();
+    pinMode(TCA8418_INT, INPUT_PULLUP);
     InitAw21009(kAw21009MaxBrightness);
     InitAw86224();
     InitEs8311();
     audio_view::InitFlash();
+
+    // 恢复 BLE
     InitializeBleUart();
     lvgl_port::SetBleConnected(IsBleUartConnected());
 
@@ -1201,7 +1233,6 @@ void loop() {
       millis() > sleep_op.wake_deadline_ms) {
     LogPrintln("Light sleep on");
 
-    ShutdownBleUart();
     lvgl_port::SetBleConnected(false);
 
     lvgl_port::SetSleepMode(true);
@@ -1216,22 +1247,24 @@ void loop() {
 
   // 休眠状态下通过BOOT按键唤醒
   if (sleep_op.current_mode == SleepOperator::Mode::kLightSleep) {
-    if (boot_wake_requested || digitalRead(nRF52840_BOOT) == LOW) {
-      boot_wake_requested = false;
-      SetSystemSleep(false);
+    while (sleep_op.current_mode == SleepOperator::Mode::kLightSleep) {
+      if (boot_wake_requested || digitalRead(nRF52840_BOOT) == LOW) {
+        boot_wake_requested = false;
+        SetSystemSleep(false);
 
-      LogPrintln("Awakening");
+        LogPrintln("Awakening");
 
-      lvgl_port::SetSleepMode(false);
-      UpdateStatusBar();
-      screen_refresh_flag = false;
-      RefreshCurrentPage(true);
+        lvgl_port::SetSleepMode(false);
+        UpdateStatusBar();
+        screen_refresh_flag = false;
+        RefreshCurrentPage(true);
 
-      sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
-      ResetAutoSleepTimer();
-    } else {
+        sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
+        ResetAutoSleepTimer();
+        break;
+      }
       waitForEvent();
-      return;
+      delay(1000);
     }
   }
 
