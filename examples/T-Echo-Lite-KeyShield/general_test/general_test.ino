@@ -2,25 +2,33 @@
  * @Description: original_test
  * @Author: LILYGO_L
  * @Date: 2025-06-13 14:20:16
- * @LastEditTime: 2026-06-05 09:45:24
+ * @LastEditTime: 2026-06-08 13:34:21
  * @License: GPL 3.0
  */
 #include <Adafruit_TinyUSB.h>
 #include <Arduino.h>
+#include <SPI.h>
 #include <Wire.h>
 
 #include <algorithm>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "Adafruit_SPIFlash.h"
 #include "audio_view.h"
 #include "battery_view.h"
+#include "ble_uart_log.h"
+#include "bluetooth_view.h"
 #include "cpp_bus_driver_library.h"
+#include "gps_view.h"
 #include "home_view.h"
+#include "imu_view.h"
 #include "keyboard_view.h"
 #include "lvgl.h"
 #include "lvgl_port.h"
+#include "sx1262_lora_view.h"
 #include "t_echo_lite_keyshield_config.h"
 
 static constexpr uint8_t kAudioMclkMultiple = 32;
@@ -44,6 +52,10 @@ static constexpr uint32_t kScreenRefreshTaskPeriodMs = 10;
 static constexpr uint16_t kScreenRefreshTaskStackSize = 2048;
 static constexpr size_t kHomeVisibleLineCount = 10;
 static constexpr size_t kHomeScrollStep = kHomeVisibleLineCount / 2;
+static constexpr size_t kMaxPartialRefreshCount = 30;
+static constexpr size_t kSx1262FrequencyTextMaxLength = 7;
+static constexpr float kSx1262MinFrequencyMhz = 150.0f;
+static constexpr float kSx1262MaxFrequencyMhz = 960.0f;
 
 struct SleepOperator {
   enum class Mode : uint8_t {
@@ -59,6 +71,21 @@ enum class UiPage : uint8_t {
   kKeyboardTest,
   kAudioTest,
   kBatteryInfo,
+  kBluetooth,
+  kSx1262Lora,
+  kGps,
+  kImu,
+};
+
+enum class AudioTarget : uint8_t {
+  kMic,
+  kSpeaker,
+};
+
+enum class Sx1262LoraControl : uint8_t {
+  kFrequency,
+  kBandwidth,
+  kAutoSend,
 };
 
 bool screen_refresh_flag = false;
@@ -66,15 +93,30 @@ UiPage current_page = UiPage::kHome;
 bool page_selected = false;
 size_t home_scroll_index = 0;
 size_t battery_scroll_index = 0;
+size_t bluetooth_scroll_index = 0;
 uint8_t filtered_battery_percentage = 0;
 battery_view::BatteryInfo battery_info_snapshot;
+bool system_sleeping = false;
+bool partial_refresh_flag = true;
+size_t partial_refresh_count = 0;
+
+// Audio state
+AudioTarget audio_target = AudioTarget::kMic;
+std::string audio_status_text = "Select Mic or Speaker";
+bool audio_action_running = false;
+
+// SX1262 LoRa state
+Sx1262LoraControl sx1262_lora_control = Sx1262LoraControl::kFrequency;
+std::string sx1262_lora_frequency_text = "868";
+bool sx1262_lora_frequency_editing = false;
+std::string sx1262_lora_bandwidth_text = "125";
+bool sx1262_lora_bandwidth_editing = false;
+bool sx1262_lora_init_attempted = false;
 
 TaskHandle_t screen_refresh_task_handle = nullptr;
 
 /**
  * @brief 获取 UI 页面名称。
- * @param page UI 页面枚举。
- * @return 页面名称字符串。
  */
 const char* GetUiPageName(UiPage page) {
   switch (page) {
@@ -86,6 +128,14 @@ const char* GetUiPageName(UiPage page) {
       return "Audio";
     case UiPage::kBatteryInfo:
       return "Battery";
+    case UiPage::kBluetooth:
+      return "Bluetooth";
+    case UiPage::kSx1262Lora:
+      return "LoRa";
+    case UiPage::kGps:
+      return "GPS";
+    case UiPage::kImu:
+      return "IMU";
     default:
       return "Unknown";
   }
@@ -93,8 +143,6 @@ const char* GetUiPageName(UiPage page) {
 
 /**
  * @brief 获取下一个 UI 页面。
- * @param page 当前 UI 页面。
- * @return 下一个 UI 页面。
  */
 UiPage GetNextUiPage(UiPage page) {
   switch (page) {
@@ -105,6 +153,14 @@ UiPage GetNextUiPage(UiPage page) {
     case UiPage::kAudioTest:
       return UiPage::kBatteryInfo;
     case UiPage::kBatteryInfo:
+      return UiPage::kBluetooth;
+    case UiPage::kBluetooth:
+      return UiPage::kSx1262Lora;
+    case UiPage::kSx1262Lora:
+      return UiPage::kGps;
+    case UiPage::kGps:
+      return UiPage::kImu;
+    case UiPage::kImu:
       return UiPage::kHome;
     default:
       return UiPage::kHome;
@@ -113,22 +169,37 @@ UiPage GetNextUiPage(UiPage page) {
 
 /**
  * @brief 获取上一个 UI 页面。
- * @param page 当前 UI 页面。
- * @return 上一个 UI 页面。
  */
 UiPage GetPreviousUiPage(UiPage page) {
   switch (page) {
     case UiPage::kHome:
-      return UiPage::kBatteryInfo;
+      return UiPage::kImu;
     case UiPage::kKeyboardTest:
       return UiPage::kHome;
     case UiPage::kAudioTest:
       return UiPage::kKeyboardTest;
     case UiPage::kBatteryInfo:
       return UiPage::kAudioTest;
+    case UiPage::kBluetooth:
+      return UiPage::kBatteryInfo;
+    case UiPage::kSx1262Lora:
+      return UiPage::kBluetooth;
+    case UiPage::kGps:
+      return UiPage::kSx1262Lora;
+    case UiPage::kImu:
+      return UiPage::kGps;
     default:
       return UiPage::kHome;
   }
+}
+
+/**
+ * @brief 计算 Bluetooth 页面最大有效滚动索引。
+ */
+size_t GetBluetoothMaxScrollIndex() {
+  const size_t line_count = BuildBluetoothInfoLines().size();
+  return line_count > kHomeVisibleLineCount ? line_count - kHomeVisibleLineCount
+                                            : 0;
 }
 
 /**
@@ -387,7 +458,6 @@ bool InitAw86224() {
 
 /**
  * @brief 切换当前 UI 页面。
- * @param page 目标 UI 页面。
  */
 void SelectUiPage(UiPage page) {
   if (current_page == UiPage::kAudioTest && page != UiPage::kAudioTest) {
@@ -395,8 +465,321 @@ void SelectUiPage(UiPage page) {
   }
   if (current_page != page && page == UiPage::kBatteryInfo) {
     battery_scroll_index = 0;
+    UpdateStatusBar();
+    RefreshBatteryInfoSnapshot();
+  }
+  if (current_page == UiPage::kSx1262Lora && page != UiPage::kSx1262Lora) {
+    ShutdownSx1262Lora();
+    sx1262_lora_init_attempted = false;
+    page_selected = false;
+  }
+  if (current_page != UiPage::kSx1262Lora && page == UiPage::kSx1262Lora) {
+    sx1262_lora_control = Sx1262LoraControl::kFrequency;
+    sx1262_lora_frequency_editing = false;
+    sx1262_lora_bandwidth_editing = false;
+    SyncSx1262LoraFrequencyText();
+    sx1262_lora_init_attempted = true;
+    InitializeSx1262Lora();
+  }
+  if (current_page == UiPage::kGps && page != UiPage::kGps) {
+    ShutdownGps();
+  }
+  if (current_page != UiPage::kGps && page == UiPage::kGps) {
+    InitializeGps();
+  }
+  if (current_page == UiPage::kImu && page != UiPage::kImu) {
+    ShutdownImu();
+  }
+  if (current_page != UiPage::kImu && page == UiPage::kImu) {
+    InitializeImu();
   }
   current_page = page;
+}
+
+// ========== SX1262 LoRa 按键处理 ==========
+
+/**
+ * @brief 判断按键是否为单个数字字符。
+ * @param key_text 按键文本。
+ * @return 是数字时返回 true。
+ */
+bool IsSx1262FrequencyDigitKey(const std::string& key_text) {
+  return key_text.size() == 1 && key_text[0] >= '0' && key_text[0] <= '9';
+}
+
+void SyncSx1262LoraFrequencyText() {
+  char text[12] = {};
+  snprintf(text, sizeof(text), "%.3f", GetSx1262LoraInfo().frequency_mhz);
+  sx1262_lora_frequency_text = text;
+  while (sx1262_lora_frequency_text.size() > 1 &&
+         sx1262_lora_frequency_text.back() == '0') {
+    sx1262_lora_frequency_text.pop_back();
+  }
+  if (!sx1262_lora_frequency_text.empty() &&
+      sx1262_lora_frequency_text.back() == '.') {
+    sx1262_lora_frequency_text.pop_back();
+  }
+}
+
+bool ParseSx1262LoraFrequencyText(float* frequency_mhz) {
+  if (frequency_mhz == nullptr || sx1262_lora_frequency_text.empty() ||
+      sx1262_lora_frequency_text == ".") {
+    return false;
+  }
+  char* end = nullptr;
+  const char* begin = sx1262_lora_frequency_text.c_str();
+  const float parsed_frequency = std::strtof(begin, &end);
+  if (end == begin || *end != '\0') return false;
+  if (parsed_frequency < kSx1262MinFrequencyMhz ||
+      parsed_frequency > kSx1262MaxFrequencyMhz) {
+    return false;
+  }
+  *frequency_mhz = parsed_frequency;
+  return true;
+}
+
+bool CommitSx1262LoraFrequencyText() {
+  float frequency_mhz = 0.0f;
+  if (!ParseSx1262LoraFrequencyText(&frequency_mhz)) {
+    SyncSx1262LoraFrequencyText();
+    return false;
+  }
+  const bool success = SetSx1262LoraFrequency(frequency_mhz);
+  SyncSx1262LoraFrequencyText();
+  return success;
+}
+
+void SyncSx1262LoraBandwidthText() {
+  const Sx1262LoraInfo info = GetSx1262LoraInfo();
+  char text[12] = {};
+  snprintf(text, sizeof(text), "%.2f", info.bandwidth_khz);
+  sx1262_lora_bandwidth_text = text;
+  while (sx1262_lora_bandwidth_text.size() > 1 &&
+         sx1262_lora_bandwidth_text.back() == '0') {
+    sx1262_lora_bandwidth_text.pop_back();
+  }
+  if (!sx1262_lora_bandwidth_text.empty() &&
+      sx1262_lora_bandwidth_text.back() == '.') {
+    sx1262_lora_bandwidth_text.pop_back();
+  }
+}
+
+bool CommitSx1262LoraBandwidthText() {
+  if (sx1262_lora_bandwidth_text.empty() ||
+      sx1262_lora_bandwidth_text == ".") {
+    SyncSx1262LoraBandwidthText();
+    return false;
+  }
+  const float desired_khz = strtof(sx1262_lora_bandwidth_text.c_str(), nullptr);
+  if (desired_khz <= 0) {
+    SyncSx1262LoraBandwidthText();
+    return false;
+  }
+  const bool success = SetSx1262LoraBandwidth(desired_khz);
+  SyncSx1262LoraBandwidthText();
+  return success;
+}
+
+void MoveSx1262LoraControlDown() {
+  switch (sx1262_lora_control) {
+    case Sx1262LoraControl::kFrequency:
+      sx1262_lora_control = Sx1262LoraControl::kBandwidth; break;
+    case Sx1262LoraControl::kBandwidth:
+      sx1262_lora_control = Sx1262LoraControl::kAutoSend; break;
+    case Sx1262LoraControl::kAutoSend:
+      sx1262_lora_control = Sx1262LoraControl::kFrequency; break;
+  }
+}
+
+void MoveSx1262LoraControlUp() {
+  switch (sx1262_lora_control) {
+    case Sx1262LoraControl::kFrequency:
+      sx1262_lora_control = Sx1262LoraControl::kAutoSend; break;
+    case Sx1262LoraControl::kBandwidth:
+      sx1262_lora_control = Sx1262LoraControl::kFrequency; break;
+    case Sx1262LoraControl::kAutoSend:
+      sx1262_lora_control = Sx1262LoraControl::kBandwidth; break;
+  }
+}
+
+void ToggleSx1262LoraAutoSend() {
+  if (GetSx1262LoraInfo().initialized || InitializeSx1262Lora()) {
+    SetSx1262LoraAutoSend(!IsSx1262LoraAutoSendEnabled());
+  }
+}
+
+bool AppendSx1262LoraFrequencyKey(const std::string& key_text) {
+  if (IsSx1262FrequencyDigitKey(key_text)) {
+    if (sx1262_lora_frequency_text.size() < kSx1262FrequencyTextMaxLength) {
+      sx1262_lora_frequency_text += key_text;
+    }
+    return true;
+  }
+  if (key_text == "*") {
+    if (sx1262_lora_frequency_text.find('.') == std::string::npos &&
+        sx1262_lora_frequency_text.size() < kSx1262FrequencyTextMaxLength) {
+      if (sx1262_lora_frequency_text.empty()) {
+        sx1262_lora_frequency_text = "0";
+      }
+      sx1262_lora_frequency_text += ".";
+    }
+    return true;
+  }
+  if (key_text == "#") {
+    if (!sx1262_lora_frequency_text.empty()) {
+      sx1262_lora_frequency_text.pop_back();
+    }
+    return true;
+  }
+  if (key_text == "No") {
+    sx1262_lora_frequency_text.clear();
+    return true;
+  }
+  return false;
+}
+
+bool HandleSx1262LoraFrequencyEditKey(const std::string& key_text) {
+  if (AppendSx1262LoraFrequencyKey(key_text)) return true;
+  if (key_text == "Center" || key_text == "Yes") {
+    CommitSx1262LoraFrequencyText();
+    sx1262_lora_frequency_editing = false;
+    return true;
+  }
+  if (key_text == "Esc") {
+    SyncSx1262LoraFrequencyText();
+    sx1262_lora_frequency_editing = false;
+    return true;
+  }
+  return false;
+}
+
+bool AppendSx1262LoraBandwidthKey(const std::string& key_text) {
+  if (IsSx1262FrequencyDigitKey(key_text)) {
+    if (sx1262_lora_bandwidth_text.size() < kSx1262FrequencyTextMaxLength) {
+      sx1262_lora_bandwidth_text += key_text;
+    }
+    return true;
+  }
+  if (key_text == "*") {
+    if (sx1262_lora_bandwidth_text.find('.') == std::string::npos &&
+        sx1262_lora_bandwidth_text.size() < kSx1262FrequencyTextMaxLength) {
+      if (sx1262_lora_bandwidth_text.empty()) {
+        sx1262_lora_bandwidth_text = "0";
+      }
+      sx1262_lora_bandwidth_text += ".";
+    }
+    return true;
+  }
+  if (key_text == "#") {
+    if (!sx1262_lora_bandwidth_text.empty()) {
+      sx1262_lora_bandwidth_text.pop_back();
+    }
+    return true;
+  }
+  if (key_text == "No") {
+    sx1262_lora_bandwidth_text.clear();
+    return true;
+  }
+  return false;
+}
+
+bool HandleSx1262LoraBandwidthEditKey(const std::string& key_text) {
+  if (AppendSx1262LoraBandwidthKey(key_text)) return true;
+  if (key_text == "Center" || key_text == "Yes") {
+    CommitSx1262LoraBandwidthText();
+    sx1262_lora_bandwidth_editing = false;
+    return true;
+  }
+  if (key_text == "Esc") {
+    SyncSx1262LoraBandwidthText();
+    sx1262_lora_bandwidth_editing = false;
+    return true;
+  }
+  return false;
+}
+
+bool HandleSx1262LoraPageKey(const std::string& key_text) {
+  if (sx1262_lora_frequency_editing) {
+    return HandleSx1262LoraFrequencyEditKey(key_text);
+  }
+  if (sx1262_lora_bandwidth_editing) {
+    return HandleSx1262LoraBandwidthEditKey(key_text);
+  }
+  if (key_text == "Down") {
+    if (!GetSx1262LoraInfo().initialized) return false;
+    MoveSx1262LoraControlDown(); return true; }
+  if (key_text == "Up") {
+    if (!GetSx1262LoraInfo().initialized) return false;
+    MoveSx1262LoraControlUp(); return true; }
+  if (key_text == "Center") {
+    if (!GetSx1262LoraInfo().initialized) {
+      sx1262_lora_init_attempted = true;
+      InitializeSx1262Lora();
+      return true;
+    }
+    if (sx1262_lora_control == Sx1262LoraControl::kFrequency) {
+      sx1262_lora_frequency_editing = true;
+      sx1262_lora_frequency_text.clear();
+    } else if (sx1262_lora_control == Sx1262LoraControl::kBandwidth) {
+      sx1262_lora_bandwidth_editing = true;
+      sx1262_lora_bandwidth_text.clear();
+    } else {
+      ToggleSx1262LoraAutoSend();
+    }
+    return true;
+  }
+  if (key_text == "Yes") {
+    sx1262_lora_control = Sx1262LoraControl::kAutoSend;
+    ToggleSx1262LoraAutoSend();
+    return true;
+  }
+  if (key_text == "Esc") {
+    page_selected = false;
+    sx1262_lora_control = Sx1262LoraControl::kFrequency;
+    sx1262_lora_frequency_editing = false;
+    sx1262_lora_bandwidth_editing = false;
+    SyncSx1262LoraFrequencyText();
+    return true;
+  }
+  return false;
+}
+
+// ========== 屏幕刷新 ==========
+
+/**
+ * @brief 向屏幕刷新任务请求一次刷新。
+ * @param partial_refresh 为 true 时允许使用局部刷新。
+ */
+void RequestScreenRefresh(bool partial_refresh) {
+  if (!partial_refresh) {
+    partial_refresh_count = 0;
+  }
+  partial_refresh_flag =
+      screen_refresh_flag ? partial_refresh_flag && partial_refresh
+                          : partial_refresh;
+  screen_refresh_flag = true;
+}
+
+/**
+ * @brief 请求键盘文本刷新，定期用快刷清理残影。
+ */
+void RequestKeyboardTextRefresh() {
+  partial_refresh_count++;
+  if (partial_refresh_count > kMaxPartialRefreshCount) {
+    RequestScreenRefresh(false);
+    return;
+  }
+  RequestScreenRefresh(true);
+}
+
+/**
+ * @brief 处理 BLE UART 连接状态变化并刷新状态栏。
+ * @param connected 为 true 时表示 BLE 已连接。
+ */
+void HandleBleUartConnectionChanged(bool connected) {
+  ResetAutoSleepTimer();
+  lvgl_port::SetBleConnected(connected);
+  RequestScreenRefresh(true);
 }
 
 /**
@@ -493,8 +876,175 @@ void RefreshBatteryInfoSnapshot() {
 }
 
 /**
- * @brief 更新状态栏电池显示信息。
+ * @brief 消费刷新请求并调用 LVGL 渲染当前页面。
  */
+void ProcessPendingScreenRefresh() {
+  if (!screen_refresh_flag) return;
+  screen_refresh_flag = false;
+
+  UpdateStatusBar();
+  RefreshCurrentPage(false);
+  partial_refresh_flag = true;
+}
+
+/**
+ * @brief 刷新当前 UI 页面。
+ * @param busy_enable 是否显示忙碌状态。
+ */
+void RefreshCurrentPage(bool busy_enable) {
+  if (current_page == UiPage::kHome) {
+    const std::vector<std::string> home_lines = home_view::CreateLines();
+    lvgl_port::ShowHomeScreen(home_lines, home_scroll_index,
+        GetUiPageName(current_page), page_selected, partial_refresh_flag,
+        busy_enable);
+  } else if (current_page == UiPage::kAudioTest) {
+    lvgl_port::ShowAudioScreen(page_selected,
+        audio_target == AudioTarget::kMic, audio_status_text.c_str(),
+        GetUiPageName(current_page), partial_refresh_flag, busy_enable,
+        audio_action_running);
+  } else if (current_page == UiPage::kBatteryInfo) {
+    const std::vector<std::string> battery_lines =
+        battery_view::CreateLines(battery_info_snapshot);
+    lvgl_port::ShowHomeScreen(battery_lines, battery_scroll_index,
+        GetUiPageName(current_page), page_selected, partial_refresh_flag,
+        busy_enable);
+  } else if (current_page == UiPage::kBluetooth) {
+    const std::vector<std::string> bluetooth_lines = BuildBluetoothInfoLines();
+    bluetooth_scroll_index =
+        std::min(bluetooth_scroll_index, GetBluetoothMaxScrollIndex());
+    lvgl_port::ShowHomeScreen(bluetooth_lines, bluetooth_scroll_index,
+        GetUiPageName(current_page), page_selected, partial_refresh_flag,
+        busy_enable);
+  } else if (current_page == UiPage::kSx1262Lora) {
+    const Sx1262LoraInfo sx1262_info = GetSx1262LoraInfo();
+    if (!sx1262_info.initialized) {
+      std::vector<std::string> lines;
+      lines.push_back("[sx1262 lora]");
+      lines.push_back("");
+      lines.push_back("LoRa module init failed");
+      lvgl_port::ShowHomeScreen(lines, 0,
+          GetUiPageName(current_page), page_selected, partial_refresh_flag,
+          busy_enable);
+    } else {
+      char rssi_text[24] = {};
+      char snr_text[24] = {};
+      if (sx1262_info.rx_count > 0) {
+        snprintf(rssi_text, sizeof(rssi_text), "rssi: %.1fdBm",
+            sx1262_info.last_rssi_dbm);
+        snprintf(snr_text, sizeof(snr_text), "snr: %.1fdB",
+            sx1262_info.last_snr_db);
+      } else {
+        snprintf(rssi_text, sizeof(rssi_text), "rssi: unknown");
+        snprintf(snr_text, sizeof(snr_text), "snr: unknown");
+      }
+      lvgl_port::Sx1262LoraScreenState sx1262_state;
+      sx1262_state.frequency_text = sx1262_lora_frequency_text.c_str();
+      sx1262_state.bandwidth_text = sx1262_lora_bandwidth_text.c_str();
+      sx1262_state.auto_send_enabled = sx1262_info.auto_send_enabled;
+      sx1262_state.rx_data =
+          sx1262_info.rx_count > 0 ? sx1262_info.last_rx_data : "none";
+      sx1262_state.rssi_text = rssi_text;
+      sx1262_state.snr_text = snr_text;
+      sx1262_state.page_selected = page_selected;
+      sx1262_state.frequency_selected =
+          sx1262_lora_control == Sx1262LoraControl::kFrequency;
+      sx1262_state.frequency_editing = sx1262_lora_frequency_editing;
+      sx1262_state.bandwidth_selected =
+          sx1262_lora_control == Sx1262LoraControl::kBandwidth;
+      sx1262_state.bandwidth_editing = sx1262_lora_bandwidth_editing;
+      sx1262_state.auto_send_selected =
+          sx1262_lora_control == Sx1262LoraControl::kAutoSend;
+      lvgl_port::ShowSx1262LoraScreen(sx1262_state,
+          GetUiPageName(current_page), partial_refresh_flag, busy_enable);
+    }
+  } else if (current_page == UiPage::kGps) {
+    const GpsInfo gps_info = GetGpsInfo();
+    char lat_text[32] = {}, lon_text[32] = {}, sat_text[32] = {};
+    char cn0_text[32] = {}, dop_text[32] = {}, speed_text[32] = {};
+    char time_text[48] = {}, fix_time_text[32] = {};
+
+    if (gps_info.has_fix) {
+      snprintf(lat_text, sizeof(lat_text), "lat: %.6f", gps_info.latitude);
+      snprintf(lon_text, sizeof(lon_text), "lon: %.6f", gps_info.longitude);
+      snprintf(fix_time_text, sizeof(fix_time_text),
+          "time to fix: %lu s",
+          static_cast<unsigned long>(gps_info.time_to_first_fix_s));
+    } else if (gps_info.module_found) {
+      snprintf(fix_time_text, sizeof(fix_time_text),
+          "waiting: %lu s",
+          static_cast<unsigned long>(gps_info.time_to_first_fix_s));
+    }
+    snprintf(sat_text, sizeof(sat_text), "sat: %u used / %u visible",
+        static_cast<unsigned int>(gps_info.satellites_used),
+        static_cast<unsigned int>(gps_info.satellites_visible));
+    if (gps_info.max_cn0 > 0) {
+      snprintf(cn0_text, sizeof(cn0_text), "max cn0: %d dBHz",
+          static_cast<int>(gps_info.max_cn0));
+    }
+    if (gps_info.has_fix) {
+      snprintf(dop_text, sizeof(dop_text), "dop: h %.1f | v %.1f | p %.1f",
+          gps_info.hdop, gps_info.vdop, gps_info.pdop);
+      snprintf(speed_text, sizeof(speed_text), "speed: %.1f km/h",
+          gps_info.speed_kmh);
+    }
+    if (gps_info.utc_valid && gps_info.date_valid) {
+      const uint8_t china_hour = (gps_info.utc_hour + 8) % 24;
+      snprintf(time_text, sizeof(time_text),
+          "time: %02u/%02u/%04u %02u:%02u:%05.2f",
+          static_cast<unsigned int>(gps_info.utc_day),
+          static_cast<unsigned int>(gps_info.utc_month),
+          static_cast<unsigned int>(gps_info.utc_year),
+          static_cast<unsigned int>(china_hour),
+          static_cast<unsigned int>(gps_info.utc_minute),
+          static_cast<double>(gps_info.utc_second));
+    } else if (gps_info.module_found) {
+      snprintf(time_text, sizeof(time_text), "time: waiting...");
+    }
+
+    lvgl_port::GpsScreenState gps_state;
+    gps_state.module_found = gps_info.module_found;
+    gps_state.has_fix = gps_info.has_fix;
+    gps_state.latitude_text = gps_info.has_fix ? lat_text : nullptr;
+    gps_state.longitude_text = gps_info.has_fix ? lon_text : nullptr;
+    gps_state.satellites_text = gps_info.module_found ? sat_text : nullptr;
+    gps_state.cn0_text = gps_info.max_cn0 > 0 ? cn0_text : nullptr;
+    gps_state.dop_text = gps_info.has_fix ? dop_text : nullptr;
+    gps_state.speed_text = gps_info.has_fix ? speed_text : nullptr;
+    gps_state.time_text = (gps_info.module_found || gps_info.utc_valid)
+        ? time_text : nullptr;
+    gps_state.fix_time_text = gps_info.module_found ? fix_time_text : nullptr;
+    gps_state.page_selected = page_selected;
+    lvgl_port::ShowGpsScreen(gps_state, GetUiPageName(current_page),
+        partial_refresh_flag, busy_enable);
+  } else if (current_page == UiPage::kImu) {
+    const ImuInfo imu_info = GetImuInfo();
+    char pitch_text[24] = {}, roll_text[24] = {};
+    char yaw_text[24] = {}, temp_text[24] = {};
+    if (imu_info.data_valid) {
+      snprintf(pitch_text, sizeof(pitch_text),
+          "pitch: %6.1f deg", static_cast<double>(imu_info.pitch));
+      snprintf(roll_text, sizeof(roll_text),
+          "roll:  %6.1f deg", static_cast<double>(imu_info.roll));
+      snprintf(yaw_text, sizeof(yaw_text),
+          "yaw:   %6.1f deg", static_cast<double>(imu_info.yaw));
+      snprintf(temp_text, sizeof(temp_text),
+          "temp:  %.1f C", static_cast<double>(imu_info.temperature));
+    }
+    lvgl_port::ImuScreenState imu_state;
+    imu_state.module_found = imu_info.module_found;
+    imu_state.pitch_text = imu_info.data_valid ? pitch_text : nullptr;
+    imu_state.roll_text = imu_info.data_valid ? roll_text : nullptr;
+    imu_state.yaw_text = imu_info.data_valid ? yaw_text : nullptr;
+    imu_state.temp_text = imu_info.data_valid ? temp_text : nullptr;
+    imu_state.page_selected = page_selected;
+    lvgl_port::ShowImuScreen(imu_state, GetUiPageName(current_page),
+        partial_refresh_flag, busy_enable);
+  } else {
+    lvgl_port::ShowTextList(keyboard_view::GetTextList(),
+        GetUiPageName(current_page), page_selected, partial_refresh_flag,
+        busy_enable);
+  }
+}
 void UpdateStatusBar() {
   static bool initialized = false;
 
@@ -517,54 +1067,37 @@ void UpdateStatusBar() {
 }
 
 /**
- * @brief 刷新当前 UI 页面。
- * @param busy_enable 是否显示忙碌状态。
- */
-void RefreshCurrentPage(bool busy_enable) {
-  if (current_page == UiPage::kHome) {
-    const std::vector<std::string> home_lines = home_view::CreateLines();
-    lvgl_port::ShowHomeScreen(home_lines, home_scroll_index,
-        GetUiPageName(current_page), page_selected, busy_enable);
-  } else if (current_page == UiPage::kAudioTest) {
-    audio_view::Show(page_selected, GetUiPageName(current_page), busy_enable);
-  } else if (current_page == UiPage::kBatteryInfo) {
-    const std::vector<std::string> battery_lines =
-        battery_view::CreateLines(battery_info_snapshot);
-    lvgl_port::ShowHomeScreen(battery_lines, battery_scroll_index,
-        GetUiPageName(current_page), page_selected, busy_enable);
-  } else {
-    lvgl_port::ShowTextList(keyboard_view::GetTextList(),
-        GetUiPageName(current_page), page_selected, true, busy_enable);
-  }
-}
-
-/**
  * @brief 屏幕刷新任务入口。
- * @param arg 任务参数。
  */
 void ScreenRefreshTask(void* arg) {
   (void)arg;
-  printf("ScreenRefreshTask start\n");
+  LogPrintln("ScreenRefreshTask start");
 
   while (true) {
-    if (screen_refresh_flag) {
-      screen_refresh_flag = false;
-      UpdateStatusBar();
-      RefreshCurrentPage(false);
+    if (!system_sleeping) {
+      ProcessPendingScreenRefresh();
+      lvgl_port::Tick(kScreenRefreshTaskPeriodMs);
     }
 
-    lvgl_port::Tick(kScreenRefreshTaskPeriodMs);
-    delay(kScreenRefreshTaskPeriodMs);
+    vTaskDelay(pdMS_TO_TICKS(kScreenRefreshTaskPeriodMs));
   }
 }
 
 /**
  * @brief 设置系统休眠或唤醒状态。
- * @param enable true 进入休眠，false 退出休眠。
  */
 void SetSystemSleep(bool enable) {
   if (enable) {
     auto& es8311_i2s_bus = GetEs8311I2sBus();
+
+    system_sleeping = true;
+    if (screen_refresh_task_handle != nullptr) {
+      vTaskSuspend(screen_refresh_task_handle);
+    }
+
+    ShutdownBleUart();
+    lvgl_port::SetBleConnected(false);
+    ShutdownSx1262Lora();
 
     Serial.end();
     lvgl_port::EndDisplay();
@@ -583,8 +1116,6 @@ void SetSystemSleep(bool enable) {
 
     digitalWrite(RT9080_EN, LOW);
     pinMode(RT9080_EN, INPUT_PULLDOWN);
-
-    vTaskSuspend(screen_refresh_task_handle);
   } else {
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
@@ -601,17 +1132,22 @@ void SetSystemSleep(bool enable) {
     InitAw86224();
     InitEs8311();
     audio_view::InitFlash();
+    InitializeBleUart();
+    lvgl_port::SetBleConnected(IsBleUartConnected());
 
-    vTaskResume(screen_refresh_task_handle);
+    system_sleeping = false;
+    if (screen_refresh_task_handle != nullptr) {
+      vTaskResume(screen_refresh_task_handle);
+    }
   }
 }
 
 void setup() {
   Serial.begin(115200);
   const String build_time = home_view::GetBuildTime();
-  Serial.println(String("[T-Echo-Lite-KeyShield_") +
-                 home_view::GetBoardVersion() + "][" +
-                 home_view::GetSoftwareName() + "]_firmware_" + build_time);
+  LogPrintln(String("[T-Echo-Lite-KeyShield_") +
+             home_view::GetBoardVersion() + "][" +
+             home_view::GetSoftwareName() + "]_firmware_" + build_time);
 
   // 3.3V Power ON
   pinMode(RT9080_EN, OUTPUT);
@@ -645,21 +1181,29 @@ void setup() {
   GetAw21009().SetBrightness(
       cpp_bus_driver::Aw21009::LedChannel::kAll, kAw21009MaxBrightness);
 
+  // 初始化 BLE
+  SetBleUartConnectionChangedCallback(HandleBleUartConnectionChanged);
+  InitializeBleUart();
+  lvgl_port::SetBleConnected(IsBleUartConnected());
+
   xTaskCreate(ScreenRefreshTask, "ScreenRefreshTask",
       kScreenRefreshTaskStackSize, nullptr, 3, &screen_refresh_task_handle);
 
-  screen_refresh_flag = true;
+  RequestScreenRefresh(false);
 
   ResetAutoSleepTimer();
 }
 
 void loop() {
-  // 自动进入休眠检测。
-  if (sleep_op.current_mode == SleepOperator::Mode::kNotSleep &&
+  // 自动休眠检测（SX1262 和 GPS 页面不休眠）。
+  if (current_page != UiPage::kSx1262Lora && current_page != UiPage::kGps &&
+      sleep_op.current_mode == SleepOperator::Mode::kNotSleep &&
       millis() > sleep_op.wake_deadline_ms) {
-    Serial.println("Light sleep on");
+    LogPrintln("Light sleep on");
 
-    // 显示休眠提示。
+    ShutdownBleUart();
+    lvgl_port::SetBleConnected(false);
+
     lvgl_port::SetSleepMode(true);
     UpdateStatusBar();
     screen_refresh_flag = false;
@@ -670,13 +1214,13 @@ void loop() {
     sleep_op.current_mode = SleepOperator::Mode::kLightSleep;
   }
 
-  // 休眠状态下通过BOOT按键中断唤醒，短按也可以触发。
+  // 休眠状态下通过BOOT按键唤醒
   if (sleep_op.current_mode == SleepOperator::Mode::kLightSleep) {
     if (boot_wake_requested || digitalRead(nRF52840_BOOT) == LOW) {
       boot_wake_requested = false;
       SetSystemSleep(false);
 
-      Serial.println("Awakening");
+      LogPrintln("Awakening");
 
       lvgl_port::SetSleepMode(false);
       UpdateStatusBar();
@@ -684,12 +1228,23 @@ void loop() {
       RefreshCurrentPage(true);
 
       sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
-      // 重置自动休眠计时。
       ResetAutoSleepTimer();
     } else {
       waitForEvent();
       return;
     }
+  }
+
+  if (ProcessSx1262Lora()) {
+    RequestScreenRefresh(true);
+  }
+
+  if (ProcessGps()) {
+    RequestScreenRefresh(true);
+  }
+
+  if (current_page == UiPage::kSx1262Lora && page_selected) {
+    ResetAutoSleepTimer();
   }
 
   if (digitalRead(TCA8418_INT) == LOW) {
@@ -698,17 +1253,17 @@ void loop() {
     cpp_bus_driver::Tca8418::IrqStatus is;
 
     if (!tca8418.ParseIrqStatus(tca8418.GetIrqFlag(), is)) {
-      printf("parse_irq_status fail\n");
+      LogPrintf("parse_irq_status fail\n");
     } else {
       if (is.fifo_overflow_flag) {
-        printf("tca8418 fifo overflow\n");
+        LogPrintf("tca8418 fifo overflow\n");
         tca8418.ClearIrqFlag(cpp_bus_driver::Tca8418::IrqFlag::kFifoOverflow);
       }
 
       if (is.keypad_lock_flag) {
         cpp_bus_driver::Tca8418::KeyLockInfo lock_info;
         if (tca8418.GetKeyLockInfo(&lock_info)) {
-          printf("key lock interrupt, locked: %u events: %u\n",
+          LogPrintf("key lock interrupt, locked: %u events: %u\n",
               static_cast<unsigned int>(lock_info.locked),
               static_cast<unsigned int>(lock_info.event_count));
         }
@@ -718,7 +1273,7 @@ void loop() {
       if (is.gpio_interrupt_flag) {
         uint32_t gpio_status = 0;
         if (tca8418.GetClearGpioIrqFlag(&gpio_status)) {
-          printf("gpio irq status: %#lx\n",
+          LogPrintf("gpio irq status: %#lx\n",
               static_cast<unsigned long>(gpio_status));
         }
         tca8418.ClearIrqFlag(cpp_bus_driver::Tca8418::IrqFlag::kGpioInterrupt);
@@ -727,27 +1282,26 @@ void loop() {
       if (is.key_events_flag) {
         cpp_bus_driver::Tca8418::TouchPoint tp;
         if (tca8418.GetMultipleTouchPoint(tp)) {
-          printf("touch finger: %d\n", tp.finger_count);
+          // LogPrintf("touch finger: %d\n", tp.finger_count);
 
           for (uint8_t i = 0; i < tp.info.size(); i++) {
             switch (tp.info[i].event_type) {
               case cpp_bus_driver::Tca8418::EventType::kKeypad: {
                 cpp_bus_driver::Tca8418::TouchPosition tp_2;
                 if (tca8418.ParseTouchNum(tp.info[i].num, tp_2)) {
-                  printf("keypad event\n");
-                  printf(
-                      "   touch num:[%d] num: %d x: %d y: %d "
-                      "press_flag: %d\n",
-                      i + 1, tp.info[i].num, tp_2.x, tp_2.y,
-                      tp.info[i].press_flag);
+                  // LogPrintf("keypad event\n");
+                  // LogPrintf(
+                  //     "   touch num:[%d] num: %d x: %d y: %d "
+                  //     "press_flag: %d\n",
+                  //     i + 1, tp.info[i].num, tp_2.x, tp_2.y,
+                  //     tp.info[i].press_flag);
                   const size_t key_index = tp.info[i].num - 1;
                   if (key_index <
                       (sizeof(Tca8418_Map) / sizeof(Tca8418_Map[0]))) {
-                    printf("   touch string: %s\n",
-                        Tca8418_Map[key_index].c_str());
+                    // LogPrintf("   touch string: %s\n",
+                    //     Tca8418_Map[key_index].c_str());
 
                     if (tp.info[i].press_flag) {
-                      // 重置自动休眠计时。
                       ResetAutoSleepTimer();
 
                       const std::string& key_text = Tca8418_Map[key_index];
@@ -756,7 +1310,7 @@ void loop() {
                         page_selected = false;
                         home_scroll_index = 0;
                         battery_scroll_index = 0;
-                        screen_refresh_flag = true;
+                        RequestScreenRefresh(false);
                         StartVibration();
                         break;
                       }
@@ -767,16 +1321,28 @@ void loop() {
                         } else if (key_text == "Up") {
                           SelectUiPage(GetPreviousUiPage(current_page));
                         } else if (key_text == "Center") {
-                          if (current_page == UiPage::kBatteryInfo) {
+                          if (current_page == UiPage::kSx1262Lora) {
+                            sx1262_lora_control = Sx1262LoraControl::kFrequency;
+                            sx1262_lora_frequency_editing = false;
+                            sx1262_lora_bandwidth_editing = false;
+                            sx1262_lora_init_attempted = true;
+                            InitializeSx1262Lora();
+                            page_selected = true;
+                          } else if (current_page == UiPage::kImu) {
+                            ReadImuSensor();
+                            page_selected = true;
+                          } else if (current_page == UiPage::kBatteryInfo) {
                             UpdateStatusBar();
                             RefreshBatteryInfoSnapshot();
                             battery_scroll_index = 0;
+                            page_selected = true;
+                          } else {
+                            page_selected = true;
                           }
-                          page_selected = true;
                         } else {
                           break;
                         }
-                        screen_refresh_flag = true;
+                        RequestScreenRefresh(false);
                         StartVibration();
                         break;
                       }
@@ -798,7 +1364,7 @@ void loop() {
                         } else {
                           break;
                         }
-                        screen_refresh_flag = true;
+                        RequestScreenRefresh(true);
                         StartVibration();
                         break;
                       }
@@ -825,12 +1391,18 @@ void loop() {
                         } else {
                           break;
                         }
-                        screen_refresh_flag = true;
+                        RequestScreenRefresh(true);
                         StartVibration();
                         break;
                       }
 
                       if (current_page == UiPage::kAudioTest) {
+                        // 追踪 Mic/Speaker 选择用于渲染
+                        if (key_text == "Down" || key_text == "Up") {
+                          audio_target = audio_target == AudioTarget::kMic
+                                             ? AudioTarget::kSpeaker
+                                             : AudioTarget::kMic;
+                        }
                         const audio_view::KeyResult audio_key_result =
                             audio_view::HandleKey(
                                 key_text, GetEs8311(), StartCompletionVibration);
@@ -838,7 +1410,7 @@ void loop() {
                           if (key_text == "Esc") {
                             page_selected = false;
                           }
-                          screen_refresh_flag = true;
+                          RequestScreenRefresh(key_text != "Center");
                           if (audio_key_result.use_key_vibration) {
                             StartVibration();
                           }
@@ -846,18 +1418,74 @@ void loop() {
                         }
                       }
 
+                      if (current_page == UiPage::kBluetooth) {
+                        if (key_text == "Down") {
+                          const size_t max_scroll_index =
+                              GetBluetoothMaxScrollIndex();
+                          bluetooth_scroll_index =
+                              std::min(bluetooth_scroll_index + kHomeScrollStep,
+                                  max_scroll_index);
+                        } else if (key_text == "Up") {
+                          bluetooth_scroll_index =
+                              bluetooth_scroll_index > kHomeScrollStep
+                                  ? bluetooth_scroll_index - kHomeScrollStep
+                                  : 0;
+                        } else if (key_text == "Center") {
+                          // Center 刷新当前 Bluetooth 信息
+                        } else if (key_text == "Esc") {
+                          page_selected = false;
+                        } else {
+                          break;
+                        }
+                        RequestScreenRefresh(true);
+                        StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kSx1262Lora) {
+                        if (!HandleSx1262LoraPageKey(key_text)) {
+                          break;
+                        }
+                        RequestScreenRefresh(true);
+                        StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kGps) {
+                        if (key_text == "Esc") {
+                          page_selected = false;
+                        } else {
+                          break;
+                        }
+                        RequestScreenRefresh(true);
+                        StartVibration();
+                        break;
+                      }
+
+                      if (current_page == UiPage::kImu) {
+                        if (key_text == "Center") {
+                          ReadImuSensor();
+                        } else if (key_text == "Esc") {
+                          page_selected = false;
+                        } else {
+                          break;
+                        }
+                        RequestScreenRefresh(true);
+                        StartVibration();
+                        break;
+                      }
+
                       if (current_page == UiPage::kKeyboardTest &&
                           key_text == "Esc") {
                         page_selected = false;
-                        screen_refresh_flag = true;
+                        RequestScreenRefresh(true);
                         StartVibration();
                         break;
                       }
 
                       keyboard_view::AddText(key_text);
                       StartVibration();
-
-                      screen_refresh_flag = true;
+                      RequestKeyboardTextRefresh();
                     }
                   }
                 }
@@ -865,8 +1493,8 @@ void loop() {
                 break;
               }
               case cpp_bus_driver::Tca8418::EventType::kGpio:
-                printf("gpio event\n");
-                printf("   touch num:[%d] num: %d press_flag: %d\n", i + 1,
+                LogPrintf("gpio event\n");
+                LogPrintf("   touch num:[%d] num: %d press_flag: %d\n", i + 1,
                     tp.info[i].num, tp.info[i].press_flag);
                 break;
 
@@ -880,12 +1508,12 @@ void loop() {
       }
 
       if (is.ctrl_alt_del_key_sequence_flag) {
-        printf("ctrl-alt-del sequence interrupt\n");
+        LogPrintf("ctrl-alt-del sequence interrupt\n");
         tca8418.ClearIrqFlag(
             cpp_bus_driver::Tca8418::IrqFlag::kCtrlAltDelKeySequence);
       }
     }
   }
 
-  delay(10);
+  vTaskDelay(pdMS_TO_TICKS(10));
 }

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 20 px
  * Bpp: 1
- * Opts: --font assets\icon\material_symbols\MaterialSymbolsRounded.ttf -r 61785,0xF307-0xF30D --size 20 --bpp 1 --format lvgl --lv-include lvgl.h --lv-font-name lvgl_font_material_symbols_rounded_20 --no-compress -o examples\T-Echo-Lite-KeyShield\general_test\lvgl_font_material_symbols_rounded_20.c
+ * Opts: --font assets\icon\material_symbols\MaterialSymbolsRounded.ttf -r 0xE1A7-0xE1A8,0xF159,0xF307-0xF30D --size 20 --bpp 1 --format lvgl --lv-include lvgl.h --lv-font-name lvgl_font_material_symbols_rounded_20 --no-compress -o examples\T-Echo-Lite-KeyShield\general_test\lvgl_font_material_symbols_rounded_20.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
@@ -22,6 +22,17 @@
 
 /*Store the image of the glyphs*/
 static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
+    /* U+E1A7 */
+    0xc, 0x3, 0x80, 0xf3, 0x3e, 0xed, 0x9f, 0xe3,
+    0xf0, 0x78, 0x1e, 0xf, 0xc7, 0xfb, 0xb6, 0xcf,
+    0x83, 0xc0, 0xe0, 0x30,
+
+    /* U+E1A8 */
+    0x3, 0x0, 0x7, 0x0, 0xf, 0x1, 0x9f, 0x3,
+    0xb6, 0x3, 0xfc, 0x3, 0xf0, 0x63, 0xc6, 0xc7,
+    0x8c, 0x1f, 0x80, 0x7f, 0x81, 0xdb, 0x3, 0x3e,
+    0x0, 0x78, 0x0, 0xe0, 0x1, 0x80,
+
     /* U+F159 "" */
     0x6, 0x0, 0xf, 0x0, 0xf, 0x80, 0xe, 0x40,
     0x6, 0x30, 0x7, 0x18, 0x3, 0x6, 0x1, 0x83,
@@ -72,14 +83,16 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
 
 static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
     {.bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0} /* id = 0 reserved */,
-    {.bitmap_index = 0, .adv_w = 320, .box_w = 17, .box_h = 16, .ofs_x = 1, .ofs_y = 2},
-    {.bitmap_index = 34, .adv_w = 320, .box_w = 19, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
-    {.bitmap_index = 58, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
-    {.bitmap_index = 81, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
-    {.bitmap_index = 104, .adv_w = 320, .box_w = 19, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
-    {.bitmap_index = 128, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
-    {.bitmap_index = 151, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
-    {.bitmap_index = 174, .adv_w = 320, .box_w = 19, .box_h = 10, .ofs_x = 1, .ofs_y = 5}
+    {.bitmap_index = 0, .adv_w = 320, .box_w = 10, .box_h = 16, .ofs_x = 5, .ofs_y = 2},
+    {.bitmap_index = 20, .adv_w = 320, .box_w = 15, .box_h = 16, .ofs_x = 3, .ofs_y = 2},
+    {.bitmap_index = 50, .adv_w = 320, .box_w = 17, .box_h = 16, .ofs_x = 1, .ofs_y = 2},
+    {.bitmap_index = 84, .adv_w = 320, .box_w = 19, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
+    {.bitmap_index = 108, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
+    {.bitmap_index = 131, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
+    {.bitmap_index = 154, .adv_w = 320, .box_w = 19, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
+    {.bitmap_index = 178, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
+    {.bitmap_index = 201, .adv_w = 320, .box_w = 18, .box_h = 10, .ofs_x = 1, .ofs_y = 5},
+    {.bitmap_index = 224, .adv_w = 320, .box_w = 19, .box_h = 10, .ofs_x = 1, .ofs_y = 5}
 };
 
 /*---------------------
@@ -87,15 +100,15 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
  *--------------------*/
 
 static const uint16_t unicode_list_0[] = {
-    0x0, 0x1ae, 0x1af, 0x1b0, 0x1b1, 0x1b2, 0x1b3, 0x1b4
+    0x0, 0x1, 0xfb2, 0x1160, 0x1161, 0x1162, 0x1163, 0x1164, 0x1165, 0x1166
 };
 
 /*Collect the unicode lists and glyph_id offsets*/
 static const lv_font_fmt_txt_cmap_t cmaps[] =
 {
     {
-        .range_start = 61785, .range_length = 437, .glyph_id_start = 1,
-        .unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 8, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
+        .range_start = 57767, .range_length = 4455, .glyph_id_start = 1,
+        .unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 10, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
     }
 };
 
@@ -162,4 +175,3 @@ lv_font_t lvgl_font_material_symbols_rounded_20 = {
 
 
 #endif /*#if LVGL_FONT_MATERIAL_SYMBOLS_ROUNDED_20*/
-

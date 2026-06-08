@@ -50,9 +50,8 @@ bool audio_record_available = false;
 uint32_t audio_buffer[2][kAudioBufferSampleCount] = {0};
 bool flash_ready = false;
 
-SPIClass custom_spi_flash(
-    NRF_SPIM3, ZD25WQ32C_MISO, ZD25WQ32C_SCLK, ZD25WQ32C_MOSI);
-Adafruit_FlashTransport_SPI flash_transport(ZD25WQ32C_CS, custom_spi_flash);
+Adafruit_FlashTransport_QSPI flash_transport(ZD25WQ32C_SCLK, ZD25WQ32C_CS,
+    ZD25WQ32C_IO0, ZD25WQ32C_IO1, ZD25WQ32C_IO2, ZD25WQ32C_IO3);
 Adafruit_SPIFlash flash(&flash_transport);
 SPIFlash_Device_t zd25wq32c = {
     total_size : (1UL << 22),
@@ -322,7 +321,6 @@ bool PlayAudioFromFlash(
 }  // namespace
 
 bool InitFlash() {
-  custom_spi_flash.setClockDivider(SPI_CLOCK_DIV2);
   if (!flash.begin(&zd25wq32c)) {
     printf("flash init failed\n");
     flash_ready = false;
