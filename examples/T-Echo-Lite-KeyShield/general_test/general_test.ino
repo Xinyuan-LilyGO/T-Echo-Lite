@@ -49,7 +49,7 @@ static constexpr float kBatteryEmptyVoltage = 3.6f;
 static constexpr float kBatteryFullVoltage = 4.2f;
 static constexpr uint8_t kBatteryAdcSampleCount = 16;
 static constexpr uint32_t kScreenRefreshTaskPeriodMs = 10;
-static constexpr uint16_t kScreenRefreshTaskStackSize = 2048;
+static constexpr uint16_t kScreenRefreshTaskStackSize = 4096;
 static constexpr size_t kHomeVisibleLineCount = 10;
 static constexpr size_t kHomeScrollStep = kHomeVisibleLineCount / 2;
 static constexpr size_t kMaxPartialRefreshCount = 30;
@@ -88,7 +88,7 @@ enum class Sx1262LoraControl : uint8_t {
   kAutoSend,
 };
 
-bool screen_refresh_flag = false;
+volatile bool screen_refresh_flag = false;
 UiPage current_page = UiPage::kHome;
 bool page_selected = false;
 size_t home_scroll_index = 0;
@@ -97,7 +97,7 @@ size_t bluetooth_scroll_index = 0;
 uint8_t filtered_battery_percentage = 0;
 battery_view::BatteryInfo battery_info_snapshot;
 bool system_sleeping = false;
-bool partial_refresh_flag = true;
+volatile bool partial_refresh_flag = true;
 size_t partial_refresh_count = 0;
 
 // Audio state
@@ -751,6 +751,7 @@ bool HandleSx1262LoraPageKey(const std::string& key_text) {
  * @param partial_refresh 为 true 时允许使用局部刷新。
  */
 void RequestScreenRefresh(bool partial_refresh) {
+  taskENTER_CRITICAL();
   if (!partial_refresh) {
     partial_refresh_count = 0;
   }
@@ -758,6 +759,7 @@ void RequestScreenRefresh(bool partial_refresh) {
       screen_refresh_flag ? partial_refresh_flag && partial_refresh
                           : partial_refresh;
   screen_refresh_flag = true;
+  taskEXIT_CRITICAL();
 }
 
 /**
@@ -879,10 +881,19 @@ void RefreshBatteryInfoSnapshot() {
  * @brief 消费刷新请求并调用 LVGL 渲染当前页面。
  */
 void ProcessPendingScreenRefresh() {
-  if (!screen_refresh_flag) return;
+  bool partial_refresh = true;
+  taskENTER_CRITICAL();
+  if (!screen_refresh_flag) {
+    taskEXIT_CRITICAL();
+    return;
+  }
   screen_refresh_flag = false;
+  partial_refresh = partial_refresh_flag;
+  partial_refresh_flag = true;
+  taskEXIT_CRITICAL();
 
   UpdateStatusBar();
+  partial_refresh_flag = partial_refresh;
   RefreshCurrentPage(false);
   partial_refresh_flag = true;
 }
@@ -1083,15 +1094,25 @@ void ScreenRefreshTask(void* arg) {
   }
 }
 
+void SuspendScreenRefreshTask() {
+  if (screen_refresh_task_handle != nullptr) {
+    vTaskSuspend(screen_refresh_task_handle);
+  }
+}
+
+void ResumeScreenRefreshTask() {
+  if (screen_refresh_task_handle != nullptr) {
+    vTaskResume(screen_refresh_task_handle);
+  }
+}
+
 /**
  * @brief 设置系统休眠或唤醒状态。
  */
 void SetSystemSleep(bool enable) {
   if (enable) {
     system_sleeping = true;
-    if (screen_refresh_task_handle != nullptr) {
-      vTaskSuspend(screen_refresh_task_handle);
-    }
+    SuspendScreenRefreshTask();
 
     Serial.end();
 
@@ -1168,9 +1189,6 @@ void SetSystemSleep(bool enable) {
     lvgl_port::SetBleConnected(IsBleUartConnected());
 
     system_sleeping = false;
-    if (screen_refresh_task_handle != nullptr) {
-      vTaskResume(screen_refresh_task_handle);
-    }
   }
 }
 
@@ -1233,6 +1251,7 @@ void loop() {
       millis() > sleep_op.wake_deadline_ms) {
     LogPrintln("Light sleep on");
 
+    SuspendScreenRefreshTask();
     lvgl_port::SetBleConnected(false);
 
     lvgl_port::SetSleepMode(true);
@@ -1254,10 +1273,12 @@ void loop() {
 
         LogPrintln("Awakening");
 
+        SuspendScreenRefreshTask();
         lvgl_port::SetSleepMode(false);
         UpdateStatusBar();
         screen_refresh_flag = false;
         RefreshCurrentPage(true);
+        ResumeScreenRefreshTask();
 
         sleep_op.current_mode = SleepOperator::Mode::kNotSleep;
         ResetAutoSleepTimer();
