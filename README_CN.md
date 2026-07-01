@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-05-16 11:16:55
+ * @LastEditTime: 2026-07-01 13:39:19
  * @License: GPL 3.0
 -->
 
@@ -210,7 +210,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 | [aw21009qnr](./examples/T-Echo-Lite-KeyShield/aw21009qnr) | <p align="center">![alt text][supported]  |  |  |
 | [aw86224](./examples/T-Echo-Lite-KeyShield/aw86224) | <p align="center">![alt text][supported]  |  |  |
 | [es8311](./examples/T-Echo-Lite-KeyShield/es8311) | <p align="center">![alt text][supported]  |  |  |
-| [original_test](./examples/T-Echo-Lite-KeyShield/original_test) | <p align="center">![alt text][supported]  | 出厂测试程序  |  |
+| [general_test](./examples/T-Echo-Lite-KeyShield/general_test) | <p align="center">![alt text][supported]  | 出厂测试程序  |  |
 | [tca8418](./examples/T-Echo-Lite-KeyShield/tca8418) | <p align="center">![alt text][supported]  |  |  |
 | [voice_speaker](./examples/T-Echo-Lite-KeyShield/voice_speaker) | <p align="center">![alt text][supported]  |  |  |
 
@@ -224,7 +224,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 | ------  | ------  | ------ |
 | [T-Echo-Lite_Original_Test(lora_868mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868mhz_125khz)]_firmware/)| 出厂测试程序 |  |
 | [T-Echo-Lite_Original_Test(lora_915mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz_125khz)]_firmware/)| 出厂测试程序 |  |
-| [T-Echo-Lite-KeyShield_original_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][original_test]_firmware/)| 出厂测试程序 |  |
+| [T-Echo-Lite-KeyShield_general_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][general_test]_firmware/)| 出厂测试程序 |  |
 
 ### IDE和烧录
 
