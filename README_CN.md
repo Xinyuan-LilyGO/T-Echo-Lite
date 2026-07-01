@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-07-01 13:39:19
+ * @LastEditTime: 2026-07-01 13:48:02
  * @License: GPL 3.0
 -->
 
@@ -324,6 +324,6 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 <br />
 
 ## 项目
-* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite_V1.0.pdf)
-* [T-Echo-Lite-Eapper_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite-Eapper_V1.0.pdf)
+* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0)
+* [T-Echo-Lite-KeyShield_V1.0](./project/T-Echo-Lite-KeyShield_V1.0)
 

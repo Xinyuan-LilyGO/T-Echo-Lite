@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-07-01 13:38:25
+ * @LastEditTime: 2026-07-01 13:48:10
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -321,5 +321,5 @@ For pin definitions, please refer to the configuration file:
 
 
 ## Project
-* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite_V1.0.pdf)
-* [T-Echo-Lite-Eapper_V1.0](./project/T-Echo-Lite_V1.0/T-Echo-Lite-Eapper_V1.0.pdf)
+* [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0)
+* [T-Echo-Lite-KeyShield_V1.0](./project/T-Echo-Lite-KeyShield_V1.0)
