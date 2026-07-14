@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-07-01 13:48:10
+ * @LastEditTime: 2026-07-14 09:22:09
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Echo-Lite</h1>
@@ -125,13 +125,14 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
 > Important note: The ICM20948 module is an external expansion module. The default purchase link does not include this module, so it needs to be purchased separately.
 
 ### 6. Flash
-*   Chip: ZD25WQ32CEIGR
+*   Chip: ZD25WQ32C or ZD25Q32D
 *   Bus Communication Protocol: SPI
 *   Dependent Libraries:
     >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
     >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)  
 *   Related Documentation:
     > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
+    >[ZD25Q32DTIGT](./information/ZD25Q32DTIGT.pdf)
 
 ### T-Echo-Lite-KeyShield Section
 ### 1. Keyboard Backlight

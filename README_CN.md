@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-07-01 13:48:02
+ * @LastEditTime: 2026-07-14 09:11:18
  * @License: GPL 3.0
 -->
 
@@ -132,13 +132,14 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 
 ### 6. Flash
 
-* 芯片：ZD25WQ32CEIGR
+* 芯片：ZD25WQ32C 或者 ZD25Q32D
 * 总线通信协议：SPI
 * 依赖库：
     >[Adafruit_BusIO](https://github.com/adafruit/Adafruit_BusIO)  
     >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)
 * 相关资料：
     >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
+    >[ZD25Q32DTIGT](./information/ZD25Q32DTIGT.pdf)
 
 ### T-Echo-Lite-KeyShield 部分
 ### 1. 键盘背光

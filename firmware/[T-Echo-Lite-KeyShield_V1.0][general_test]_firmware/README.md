@@ -1,5 +1,11 @@
 # Firmware Modification Log
 
+## 2026070140923
+### Changed firmware
+- `[T-Echo-Lite_V1.0][general_test]_firmware_2026070140923`
+### Change content
+- 更新flash新型号兼容ZD25Q32D
+
 ## 202607010917
 ### Changed firmware
 - `[T-Echo-Lite_V1.0][general_test]_firmware_202607010917`

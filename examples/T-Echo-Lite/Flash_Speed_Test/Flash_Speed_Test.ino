@@ -32,7 +32,9 @@ Adafruit_FlashTransport_QSPI flashTransport(ZD25WQ32C_SCLK, ZD25WQ32C_CS,
 
 Adafruit_SPIFlash flash(&flashTransport);
 
-SPIFlash_Device_t ZD25WQ32C =
+SPIFlash_Device_t ZD25WQ32_DEVICES[] =
+{
+    // ZD25WQ32C, JEDEC ID: BA 60 16
     {
         total_size : (1UL << 22), /* 4 MiB */
         start_up_time_us : 12000,
@@ -48,7 +50,28 @@ SPIFlash_Device_t ZD25WQ32C =
         write_status_register_split : false,
         single_status_byte : false,
         is_fram : false,
-    };
+    },
+    // ZD25Q32D, JEDEC ID: BA 40 16
+    {
+        total_size : (1UL << 22), /* 4 MiB */
+        start_up_time_us : 12000,
+        manufacturer_id : 0xBA,
+        memory_type : 0x40,
+        capacity : 0x16,
+        max_clock_speed_mhz : 133,
+        quad_enable_bit_mask : 0x02,
+        has_sector_protection : false,
+        supports_fast_read : true,
+        supports_qspi : true,
+        supports_qspi_writes : true,
+        write_status_register_split : true,
+        single_status_byte : false,
+        is_fram : false,
+    },
+};
+
+constexpr size_t ZD25WQ32_DEVICE_COUNT =
+    sizeof(ZD25WQ32_DEVICES) / sizeof(ZD25WQ32_DEVICES[0]);
 
 // SPIFlash_Device_t ZD25WQ16B_2 =
 //     {
@@ -174,7 +197,7 @@ void setup()
     pinMode(RT9080_EN, OUTPUT);
     digitalWrite(RT9080_EN, HIGH);
 
-    while (flash.begin(&ZD25WQ32C) == false)
+    while (flash.begin(ZD25WQ32_DEVICES, ZD25WQ32_DEVICE_COUNT) == false)
     // while (flash.begin(&ZD25WQ16B_2) == false)
     {
         Serial.println("Flash initialization failed");

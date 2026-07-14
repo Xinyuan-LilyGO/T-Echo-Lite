@@ -53,22 +53,44 @@ bool flash_ready = false;
 Adafruit_FlashTransport_QSPI flash_transport(ZD25WQ32C_SCLK, ZD25WQ32C_CS,
     ZD25WQ32C_IO0, ZD25WQ32C_IO1, ZD25WQ32C_IO2, ZD25WQ32C_IO3);
 Adafruit_SPIFlash flash(&flash_transport);
-SPIFlash_Device_t zd25wq32c = {
-    total_size : (1UL << 22),
-    start_up_time_us : 12000,
-    manufacturer_id : 0xBA,
-    memory_type : 0x60,
-    capacity : 0x16,
-    max_clock_speed_mhz : 104,
-    quad_enable_bit_mask : 0x02,
-    has_sector_protection : false,
-    supports_fast_read : true,
-    supports_qspi : true,
-    supports_qspi_writes : true,
-    write_status_register_split : false,
-    single_status_byte : false,
-    is_fram : false,
+SPIFlash_Device_t zd25wq32_devices[] = {
+    // ZD25WQ32C, JEDEC ID: BA 60 16
+    {
+        total_size : (1UL << 22),
+        start_up_time_us : 12000,
+        manufacturer_id : 0xBA,
+        memory_type : 0x60,
+        capacity : 0x16,
+        max_clock_speed_mhz : 104,
+        quad_enable_bit_mask : 0x02,
+        has_sector_protection : false,
+        supports_fast_read : true,
+        supports_qspi : true,
+        supports_qspi_writes : true,
+        write_status_register_split : false,
+        single_status_byte : false,
+        is_fram : false,
+    },
+    // ZD25Q32D, JEDEC ID: BA 40 16
+    {
+        total_size : (1UL << 22),
+        start_up_time_us : 12000,
+        manufacturer_id : 0xBA,
+        memory_type : 0x40,
+        capacity : 0x16,
+        max_clock_speed_mhz : 133,
+        quad_enable_bit_mask : 0x02,
+        has_sector_protection : false,
+        supports_fast_read : true,
+        supports_qspi : true,
+        supports_qspi_writes : true,
+        write_status_register_split : true,
+        single_status_byte : false,
+        is_fram : false,
+    },
 };
+constexpr size_t kZd25wq32DeviceCount =
+    sizeof(zd25wq32_devices) / sizeof(zd25wq32_devices[0]);
 
 /**
  * @brief 更新音频页面状态提示。
@@ -321,11 +343,13 @@ bool PlayAudioFromFlash(
 }  // namespace
 
 bool InitFlash() {
-  if (!flash.begin(&zd25wq32c)) {
+  if (!flash.begin(zd25wq32_devices, kZd25wq32DeviceCount)) {
     printf("flash init failed\n");
     flash_ready = false;
     return false;
   }
+  printf("flash JEDEC ID: 0x%06lX\n",
+      static_cast<unsigned long>(flash.getJEDECID()));
   flash_ready = true;
 
   AudioRecordHeader header;

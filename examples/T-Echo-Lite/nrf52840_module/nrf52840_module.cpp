@@ -2,7 +2,7 @@
  * @Description: nrf52840_module
  * @Author: LILYGO_L
  * @Date: 2024-12-28 09:38:30
- * @LastEditTime: 2025-12-17 13:48:39
+ * @LastEditTime: 2026-07-14 09:18:34
  * @License: GPL 3.0
  */
 #include <Arduino.h>
@@ -12,7 +12,7 @@
 #include "RadioLib.h"
 
 #define SOFTWARE_NAME "nrf52840_module"
-#define SOFTWARE_LASTEDITTIME "202512171348"
+#define SOFTWARE_LASTEDITTIME "202607131624"
 #define BOARD_VERSION "V1.0"
 
 static const uint32_t Local_MAC[2] =
@@ -21,7 +21,9 @@ static const uint32_t Local_MAC[2] =
         NRF_FICR->DEVICEID[1],
 };
 
-SPIFlash_Device_t ZD25WQ32C =
+SPIFlash_Device_t ZD25WQ32_DEVICES[] =
+{
+    // ZD25WQ32C, JEDEC ID: BA 60 16
     {
         total_size : (1UL << 22), /* 4 MiB */
         start_up_time_us : 12000,
@@ -37,7 +39,28 @@ SPIFlash_Device_t ZD25WQ32C =
         write_status_register_split : false,
         single_status_byte : false,
         is_fram : false,
-    };
+    },
+    // ZD25Q32D, JEDEC ID: BA 40 16
+    {
+        total_size : (1UL << 22), /* 4 MiB */
+        start_up_time_us : 12000,
+        manufacturer_id : 0xBA,
+        memory_type : 0x40,
+        capacity : 0x16,
+        max_clock_speed_mhz : 133,
+        quad_enable_bit_mask : 0x02,
+        has_sector_protection : false,
+        supports_fast_read : true,
+        supports_qspi : true,
+        supports_qspi_writes : true,
+        write_status_register_split : true,
+        single_status_byte : false,
+        is_fram : false,
+    },
+};
+
+constexpr size_t ZD25WQ32_DEVICE_COUNT =
+    sizeof(ZD25WQ32_DEVICES) / sizeof(ZD25WQ32_DEVICES[0]);
 
 struct Button_Triggered_Operator
 {
@@ -79,7 +102,7 @@ struct SX1262_Operator
 
     struct
     {
-        float value = 433.0;
+        float value = 920.0;
         bool change_flag = false;
     } frequency;
     struct
@@ -195,6 +218,29 @@ Adafruit_FlashTransport_QSPI flashTransport(ZD25WQ32C_SCLK, ZD25WQ32C_CS,
                                             ZD25WQ32C_IO0, ZD25WQ32C_IO1,
                                             ZD25WQ32C_IO2, ZD25WQ32C_IO3);
 Adafruit_SPIFlash flash(&flashTransport);
+
+void Print_Flash_JEDEC_ID(void)
+{
+    uint8_t jedec_id[3] = {0};
+
+    if (flashTransport.readCommand(SFLASH_CMD_READ_JEDEC_ID, jedec_id,
+                                   sizeof(jedec_id)) == false)
+    {
+        Serial.println("Flash JEDEC ID read failed");
+        return;
+    }
+
+    Serial.print("Raw flash JEDEC ID: 0x");
+    for (uint8_t i = 0; i < sizeof(jedec_id); i++)
+    {
+        if (jedec_id[i] < 0x10)
+        {
+            Serial.print('0');
+        }
+        Serial.print(jedec_id[i], HEX);
+    }
+    Serial.println();
+}
 
 SPIClass Custom_SPI_3(NRF_SPIM3, SX1262_MISO, SX1262_SCLK, SX1262_MOSI);
 SX1262 radio = new Module(SX1262_CS, SX1262_DIO1, SX1262_RST, SX1262_BUSY, Custom_SPI_3);
@@ -588,7 +634,10 @@ void setup()
 
     // 3.3V Power ON
     pinMode(RT9080_EN, OUTPUT);
+    digitalWrite(RT9080_EN, LOW);
+    delay(5);
     digitalWrite(RT9080_EN, HIGH);
+    delay(5);
 
     pinMode(nRF52840_BOOT, INPUT_PULLUP);
 
@@ -634,9 +683,10 @@ void setup()
 
     Serial.println("pin test finish");
 
-    while (flash.begin(&ZD25WQ32C) == false)
+    while (flash.begin(ZD25WQ32_DEVICES, ZD25WQ32_DEVICE_COUNT) == false)
     {
         Serial.println("Flash initialization failed");
+        Print_Flash_JEDEC_ID();
         for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
         {
             digitalWrite(Pin_Test[i], HIGH);
@@ -644,6 +694,8 @@ void setup()
         delay(1000);
     }
     Serial.println("Flash initialization successful");
+    Serial.print("Flash JEDEC ID: 0x");
+    Serial.println(flash.getJEDECID(), HEX);
 
     for (uint8_t i = 0; i < sizeof(Pin_Test); i++)
     {

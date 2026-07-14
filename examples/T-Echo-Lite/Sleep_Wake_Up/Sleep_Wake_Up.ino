@@ -30,7 +30,9 @@ struct Sleep_Operator
     uint8_t current_mode = mode::NOT_SLEEP;
 };
 
-SPIFlash_Device_t ZD25WQ32C =
+SPIFlash_Device_t ZD25WQ32_DEVICES[] =
+{
+    // ZD25WQ32C, JEDEC ID: BA 60 16
     {
         total_size : (1UL << 22), /* 4 MiB */
         start_up_time_us : 12000,
@@ -46,7 +48,28 @@ SPIFlash_Device_t ZD25WQ32C =
         write_status_register_split : false,
         single_status_byte : false,
         is_fram : false,
-    };
+    },
+    // ZD25Q32D, JEDEC ID: BA 40 16
+    {
+        total_size : (1UL << 22), /* 4 MiB */
+        start_up_time_us : 12000,
+        manufacturer_id : 0xBA,
+        memory_type : 0x40,
+        capacity : 0x16,
+        max_clock_speed_mhz : 133,
+        quad_enable_bit_mask : 0x02,
+        has_sector_protection : false,
+        supports_fast_read : true,
+        supports_qspi : true,
+        supports_qspi_writes : true,
+        write_status_register_split : true,
+        single_status_byte : false,
+        is_fram : false,
+    },
+};
+
+constexpr size_t ZD25WQ32_DEVICE_COUNT =
+    sizeof(ZD25WQ32_DEVICES) / sizeof(ZD25WQ32_DEVICES[0]);
 
 // SPIFlash_Device_t ZD25WQ16B_2 =
 //     {
@@ -103,6 +126,11 @@ Adafruit_FlashTransport_QSPI flashTransport(ZD25WQ32C_SCLK, ZD25WQ32C_CS,
                                             ZD25WQ32C_IO0, ZD25WQ32C_IO1,
                                             ZD25WQ32C_IO2, ZD25WQ32C_IO3);
 Adafruit_SPIFlash flash(&flashTransport);
+
+const char *Get_Flash_Device_Name(void)
+{
+    return flash.getJEDECID() == 0xBA4016 ? "ZD25Q32D" : "ZD25WQ32C";
+}
 
 Button_Triggered_Operator Button_Triggered_OP;
 Sleep_Operator Sleep_OP;
@@ -256,7 +284,7 @@ void System_Sleep(bool mode)
         Custom_SPI_3.begin();
         Custom_SPI_3.setClockDivider(SPI_CLOCK_DIV2);
         radio.standby();
-        flash.begin();
+        flash.begin(ZD25WQ32_DEVICES, ZD25WQ32_DEVICE_COUNT);
         flashTransport.setClockSpeed(32000000UL, 0);
         flashTransport.runCommand(0xAB); // Exit deep sleep mode
         pinMode(LED_1, OUTPUT);
@@ -352,13 +380,15 @@ void setup()
         Serial.println("SX1262 initialization successful");
     }
 
-    if (flash.begin(&ZD25WQ32C) == false)
+    if (flash.begin(ZD25WQ32_DEVICES, ZD25WQ32_DEVICE_COUNT) == false)
     {
         Serial.println("Flash initialization failed");
         delay(1000);
     }
 
     Serial.println("Flash initialization successful");
+    Serial.print("Flash JEDEC ID: 0x");
+    Serial.println(flash.getJEDECID(), HEX);
 
     flashTransport.setClockSpeed(32000000UL, 0);
 
@@ -445,7 +475,9 @@ void loop()
             display.setCursor(25, 110);
             display.print("LoRa: SX1262");
             display.setCursor(25, 120);
-            display.print("Flash: ZD25WQ32C(4MB)");
+            display.print("Flash: ");
+            display.print(Get_Flash_Device_Name());
+            display.print("(4MB)");
             display.setFont(&FreeSans9pt7b);
             display.setTextSize(1);
             display.setCursor(25, 145);
