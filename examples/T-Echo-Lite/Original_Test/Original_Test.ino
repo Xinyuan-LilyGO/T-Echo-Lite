@@ -2,7 +2,7 @@
  * @Description: T-Echo Lite factory original factory testing
  * @Author: LILYGO_L
  * @Date: 2024-08-07 17:27:50
- * @LastEditTime: 2026-04-08 16:39:55
+ * @LastEditTime: 2026-07-14 09:49:31
  * @License: GPL 3.0
  */
 #include "Adafruit_EPD.h"
@@ -1617,6 +1617,55 @@ void Original_Test_8()
 
 void Original_Test_Loop()
 {
+    Original_Test_3();
+
+    while (1)
+    {
+        bool temp = false;
+
+        GFX_Print_SX1262_Info_Loop();
+
+        if (Key_Scanning() == true)
+        {
+            switch (Button_Triggered_OP.current_state)
+            {
+            case Button_Triggered_OP.gesture::SINGLE_CLICK:
+                Serial.println("Key triggered: SINGLE_CLICK");
+
+                Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
+                SX1262_OP.device_1.send_flag = true;
+                SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTING;
+                // clear error count watchdog
+                SX1262_OP.device_1.error_count = 0;
+                CycleTime_2 = millis() + 1000;
+
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
+                Serial.println("Key triggered: DOUBLE_CLICK");
+
+                Original_Test_3();
+
+                // delay(1000);
+                break;
+            case Button_Triggered_OP.gesture::LONG_PRESS:
+                Serial.println("Key triggered: LONG_PRESS");
+                temp = true;
+                // delay(1000);
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        if (temp == true)
+        {
+            radio.sleep();
+            break;
+        }
+    }
+
     Original_Test_6();
 
     while (1)
@@ -1756,55 +1805,6 @@ void Original_Test_Loop()
 
         if (temp == true)
         {
-            break;
-        }
-    }
-
-    Original_Test_3();
-
-    while (1)
-    {
-        bool temp = false;
-
-        GFX_Print_SX1262_Info_Loop();
-
-        if (Key_Scanning() == true)
-        {
-            switch (Button_Triggered_OP.current_state)
-            {
-            case Button_Triggered_OP.gesture::SINGLE_CLICK:
-                Serial.println("Key triggered: SINGLE_CLICK");
-
-                Display_Refresh_OP.sx1262_test.transmission_fast_refresh_flag = true;
-                SX1262_OP.device_1.send_flag = true;
-                SX1262_OP.device_1.connection_flag = SX1262_OP.state::CONNECTING;
-                // clear error count watchdog
-                SX1262_OP.device_1.error_count = 0;
-                CycleTime_2 = millis() + 1000;
-
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::DOUBLE_CLICK:
-                Serial.println("Key triggered: DOUBLE_CLICK");
-
-                Original_Test_3();
-
-                // delay(1000);
-                break;
-            case Button_Triggered_OP.gesture::LONG_PRESS:
-                Serial.println("Key triggered: LONG_PRESS");
-                temp = true;
-                // delay(1000);
-                break;
-
-            default:
-                break;
-            }
-        }
-
-        if (temp == true)
-        {
-            radio.sleep();
             break;
         }
     }

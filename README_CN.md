@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-07-14 09:11:18
+ * @LastEditTime: 2026-07-14 09:57:18
  * @License: GPL 3.0
 -->
 
@@ -223,8 +223,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
-| [T-Echo-Lite_Original_Test(lora_868mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_868mhz_125khz)]_firmware/)| 出厂测试程序 |  |
-| [T-Echo-Lite_Original_Test(lora_915mhz_125khz)](./firmware/[T-Echo-Lite_V1.0][Original_Test(lora_915mhz_125khz)]_firmware/)| 出厂测试程序 |  |
+| [T-Echo-Lite_Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/)| 出厂测试程序 |  |
 | [T-Echo-Lite-KeyShield_general_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][general_test]_firmware/)| 出厂测试程序 |  |
 
 ### IDE和烧录
