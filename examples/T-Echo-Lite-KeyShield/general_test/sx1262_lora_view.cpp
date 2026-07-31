@@ -294,7 +294,9 @@ bool InitializeSx1262Lora() {
   sx1262_spi.begin();
   sx1262_spi.setClockDivider(SPI_CLOCK_DIV2);
 
-  int16_t state = sx1262_radio.begin();
+  int16_t state = sx1262_radio.begin(
+      434.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 10, 8,
+      SX1262_TCXO_VOLTAGE, SX1262_USE_REGULATOR_LDO);
   sx1262_info.last_error = state;
   if (state != RADIOLIB_ERR_NONE) {
     LogPrintf("SX1262 initialization failed, error=%d\n", state);

@@ -773,11 +773,16 @@ bool SX1262_Initialization(void)
     int16_t state = -1;
     if (SX1262_OP.current_mode == SX1262_OP.mode::LORA)
     {
-        state = radio.begin();
+        state = radio.begin(434.0, 125.0, 9, 7,
+                            RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 10, 8,
+                            SX1262_TCXO_VOLTAGE,
+                            SX1262_USE_REGULATOR_LDO);
     }
     else
     {
-        state = radio.beginFSK();
+        state = radio.beginFSK(434.0, 4.8, 5.0, 156.2, 10, 16,
+                               SX1262_TCXO_VOLTAGE,
+                               SX1262_USE_REGULATOR_LDO);
     }
 
     if (state == RADIOLIB_ERR_NONE)

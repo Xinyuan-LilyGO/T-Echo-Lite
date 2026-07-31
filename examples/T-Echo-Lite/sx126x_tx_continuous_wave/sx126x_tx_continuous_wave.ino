@@ -81,10 +81,13 @@ void setup()
     pinMode(SX1262_RF_VC2, OUTPUT);
     Set_SX1262_RF_Transmitter_Switch(false);
 
-    // initialize SX1262 with default settings
+    // Initialize S62F with its required 3.0 V TCXO and DC-DC regulator.
     Serial.println("[SX1262] Initializing ... ");
     Custom_SPI.begin();
-    while (radio.begin() != RADIOLIB_ERR_NONE)
+    while (radio.begin(434.0, 125.0, 9, 7,
+                       RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 10, 8,
+                       SX1262_TCXO_VOLTAGE,
+                       SX1262_USE_REGULATOR_LDO) != RADIOLIB_ERR_NONE)
     {
         Serial.println("SX1262 initialization failed");
         delay(1000);

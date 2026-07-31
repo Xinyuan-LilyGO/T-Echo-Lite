@@ -82,8 +82,17 @@
 #define SX1262_INT _PINNUM(1, 8)
 #define SX1262_DIO1 _PINNUM(1, 8)
 #define SX1262_DIO2 _PINNUM(0, 5)
+
+// 本板使用 AcSiP 射频开关控制模式 A，由 MCU 分别驱动两个 RF_VC 引脚。
+// DIO2 为单独引出的信号，不能替代这两个 GPIO 控制引脚。
 #define SX1262_RF_VC1 _PINNUM(0, 27)
 #define SX1262_RF_VC2 _PINNUM(1, 1)
+
+// S62F 使用内置的 32 MHz TCXO，由 SX1262 的 DIO3 提供 3.0 V 电源。
+// VREG 与 DCC_SW 通过外置 15 uH 电感连接，因此使用 SX1262 的 DC-DC
+// 稳压模式，不强制使用纯 LDO 模式。
+#define SX1262_TCXO_VOLTAGE 3.0
+#define SX1262_USE_REGULATOR_LDO false
 
 // BOOT
 #define nRF52840_BOOT _PINNUM(0, 24)

@@ -104,6 +104,13 @@ T-Echo-Lite-Kit is a baseboard expansion for T-Echo-Lite, primarily extending pe
     >[Adafruit_SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)
 *   Related Documentation:
     > [S62F](./information/S62F.pdf)  
+    > [S62F Application Note](./information/S62F_ApplicationNote_Ver_D.pdf)
+
+#### S62F Hardware Configuration
+
+* RF switch: T-Echo-Lite uses AcSiP control mode A. The nRF52840 drives `RF_VC1` (`P0.27`) and `RF_VC2` (`P1.01`) directly. `DIO2` (`P0.05`) is routed separately and is not hardwired to the RF switch on this board. Set `RF_VC1/RF_VC2` to `HIGH/LOW` for transmit and `LOW/HIGH` for receive.
+* TCXO: The embedded 32 MHz TCXO is controlled internally by SX1262 `DIO3`. Set `tcxoVoltage` explicitly to `3.0 V` when initializing the radio.
+* Regulator: `VREG` and `DCC_SW` are connected through a 15 uH inductor. Use the DC-DC regulator mode (`useRegulatorLDO = false`).
 
 ### 4. GPS
 *   Chip Module: L76K
