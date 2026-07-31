@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2026-07-14 09:57:18
+ * @LastEditTime: 2026-07-31 14:57:11
  * @License: GPL 3.0
 -->
 
@@ -18,13 +18,13 @@
 | Version                               | Update date                       |
 | :-------------------------------: | :-------------------------------: |
 | T-Echo-Lite_V1.0            | 2024-12-06                         |
-| T-Echo-Lite-KeyShield_V1.0            | 2025-10-14                         |
+| T-Echo-Lite-Kit_V1.0            | 2025-10-14                         |
 
 ## 购买链接
 | Product                     | SOC           |  FLASH  |  RAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
 | T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| [LILYGO Mall](https://lilygo.cc/products/t-echo-lite?_pos=1&_sid=79b4c08e7&_ss=r&variant=45331277906101) |
-| T-Echo-Lite-KeyShield_V1.0   |  |  || NULL |
+| T-Echo-Lite-Kit_V1.0   |  |  || NULL |
 
 ## 目录
 - [描述](#描述)
@@ -40,7 +40,10 @@
 
 T-Echo-Lite是基于T-Echo的轻便版本，拥有比T-Echo更小的体积，更小的功耗设计，最低深度睡眠功耗可达2μA-10μA（不同板子由于板载元器件差异功耗的表现可能不同，这里最低功耗采用LILYGO实验室测定的工程板），板载丰富的功能，惯性传感器、LORA模块、太阳能充电功能（5V）、外置GPS等功能，及其优秀的功耗表现使得T-Echo-Lite能够拥有更为出色的续航。
 
-T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬声器、麦克风、振动等外设。
+T-Echo-Lite-Kit为T-Echo-Lite的底板扩展，主要扩展了键盘、扬声器、麦克风、振动等外设。
+
+> [!NOTE]
+> T-Echo-Lite-Kit 与 T-Echo-Lite-KeyShield 是同一产品。旧名称仅保留在已有的文件名和目录名中。
 
 > [!IMPORTANT]
 > 重要说明：L76K模块和ICM20948模块属于外扩模块默认购买链接不提供这两个模块（其中ICM20948模块为焊接的方式连接，L76K模块为排针的方式连接），需要单独购买。
@@ -141,7 +144,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
     >[ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
     >[ZD25Q32DTIGT](./information/ZD25Q32DTIGT.pdf)
 
-### T-Echo-Lite-KeyShield 部分
+### T-Echo-Lite-Kit 部分
 ### 1. 键盘背光
 
 * 驱动芯片：AW21009QNR
@@ -205,7 +208,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 | [SX126x_PingPong_2](./examples/T-Echo-Lite/SX126x_PingPong_2) | <p align="center">![alt text][supported]  |  |  |
 | [sx126x_tx_continuous_wave](./examples/T-Echo-Lite/sx126x_tx_continuous_wave) | <p align="center">![alt text][supported]  |  |  |
 
-### T-Echo-Lite-KeyShield示例
+### T-Echo-Lite-Kit示例
 | Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
 | [aw21009qnr](./examples/T-Echo-Lite-KeyShield/aw21009qnr) | <p align="center">![alt text][supported]  |  |  |
@@ -224,7 +227,7 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
 | [T-Echo-Lite_Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/)| 出厂测试程序 |  |
-| [T-Echo-Lite-KeyShield_general_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][general_test]_firmware/)| 出厂测试程序 |  |
+| [T-Echo-Lite-Kit_general_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][general_test]_firmware/)| 出厂测试程序 |  |
 
 ### IDE和烧录
 
@@ -325,5 +328,5 @@ T-Echo-Lite-KeyShield为T-Echo-Lite的底板扩展，主要扩展了键盘、扬
 
 ## 项目
 * [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0)
-* [T-Echo-Lite-KeyShield_V1.0](./project/T-Echo-Lite-KeyShield_V1.0)
+* [T-Echo-Lite-Kit_V1.0](./project/T-Echo-Lite-KeyShield_V1.0)
 

@@ -17,13 +17,13 @@
 | Version                              | Update date                       |
 | :-------------------------------: | :-------------------------------: |
 | T-Echo-Lite_V1.0            | 2024-12-06                         |
-| T-Echo-Lite-KeyShield_V1.0            | 2025-10-14                         |
+| T-Echo-Lite-Kit_V1.0            | 2025-10-14                         |
 
 ## PurchaseLink
 | Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
 | T-Echo-Lite_V1.0   | nRF52840 |   1M   |256kB| [LILYGO Mall](https://lilygo.cc/products/t-echo-lite?_pos=1&_sid=79b4c08e7&_ss=r&variant=45331277906101) |
-| T-Echo-Lite-KeyShield_V1.0   |  |  || NULL |
+| T-Echo-Lite-Kit_V1.0   |  |  || NULL |
 
 ## Directory
 - [Describe](#describe)
@@ -39,7 +39,10 @@
 
 T-Echo-Lite is a lightweight version based on T-Echo, featuring a smaller volume and lower power consumption design compared to T-Echo. Its minimum deep sleep power consumption can reach 2μA to 10μA (due to differences in onboard components on different boards, power consumption performance may vary; the minimum power consumption mentioned here is based on the engineering board tested by the LILYGO laboratory). The board is equipped with a rich set of features, including an inertial sensor, LORA module, solar charging function (5V), external GPS, and more. Its excellent power consumption performance allows T-Echo-Lite to achieve superior battery life.
 
-T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extending peripherals such as a keyboard, speaker, microphone, and vibration motor.
+T-Echo-Lite-Kit is a baseboard expansion for T-Echo-Lite, primarily extending peripherals such as a keyboard, speaker, microphone, and vibration motor.
+
+> [!NOTE]
+> T-Echo-Lite-Kit and T-Echo-Lite-KeyShield refer to the same product. The legacy name is retained only in existing file and directory names.
 
 > [!IMPORTANT]
 > Important note: The L76K module and the ICM20948 module are external expansion modules. The default purchase link does not include these two modules (the ICM20948 module is connected via soldering, while the L76K module is connected via pin headers). They need to be purchased separately.
@@ -134,7 +137,7 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
     > [ZD25WQ32CEIGR](./information/ZD25WQ32CEIGR.pdf)
     >[ZD25Q32DTIGT](./information/ZD25Q32DTIGT.pdf)
 
-### T-Echo-Lite-KeyShield Section
+### T-Echo-Lite-Kit Section
 ### 1. Keyboard Backlight
 
 * Driver Chip: AW21009QNR
@@ -198,7 +201,7 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
 | [SX126x_PingPong_2](./examples/T-Echo-Lite/SX126x_PingPong_2) | <p align="center">![alt text][supported]  |  |  |
 | [sx126x_tx_continuous_wave](./examples/T-Echo-Lite/sx126x_tx_continuous_wave) | <p align="center">![alt text][supported]  |  |  |
 
-### T-Echo-Lite-KeyShield Examples
+### T-Echo-Lite-Kit Examples
 | Example | `[Arduino IDE (Adafruit_nRF52_V1.6.1)]` <br /> `[PlatformIO (nordicnrf52_V10.6.0)]` <br /> Support | Description | Picture |
 | ------  | ------  | ------ | ------ | 
 | [aw21009qnr](./examples/T-Echo-Lite-KeyShield/aw21009qnr) | <p align="center">![alt text][supported]  |  |  |
@@ -217,7 +220,7 @@ T-Echo-Lite-KeyShield is a baseboard expansion for T-Echo-Lite, primarily extend
 | Firmware | Description | Picture |
 | ------  | ------  | ------ |
 | [T-Echo-Lite_Original_Test](./firmware/[T-Echo-Lite_V1.0][Original_Test]_firmware/)| Product factory original testing |  |
-| [T-Echo-Lite-KeyShield_general_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][general_test]_firmware/)| Product factory original testing |  |
+| [T-Echo-Lite-Kit_general_test](./firmware/[T-Echo-Lite-KeyShield_V1.0][general_test]_firmware/)| Product factory original testing |  |
 
 ### IDE and Flashing
 
@@ -322,4 +325,4 @@ For pin definitions, please refer to the configuration file:
 
 ## Project
 * [T-Echo-Lite_V1.0](./project/T-Echo-Lite_V1.0)
-* [T-Echo-Lite-KeyShield_V1.0](./project/T-Echo-Lite-KeyShield_V1.0)
+* [T-Echo-Lite-Kit_V1.0](./project/T-Echo-Lite-KeyShield_V1.0)
