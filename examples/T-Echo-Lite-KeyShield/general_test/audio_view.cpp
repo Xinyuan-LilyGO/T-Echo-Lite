@@ -207,6 +207,15 @@ bool RecordAudioToFlash(
     return false;
   }
 
+  // 启动后的第一次 RXPTRUPD 仅表示 DMA 接管首个缓冲，还没有录满。
+  // 先排入第二个缓冲，再等下一次事件才能读取已完成的首个缓冲。
+  if (!WaitForAudioReadEvent(es8311, 200) ||
+      !es8311.SetNextReadI2s(audio_buffer[free_buffer])) {
+    Stop(es8311);
+    ShowStatus("Record buffer failed");
+    return false;
+  }
+
   while (millis() < record_deadline && written_bytes < kAudioRecordBytes) {
     if (!WaitForAudioReadEvent(es8311, 200)) {
       continue;
@@ -215,7 +224,12 @@ bool RecordAudioToFlash(
     const uint8_t ready_buffer = filling_buffer;
     filling_buffer = free_buffer;
     free_buffer = ready_buffer;
-    es8311.SetNextReadI2s(audio_buffer[filling_buffer]);
+    // filling_buffer 已由 DMA 接管；排入刚释放的 ready_buffer。
+    if (!es8311.SetNextReadI2s(audio_buffer[ready_buffer])) {
+      Stop(es8311);
+      ShowStatus("Record buffer failed");
+      return false;
+    }
 
     const uint32_t write_bytes =
         std::min<uint32_t>(kAudioBufferBytes, kAudioRecordBytes - written_bytes);
@@ -275,13 +289,22 @@ bool PlayAudioFromFlash(
   uint32_t loaded_bytes = 0;
   uint32_t played_bytes = 0;
   uint32_t buffer_length[2] = {0};
-  bool buffer_ready[2] = {false};
   if (!LoadAudioChunk(0, 0, &buffer_length[0])) {
     ShowStatus("Audio read failed");
     return false;
   }
   loaded_bytes += buffer_length[0];
-  buffer_ready[0] = true;
+
+  // 在启动 DMA 前准备下一段，禁止覆盖仍在播放的缓冲区。
+  if (loaded_bytes < audio_recorded_length) {
+    if (!LoadAudioChunk(loaded_bytes, 1, &buffer_length[1])) {
+      ShowStatus("Audio read failed");
+      return false;
+    }
+    loaded_bytes += buffer_length[1];
+  } else {
+    memset(audio_buffer[1], 0, kAudioBufferBytes);
+  }
 
   if (!es8311.StartTransmitI2s(audio_buffer[0], nullptr,
           kAudioBufferSampleCount)) {
@@ -289,46 +312,48 @@ bool PlayAudioFromFlash(
     return false;
   }
 
-  buffer_ready[0] = false;
-  uint8_t current_buffer = 1;
-  uint32_t active_buffer_length = buffer_length[0];
+  // 第一次 TXPTRUPD 是首个缓冲开始播放，并非播放完成。
+  if (!WaitForAudioWriteEvent(es8311, 500) ||
+      !es8311.SetNextWriteI2s(audio_buffer[1])) {
+    Stop(es8311);
+    ShowStatus("Play buffer failed");
+    return false;
+  }
+
+  uint8_t active_buffer = 0;
 
   while (played_bytes < audio_recorded_length) {
-    if (!buffer_ready[current_buffer] && loaded_bytes < audio_recorded_length) {
-      if (!LoadAudioChunk(
-              loaded_bytes, current_buffer, &buffer_length[current_buffer])) {
-        Stop(es8311);
-        ShowStatus("Audio read failed");
-        return false;
-      }
-      loaded_bytes += buffer_length[current_buffer];
-      buffer_ready[current_buffer] = true;
-    }
-
-    const uint8_t next_buffer = current_buffer == 0 ? 1 : 0;
-    if (!buffer_ready[next_buffer] && loaded_bytes < audio_recorded_length) {
-      if (!LoadAudioChunk(
-              loaded_bytes, next_buffer, &buffer_length[next_buffer])) {
-        Stop(es8311);
-        ShowStatus("Audio read failed");
-        return false;
-      }
-      loaded_bytes += buffer_length[next_buffer];
-      buffer_ready[next_buffer] = true;
-    }
-
     if (!WaitForAudioWriteEvent(es8311, 500)) {
-      continue;
+      Stop(es8311);
+      ShowStatus("Play timeout");
+      return false;
     }
 
-    played_bytes += active_buffer_length;
-    if (buffer_ready[current_buffer]) {
-      es8311.SetNextWriteI2s(audio_buffer[current_buffer]);
-      active_buffer_length = buffer_length[current_buffer];
-      buffer_ready[current_buffer] = false;
-      current_buffer = current_buffer == 0 ? 1 : 0;
-    } else if (loaded_bytes >= audio_recorded_length) {
+    // 下一缓冲已开始播放，只有上一缓冲现在可安全写入。
+    const uint8_t released_buffer = active_buffer;
+    played_bytes += buffer_length[released_buffer];
+    active_buffer = active_buffer == 0 ? 1 : 0;
+    if (played_bytes >= audio_recorded_length) {
       break;
+    }
+
+    if (loaded_bytes < audio_recorded_length) {
+      if (!LoadAudioChunk(loaded_bytes, released_buffer,
+              &buffer_length[released_buffer])) {
+        Stop(es8311);
+        ShowStatus("Audio read failed");
+        return false;
+      }
+      loaded_bytes += buffer_length[released_buffer];
+    } else {
+      // 最后一段播放时排入静音，避免 DMA 重播旧音频。
+      memset(audio_buffer[released_buffer], 0, kAudioBufferBytes);
+      buffer_length[released_buffer] = 0;
+    }
+    if (!es8311.SetNextWriteI2s(audio_buffer[released_buffer])) {
+      Stop(es8311);
+      ShowStatus("Play buffer failed");
+      return false;
     }
   }
 
