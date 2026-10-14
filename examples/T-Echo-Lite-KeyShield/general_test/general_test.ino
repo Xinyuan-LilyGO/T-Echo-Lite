@@ -1164,7 +1164,11 @@ void SetSystemSleep(bool enable) {
 
     // 切断 3.3V 外设供电
     digitalWrite(RT9080_EN, LOW);
-    nrf_gpio_cfg_default(RT9080_EN);
+    pinMode(RT9080_EN, INPUT_PULLDOWN);
+
+    // GPS 使用独立的电源控制脚，主 3.3V 关闭不会自动关闭 GPS。
+    digitalWrite(GPS_RT9080_EN, LOW);
+    pinMode(GPS_RT9080_EN, INPUT_PULLDOWN);
   } else {
     // 恢复 3.3V 供电
     pinMode(RT9080_EN, OUTPUT);
